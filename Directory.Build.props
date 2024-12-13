@@ -1,5 +1,5 @@
 ﻿<Project>
   <Import Project="targets.props" />
-  <Import Project="common.props" />
+  <Import Project="common_aio.props" />
   <Import Project="version.props" />
 </Project>

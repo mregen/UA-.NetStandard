@@ -1,0 +1,10 @@
+{
+    "instanceUrl":  "https://msazure.visualstudio.com",
+    "projectName":  "One",
+    "areaPath":  "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors",
+    "notificationAliases": ["aio-connectors@microsoft.com"],
+    "ppe":  "false",
+    "template":  "TFSMSAzure",
+    "codebaseName":  "opcuasdk",
+    "DefaultBranchs": "main"
+}

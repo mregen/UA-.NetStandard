@@ -1,0 +1,322 @@
+#
+# Common build stages definition for all OneBranch.*.yml file.
+#
+# Notes on use:
+# - When adding stages that are build definition specific, use conditionals.
+#   See ADO documentation for details:
+#   https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
+# - 'ob_restore_phase'  OneBranch specific. Steps decorated with this variable
+#   will be run with network. All these steps are hoisted to the beginning of the build
+#   by the OneBranch build yaml template.
+# More settings at https://aka.ms/obpipelines/yaml/jobs
+
+stages:
+  - stage: prepare
+    displayName: Prepare pipeline
+
+    jobs:
+      - job: gitversion
+        displayName: Set version and variables
+
+        pool:
+          type: linux
+          isCustom: true
+          vmImage: ubuntu-latest
+
+        variables:
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+          ob_sdl_binskim_enabled: false
+
+        steps:
+          - task: UseDotNet@2
+            displayName: Setup .NET
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: $(Build.SourcesDirectory)
+
+          - task: NuGetAuthenticate@1
+
+          - task: PowerShell@2
+            displayName: Versioning
+            inputs:
+              targetType: filePath
+              filePath: ./.azurepipelines/set-version.ps1
+
+          - task: onebranch.pipeline.version@1
+            displayName: Update pipeline title
+            inputs:
+              system: Custom
+              customVersion: $(BuildTemplate)-$(Build.BuildNumber)
+
+          # commented the test matrix because it saves only a few minutes 
+          # and requires a lot more VM resources.
+          # In addition code coverage is not quite right.
+          # - task: PowerShell@2
+          #   name: testmatrix
+          #   displayName: Prepare Tests
+          #   inputs:
+          #     targetType: filePath
+          #     filePath: ./.azurepipelines/get-matrix.ps1
+          #     arguments: -FileName *.Tests.csproj -AgentTable @{ linux = "ubuntu-latest" }
+
+  - stage: build
+    displayName: Build and Test
+
+    dependsOn:
+      - prepare
+
+    jobs:
+      - job: solutions
+        displayName: Build Solutions
+
+        pool:
+          type: windows
+
+        variables:
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+          DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+
+        steps:
+          - task: UseDotNet@2
+            displayName: Setup .NET
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: $(Build.SourcesDirectory)
+
+          - task: NuGetAuthenticate@1
+
+          - task: PowerShell@2
+            displayName: Versioning
+            inputs:
+              targetType: filePath
+              filePath: ./.azurepipelines/set-version.ps1
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: build
+              arguments: --configuration $(BuildConfiguration)
+              projects: $(Build.SourcesDirectory)/*.sln
+
+          - task: RoslynAnalyzers@3
+            displayName: Roslyn Analyzers
+            inputs:
+              userProvideBuildInfo: msBuildInfo
+              msBuildArchitecture: amd64
+              rulesetName: Recommended
+              rulesetVersion: Latest
+              msBuildCommandline: 'dotnet.exe build "$(Build.SourcesDirectory)/UA Core Library.sln" --configuration $(BuildConfiguration) --output $(Agent.TempDirectory)\outroslyn'
+              policyName: Microsoft
+              loadRoslynConfiguredAnalyzersOption: Enable
+
+          - task: DeleteFiles@1
+            displayName: Cleanup RoslynAnalyzer builds
+            inputs:
+              SourceFolder: $(Agent.TempDirectory)\outroslyn
+              RemoveSourceFolder: true
+
+      - job: Tests
+        timeoutInMinutes: 60
+        displayName: Run Tests
+
+        # strategy:
+        #   matrix: $[stageDependencies.prepare.gitversion.outputs['testmatrix.jobMatrix'] ]
+
+        pool:
+          type: linux
+          isCustom: true
+          vmImage: ubuntu-latest
+          # vmImage: $(poolImage)
+
+        variables:
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+          DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+
+        steps:
+          - task: UseDotNet@2
+            displayName: Setup .NET
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: $(Build.SourcesDirectory)
+
+          - task: NuGetAuthenticate@1
+
+          - task: PowerShell@2
+            displayName: Versioning
+            inputs:
+              targetType: filePath
+              filePath: ./.azurepipelines/set-version.ps1
+
+          - task: DotNetCoreCLI@2
+            displayName: Run Tests
+            inputs:
+              command: test
+              projects: $(Build.SourcesDirectory)/Tests/**/*.Tests.csproj
+              # projects: $(file)
+              arguments: >-
+                --configuration $(BuildConfiguration)
+                --blame
+                --logger trx
+                --settings ./Tests/coverlet.runsettings.xml
+                --collect "XPlat Code coverage"
+                --results-directory "$(Build.ArtifactStagingDirectory)/testresults"
+                /p:CollectCoverage=true
+                /p:CoverletOutputFormat=cobertura
+              publishTestResults: false
+
+          - task: PublishTestResults@2
+            displayName: Upload test results
+            condition: always()
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: "**/*.trx"
+              searchFolder: $(Build.ArtifactStagingDirectory)/testresults
+
+          - task: PublishCodeCoverageResults@2
+            condition: always()
+            displayName: Publish code coverage results
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: $(Build.ArtifactStagingDirectory)/testresults/????????-*/coverage.cobertura.xml
+              failIfCoverageEmpty: false
+
+      - job: dotnet_sdk
+        displayName: Build OPC UA.NET SDK
+
+        pool:
+          type: windows
+
+        variables:
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+          DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+          ob_symbolsPublishing_enabled: true
+          ob_symbolsPublishing_symbolsFolder: $(Build.SourcesDirectory)
+          ob_symbolsPublishing_searchPattern: |
+            Stack/**/bin/$(BuildConfiguration)/**/*.pdb
+            Libraries/**/bin/$(BuildConfiguration)/**/*.pdb
+          ob_symbolsPublishing_indexSources: true
+          ob_sdl_binskim_enabled: false
+          msbuildversion: '/p:Version=$(NBGV_Version) /p:AssemblyVersion=$(NBGV_SimpleVersion) /p:FileVersion=$(NBGV_AssemblyFileVersion)'
+          msbuildsign: '/p:AssemblyOriginatorKeyFile=$(strongnamefile.secureFilePath) /p:SignAssembly=true'
+          nugetpreviewversion: '$(NBGV_NuGetPackageVersion)'
+          nugetpublicversion: '$(NBGV_Version)$(NBGV_PrereleaseVersion)'
+
+        steps:
+          - task: UseDotNet@2
+            displayName: Setup .NET
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: $(Build.SourcesDirectory)
+
+          - task: DownloadSecureFile@1
+            name: strongnamefile
+            displayName: 'Download AIO SDK Strong Name Key'
+            inputs:
+              secureFile: 'aio-opcua-sdk.key.snk'
+
+          - task: NuGetAuthenticate@1
+
+          - task: PowerShell@2
+            displayName: Versioning
+            inputs:
+              targetType: filePath
+              filePath: ./.azurepipelines/set-version.ps1
+
+          - task: DotNetCoreCLI@2
+            displayName: Build $(BuildConfiguration)
+            inputs:
+              command: build
+              arguments: '--no-incremental --configuration $(BuildConfiguration) ${{ variables.msbuildversion }} ${{ variables.msbuildsign }}'
+              projects: '$(Build.SourcesDirectory)/UA Core Library.sln'
+
+          - task: ComponentGovernanceComponentDetection@0
+            displayName: "Component Detection"
+            inputs:
+              sourceScanPath: "Libraries/"
+              ignoreDirectories: "Libraries/Opc.Ua.PubSub,Libraries/Opc.Ua.Gds.Server.Common,Libraries/Opc.Ua.Gds.Client.Common"
+              timeout: 60
+
+          - task: onebranch.pipeline.signing@1
+            displayName: Sign Libraries
+            inputs:
+              command: sign
+              signing_environment: azure-ado
+              signing_profile: external_distribution
+              files_to_sign: 'Stack/**/bin/$(BuildConfiguration)/**/*.dll;Libraries/**/bin/$(BuildConfiguration)/**/*.dll'
+              search_root: $(Build.SourcesDirectory)
+
+
+          - task: DotNetCoreCLI@2
+            displayName: Pack Nuget $(BuildConfiguration)
+            inputs:
+              command: pack
+              packagesToPack:  '$(Build.SourcesDirectory)/UA Core Library.sln'
+              configuration: $(BuildConfiguration)
+              configurationToPack: $(BuildConfiguration)
+              nobuild: true
+
+          - task: DeleteFiles@1
+            displayName: Remove Quickstart Nuget
+            inputs:
+              SourceFolder: $(Build.ArtifactStagingDirectory)
+              RemoveSourceFolder: false
+              contents: |
+                OPCFoundation.NetStandard.Opc.Ua.Quickstarts.Servers.*
+
+          - task: onebranch.pipeline.signing@1
+            displayName: Sign nuget package
+            inputs:
+              command: sign
+              signing_environment: azure-ado
+              signing_profile: external_distribution
+              files_to_sign: "**/*.nupkg;**/*.snupkg"
+              search_root: $(Build.ArtifactStagingDirectory)
+
+          - task: DeleteFiles@1
+            displayName: Cleanup RoslynAnalyzer build
+            inputs:
+              SourceFolder: $(Agent.TempDirectory)\outroslyn
+              RemoveSourceFolder: true
+
+  - stage: publish_sdks
+    displayName: Publish OPC UA SDK
+
+    dependsOn:
+      - build
+
+    jobs:
+      - job: dotnet_nuget_public_sdk
+        displayName: Publish .NET OPC UA SDK
+
+        pool:
+          type: windows
+
+        variables:
+          ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+          ob_git_checkout: false
+          ob_sdl_tsa_enabled: false
+
+        steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: Download packages
+            inputs:
+              buildType: current
+              artifactName: drop_build_dotnet_sdk
+              targetPath: $(Build.SourcesDirectory)/dst/build
+
+          - task: NuGetCommand@2
+            condition: and(succeeded(),eq(variables.PushNuget, true))
+            displayName: NuGet push
+            inputs:
+              command: push
+              publishVstsFeed: one/aio-brokers
+              allowPackageConflicts: true
+              packagesToPush: '$(Build.SourcesDirectory)/dst/build/**/*.nupkg;$(Build.SourcesDirectory)/dst/build/**/*.snupkg'
+

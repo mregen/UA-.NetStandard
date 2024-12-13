@@ -1,0 +1,84 @@
+<Project>
+  <PropertyGroup>
+    <Product>Microsoft AIO OPC UA .NET SDK</Product>
+    <RepositoryUrl>https://dev.azure.com/msazure/One/_git/aio-opcua-sdk</RepositoryUrl>
+    <PackageReleaseNotes>$(RepositoryUrl)/releases</PackageReleaseNotes>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <VersionPrefix>1.05.374</VersionPrefix>
+    <VersionSuffix>preview-$([System.DateTime]::Now.ToString("yyyyMMdd"))</VersionSuffix>
+    <Copyright>
+      © Microsoft Corporation. All rights reserved. 
+      Portions copyright © by OPC Foundation, Inc. and licensed under the Reciprocal Community License (RCL). https://opcfoundation.org/license/rcl/1.00/ 
+    </Copyright>
+    <PackagePrefix>Microsoft.Aio</PackagePrefix>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <NoWarn>NU5125;CA2254;CA1307</NoWarn>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <HighEntropyVA>true</HighEntropyVA>
+    <IsPackable>false</IsPackable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Highest language version supported by .NET Standard 2.0 and .NET Framework -->
+    <LangVersion>7.3</LangVersion>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- to check the package validation on a release build, uncomment here -->
+    <!--<PackageValidationBaselineVersion>1.5.374.27</PackageValidationBaselineVersion>-->
+    <!-- to regenerate the compatibility suppression file, uncomment here -->
+    <!--<GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>-->
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAudit>true</NuGetAudit>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>images/logo.jpg</PackageIcon>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <!-- <PackageLicenseFile>licenses/LICENSE.txt</PackageLicenseFile> -->
+    <PackageReleaseNotes>$(RepositoryUrl)/releases</PackageReleaseNotes>
+    <PackageReadmeFile>NugetREADME.md</PackageReadmeFile>
+    <PackageTags>AIO OPC UA OpcUa SDK dotnet C#</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' != 'false' AND '$(PackageLicenseExpression)' == 'MIT'">
+    <None Include="$(MSBuildThisFileDirectory)/licenses/Microsoft MIT license.txt" Pack="true" PackagePath="licenses/LICENSE.txt"/>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(IsPackable)' != 'false' AND '$(PackageLicenseExpression)' == ''">
+    <None Include="$(MSBuildThisFileDirectory)/LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)/nuget/logo.jpg" Pack="true" PackagePath="$(PackageIcon)"/>
+    <None Include="$(MSBuildThisFileDirectory)/Docs/README.md" Pack="true" PackagePath="$(PackageReadmeFile)"/>
+    <None Include="NOTICE.txt" Pack="true" PackagePath="" Visible="false" Condition=" Exists('NOTICE.txt') " />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NBGV_PublicRelease)' != ''">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <!-- Deterministic build is currently not supported for code coverage tests. -->
+  <PropertyGroup Condition="'$(CollectCoverage)' != 'true' AND ('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true')">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+</Project>
+
