@@ -6,5 +6,5 @@
     "ppe":  "false",
     "template":  "TFSMSAzure",
     "codebaseName":  "opcuasdk",
-    "DefaultBranchs": "main"
+    "DefaultBranches": "main"
 }

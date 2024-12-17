@@ -76,7 +76,7 @@ More samples based on the official [Nuget](https://www.nuget.org/packages/OPCFou
 [![Nuget Downloads](https://img.shields.io/nuget/dt/OPCFoundation.NetStandard.Opc.Ua)](https://www.nuget.org/packages/OPCFoundation.NetStandard.Opc.Ua/)
 
 ### Build Status
-[![Azure DevOps](https://opcfoundation.visualstudio.com/opcua-netstandard/_apis/build/status/OPCFoundation.UA-.NETStandard?branchName=master)](https://opcfoundation.visualstudio.com/opcua-netstandard/_build/latest?definitionId=14&branchName=master)
+[![Build Status](https://msazure.visualstudio.com/One/_apis/build/status%2FOneBranch%2Faio-opcua-sdk-Official?repoName=aio-opcua-sdk&branchName=main)](https://msazure.visualstudio.com/One/_build/latest?definitionId=398362&repoName=aio-opcua-sdk&branchName=main)
 [![Github Actions](https://github.com/OPCFoundation/UA-.NETStandard/actions/workflows/buildandtest.yml/badge.svg)](https://github.com/OPCFoundation/UA-.NETStandard/actions/workflows/buildandtest.yml)
 
 ### Code Quality

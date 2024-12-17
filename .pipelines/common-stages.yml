@@ -127,8 +127,8 @@ stages:
 
         pool:
           type: linux
-          isCustom: true
-          vmImage: ubuntu-latest
+          # isCustom: true
+          # vmImage: ubuntu-latest
           # vmImage: $(poolImage)
 
         variables:
