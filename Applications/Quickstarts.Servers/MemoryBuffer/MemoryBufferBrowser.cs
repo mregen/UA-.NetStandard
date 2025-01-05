@@ -155,7 +155,7 @@ namespace MemoryBuffer
 
                 for (int ii = 0; ii < name.Length; ii++)
                 {
-                    if ("0123456789ABCDEF".IndexOf(name[ii]) == -1)
+                    if ("0123456789ABCDEF".IndexOf(name[ii], StringComparison.Ordinal) == -1)
                     {
                         return null;
                     }

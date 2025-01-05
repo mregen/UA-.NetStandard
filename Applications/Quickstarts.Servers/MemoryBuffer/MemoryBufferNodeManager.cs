@@ -208,7 +208,7 @@ namespace MemoryBuffer
                         return null;
                     }
 
-                    int index = id.IndexOf('[');
+                    int index = id.IndexOf('[', StringComparison.Ordinal);
 
                     if (index == -1)
                     {

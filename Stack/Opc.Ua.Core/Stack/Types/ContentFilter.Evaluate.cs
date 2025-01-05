@@ -437,17 +437,17 @@ namespace Opc.Ua
             // The specail meaning of the regular expression characters not coincident with the
             // OPC UA wildcards must be suppressed so as not to interfere with matching.
             // preceed all '^', '$', '.', '|', '?', '*', '+', '(', ')' with a '\'
-            expression = Regex.Replace(expression, "([\\^\\$\\.\\|\\?\\*\\+\\(\\)])", "\\$1", RegexOptions.Compiled);
+            expression = SuppressUnusedCharacters().Replace(expression, "\\$1");
 
             // 2) Replace all OPC UA wildcards with their regular expression equivalents
             // replace all '%' with ".+", except "\%"
-            expression = Regex.Replace(expression, "(?<!\\\\)%", ".*", RegexOptions.Compiled);
+            expression = ReplaceWildcards().Replace(expression, ".*");
 
             // replace all '_' with '.', except "\_"
-            expression = Regex.Replace(expression, "(?<!\\\\)_", ".", RegexOptions.Compiled);
+            expression = ReplaceUnderscores().Replace(expression, ".");
 
             // replace all "[!" with "[^", except "\[!"
-            expression = Regex.Replace(expression, "(?<!\\\\)(\\[!)", "[^", RegexOptions.Compiled);
+            expression = ReplaceBrackets().Replace(expression, "[^");
 
             return Regex.IsMatch(target, expression);
         }
@@ -2229,6 +2229,17 @@ namespace Opc.Ua
             return null;
         }
 
+        [GeneratedRegex("([\\^\\$\\.\\|\\?\\*\\+\\(\\)])", RegexOptions.Compiled)]
+        private static partial Regex SuppressUnusedCharacters();
+
+        [GeneratedRegex("(?<!\\\\)%", RegexOptions.Compiled)]
+        private static partial Regex ReplaceWildcards();
+
+        [GeneratedRegex("(?<!\\\\)_", RegexOptions.Compiled)]
+        private static partial Regex ReplaceUnderscores();
+
+        [GeneratedRegex("(?<!\\\\)(\\[!)", RegexOptions.Compiled)]
+        private static partial Regex ReplaceBrackets();
 
         #endregion
     }
