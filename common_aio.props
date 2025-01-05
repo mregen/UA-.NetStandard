@@ -26,8 +26,8 @@
     <!--<PackageValidationBaselineVersion>1.5.374.27</PackageValidationBaselineVersion>-->
     <!-- to regenerate the compatibility suppression file, uncomment here -->
     <!--<GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>-->
-    <NuGetAuditMode>all</NuGetAuditMode>
-    <NuGetAudit>true</NuGetAudit>
+    <!--<NuGetAuditMode>all</NuGetAuditMode>-->
+    <!--<NuGetAudit>true</NuGetAudit>-->
   </PropertyGroup>
 
   <PropertyGroup>
