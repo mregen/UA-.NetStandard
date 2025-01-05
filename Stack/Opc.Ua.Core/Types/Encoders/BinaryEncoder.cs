@@ -2003,6 +2003,12 @@ namespace Opc.Ua
                 }
             }
         }
+
+        /// <inheritdoc/>
+        public void WriteSwitchField(string fieldName, uint switchField) => WriteUInt32(fieldName, switchField);
+
+        /// <inheritdoc/>
+        public void WriteEncodingMask(string fieldName, uint encodingMask) => WriteUInt32(fieldName, encodingMask);
         #endregion
 
         #region Private Methods
