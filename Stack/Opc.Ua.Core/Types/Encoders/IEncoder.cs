@@ -217,7 +217,7 @@ namespace Opc.Ua
         /// <summary>
         /// Writes an encodeable object to the stream.
         /// </summary>
-        void WriteEncodeable(string fieldName, IEncodeable value, System.Type systemType);
+        void WriteEncodeable(string fieldName, IEncodeable value, Type systemType);
 
         /// <summary>
         /// Writes an enumerated value array to the stream.
@@ -357,12 +357,12 @@ namespace Opc.Ua
         /// <summary>
         /// Writes an encodeable object array to the stream.
         /// </summary>
-        void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, System.Type systemType);
+        void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, Type systemType);
 
         /// <summary>
         /// Writes an enumerated value array to the stream.
         /// </summary>
-        void WriteEnumeratedArray(string fieldName, Array values, System.Type systemType);
+        void WriteEnumeratedArray(string fieldName, Array values, Type systemType);
 
         /// <summary>
         /// Encode an array according to its valueRank and BuiltInType
@@ -372,12 +372,12 @@ namespace Opc.Ua
         /// <summary>
         /// Encode the switch field for a union.
         /// </summary>
-        void WriteSwitchField(string fieldName, uint switchField);
+        void WriteSwitchField(uint switchField);
 
         /// <summary>
         /// Encode the encoding mask for a structure with optional fields.
         /// </summary>
-        void WriteEncodingMask(string fieldName, uint encodingMask);
+        void WriteEncodingMask(uint encodingMask);
     }
 
     /// <summary>

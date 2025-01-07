@@ -27,6 +27,8 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
+using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
@@ -34,6 +36,7 @@ using BenchmarkDotNet.Diagnosers;
 using Microsoft.IO;
 using NUnit.Framework;
 using Opc.Ua.Bindings;
+using Opc.Ua.Buffers;
 using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
 
@@ -138,6 +141,18 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         }
 
         /// <summary>
+        /// Test encoding with BufferWriter kept open.
+        /// </summary>
+        [Theory]
+        public void JsonEncoderArrayPoolBufferWriter(bool toText)
+        {
+            using (var bufferWriter = new ArrayPoolBufferWriter<byte>())
+            {
+                TestBufferWriterEncode(bufferWriter, toText);
+            }
+        }
+
+        /// <summary>
         /// Benchmark encoding with memory stream kept open.
         /// </summary>
         [Benchmark]
@@ -213,21 +228,52 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         #region Private Methods
         private void TestStreamEncode(MemoryStream memoryStream, bool toArray)
         {
+            int length1;
             using (var jsonEncoder = new JsonEncoder(m_context, false, false, memoryStream, true, StreamSize))
             {
                 TestEncoding(jsonEncoder);
-                _ = jsonEncoder.Close();
+                length1 = jsonEncoder.Close();
             }
             using (var jsonEncoder = new JsonEncoder(m_context, false, false, memoryStream, true, StreamSize))
             {
                 TestEncoding(jsonEncoder);
                 if (toArray)
                 {
-                    int length = jsonEncoder.Close();
-                    Assert.AreEqual(length, memoryStream.Position);
+                    int length2 = jsonEncoder.Close();
+                    Assert.AreEqual(length1 + length2, memoryStream.Position);
                     var result = memoryStream.ToArray();
                     Assert.NotNull(result);
-                    Assert.AreEqual(length, result.Length);
+                    Assert.AreEqual(length1 + length2, result.Length);
+                    EncoderCommon.PrettifyAndValidateJson(result.AsSpan().Slice(0, length1));
+                    EncoderCommon.PrettifyAndValidateJson(result.AsSpan().Slice(length1, length2));
+                }
+                else
+                {
+                    var result = jsonEncoder.CloseAndReturnText();
+                    Assert.NotNull(result);
+                }
+            }
+        }
+
+        private void TestBufferWriterEncode(ArrayPoolBufferWriter<byte> bufferWriter, bool toArray)
+        {
+            int length1;
+            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.Reversible, bufferWriter, false, true))
+            {
+                TestEncoding(jsonEncoder);
+                length1 = jsonEncoder.Close();
+            }
+            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.NonReversible, bufferWriter, false, true))
+            {
+                TestEncoding(jsonEncoder);
+                if (toArray)
+                {
+                    int length2 = jsonEncoder.Close();
+                    var buffers = bufferWriter.GetReadOnlySequence();
+                    Assert.NotNull(buffers);
+                    Assert.AreEqual(length1 + length2, buffers.Length);
+                    EncoderCommon.PrettifyAndValidateJson(Encoding.UTF8.GetString(buffers.Slice(0, length1)));
+                    EncoderCommon.PrettifyAndValidateJson(Encoding.UTF8.GetString(buffers.Slice(length1, length2)));
                 }
                 else
                 {

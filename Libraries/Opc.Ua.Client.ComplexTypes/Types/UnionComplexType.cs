@@ -96,9 +96,10 @@ namespace Opc.Ua.Client.ComplexTypes
 
             string fieldName = null;
 
+            encoder.WriteSwitchField(m_switchField);
+
             if (encoder.UseReversibleEncoding)
             {
-                encoder.WriteUInt32("SwitchField", m_switchField);
                 fieldName = "Value";
             }
 
@@ -125,7 +126,7 @@ namespace Opc.Ua.Client.ComplexTypes
             }
             else if (!encoder.UseReversibleEncoding)
             {
-                encoder.WriteString(null, "null");
+                encoder.WriteString(null, null);
             }
 
             encoder.PopNamespace();
@@ -139,7 +140,8 @@ namespace Opc.Ua.Client.ComplexTypes
             string fieldName = "Value";
             UInt32 unionSelector = 0;
 
-            if (decoder is IJsonDecoder jd)
+            if (decoder.EncodingType == EncodingType.Json &&
+                decoder is IJsonDecoder jd)
             {
                 object token = null;
                 m_switchField = 0;
@@ -186,7 +188,7 @@ namespace Opc.Ua.Client.ComplexTypes
             }
             else
             {
-                unionSelector = m_switchField = decoder.ReadUInt32("SwitchField");
+                unionSelector = m_switchField = decoder.ReadSwitchField(null);
             }
 
             if (unionSelector > 0)

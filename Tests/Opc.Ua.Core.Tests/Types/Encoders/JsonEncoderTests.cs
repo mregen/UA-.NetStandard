@@ -916,19 +916,19 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         [Test]
         public void TestWriteMultipleEncodeableWithoutNameExpectException()
         {
-            // invalid JSON
-            // "{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}"
-            // "{{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}}"
+            // valid JSON
+            // "{\"Foo\":\"bar_1\",\"Foo\":\"bar_2\",\"Foo\":\"bar_3\"}"
             using (var encodeable = new FooBarEncodeable())
             {
                 using (var encoder = new JsonEncoder(Context, true, false))
                 {
-                    Assert.Throws<ServiceResultException>(() => {
-                        encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
-                        encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
-                        encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
-                    }
-                    );
+                    encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
+                    encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
+                    encoder.WriteEncodeable(null, encodeable, typeof(FooBarEncodeable));
+
+                    var encoded = encoder.CloseAndReturnText();
+                    TestContext.Out.WriteLine("Encoded:");
+                    TestContext.Out.WriteLine(encoded);
                 }
             }
         }
@@ -1023,17 +1023,27 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         /// <summary>
         /// It is not valid to have a JSON array within an object without fieldname.
         /// </summary>
-        [TestCase(false, "[{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}]")]
-        [TestCase(true, "[[{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}]]")]
-        public void TestWriteEncodeableArrayWithoutFieldName(bool topLevelIsArray, string expected)
+        [TestCase(false, "[{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}]", true)]
+        [TestCase(true, "[[{\"Foo\":\"bar_1\"},{\"Foo\":\"bar_2\"},{\"Foo\":\"bar_3\"}]]", false)]
+        public void TestWriteEncodeableArrayWithoutFieldName(bool topLevelIsArray, string expected, bool invalid)
         {
             var encodeables = new List<FooBarEncodeable> { new FooBarEncodeable(), new FooBarEncodeable(), new FooBarEncodeable() };
-
-            RunWriteEncodeableArrayTest(
-                null,
-                encodeables,
-                expected,
-                topLevelIsArray);
+            if (invalid)
+            {
+                Assert.Throws<ServiceResultException>(() => RunWriteEncodeableArrayTest(
+                    null,
+                    encodeables,
+                    expected,
+                    topLevelIsArray));
+            }
+            else
+            {
+                RunWriteEncodeableArrayTest(
+                    null,
+                    encodeables,
+                    expected,
+                    topLevelIsArray);
+            }
         }
 
         /// <summary>
@@ -1239,7 +1249,8 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             string resultString = testDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture);
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
             Span<char> valueString = stackalloc char[JsonEncoder.DateTimeRoundTripKindLength];
-            var resultO = JsonEncoder.ConvertUniversalTimeToString(testDateTime, valueString).ToString();
+            JsonEncoder.ConvertUniversalTimeToString(testDateTime, valueString, out int charsWritten);
+            var resultO = valueString.Slice(0, charsWritten).ToString();
 #else
             string resultO = JsonEncoder.ConvertUniversalTimeToString(testDateTime);
 #endif

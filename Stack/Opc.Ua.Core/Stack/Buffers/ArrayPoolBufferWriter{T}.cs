@@ -40,7 +40,7 @@ namespace Opc.Ua.Buffers
     /// </summary>
     public sealed class ArrayPoolBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
-        private const int DefaultChunkSize = 256;
+        private const int DefaultChunkSize = 4096;
         private const int MaxChunkSize = 65536;
         private readonly bool _clearArray;
         private int _chunkSize;

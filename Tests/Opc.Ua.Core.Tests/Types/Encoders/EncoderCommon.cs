@@ -28,6 +28,7 @@
  * ======================================================================*/
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -485,6 +486,22 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         /// Format and validate a JSON string.
         /// </summary>
         public static string PrettifyAndValidateJson(byte[] json, bool outputFormatted = false)
+        {
+            return PrettifyAndValidateJson(Encoding.UTF8.GetString(json), outputFormatted);
+        }
+
+        /// <summary>
+        /// Format and validate a JSON string.
+        /// </summary>
+        public static string PrettifyAndValidateJson(ReadOnlySpan<byte> json, bool outputFormatted = false)
+        {
+            return PrettifyAndValidateJson(Encoding.UTF8.GetString(json), outputFormatted);
+        }
+
+        /// <summary>
+        /// Format and validate a JSON string.
+        /// </summary>
+        public static string PrettifyAndValidateJson(ReadOnlySequence<byte> json, bool outputFormatted = false)
         {
             return PrettifyAndValidateJson(Encoding.UTF8.GetString(json), outputFormatted);
         }
