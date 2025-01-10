@@ -11,6 +11,7 @@
       Portions copyright © by OPC Foundation, Inc. and licensed under the Reciprocal Community License (RCL). https://opcfoundation.org/license/rcl/1.00/ 
     </Copyright>
     <PackagePrefix>Microsoft.Aio</PackagePrefix>
+    <AssemblyPrefix>Microsoft.Aio.Opc.Ua</AssemblyPrefix>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <NoWarn>NU5125;CA2254;CA1307</NoWarn>

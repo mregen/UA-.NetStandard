@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Opc.Ua.Server</AssemblyName>
+    <AssemblyName>$(AssemblyPrefix).Server</AssemblyName>
     <TargetFrameworks>$(LibTargetFrameworks)</TargetFrameworks>
     <PackageId>$(PackagePrefix).Opc.Ua.Server</PackageId>
     <RootNamespace>Opc.Ua.Server</RootNamespace>
