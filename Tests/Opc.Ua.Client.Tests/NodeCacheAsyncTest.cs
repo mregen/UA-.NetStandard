@@ -699,7 +699,7 @@ namespace Opc.Ua.Client.Tests
                                 Assert.NotNull(text);
                                 break;
                             case 7:
-                                NodeId number = new NodeId((int)BuiltInType.Number);
+                                NodeId number = NodeId.Create((int)BuiltInType.Number);
                                 bool isKnown = Session.NodeCache.IsKnown(new ExpandedNodeId((int)BuiltInType.Int64));
                                 Assert.True(isKnown);
                                 bool isKnown2 = Session.NodeCache.IsKnown(TestData.DataTypeIds.ScalarStructureDataType);
@@ -720,7 +720,7 @@ namespace Opc.Ua.Client.Tests
                                 Assert.AreEqual(DataTypeIds.Structure, nodeId2);
                                 IList<NodeId> subTypes = Session.NodeCache.FindSubTypes(new ExpandedNodeId((int)BuiltInType.Number));
                                 bool isTypeOf = Session.NodeCache.IsTypeOf(new ExpandedNodeId((int)BuiltInType.Int32), new ExpandedNodeId((int)BuiltInType.Number));
-                                bool isTypeOf2 = Session.NodeCache.IsTypeOf(new NodeId((int)BuiltInType.UInt32), number);
+                                bool isTypeOf2 = Session.NodeCache.IsTypeOf(NodeId.Create((byte)BuiltInType.UInt32), number);
                                 break;
                             case 8:
                                 bool isEncodingOf = Session.NodeCache.IsEncodingOf(new ExpandedNodeId((int)BuiltInType.Int32), DataTypeIds.Structure);
@@ -728,7 +728,7 @@ namespace Opc.Ua.Client.Tests
                                 bool isEncodingFor = Session.NodeCache.IsEncodingFor(DataTypeIds.Structure,
                                     new TestData.ScalarStructureDataType());
                                 Assert.True(isEncodingFor);
-                                bool isEncodingFor2 = Session.NodeCache.IsEncodingFor(new NodeId((int)BuiltInType.UInt32), new NodeId((int)BuiltInType.UInteger));
+                                bool isEncodingFor2 = Session.NodeCache.IsEncodingFor(NodeId.Create((byte)BuiltInType.UInt32), new NodeId((int)BuiltInType.UInteger));
                                 Assert.False(isEncodingFor2);
                                 break;
                             case 9:

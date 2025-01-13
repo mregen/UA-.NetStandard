@@ -1,6 +1,5 @@
 <Project>
-  <!-- Uncomment to suppress warning that .NET Core 2.1 is used with .NET 6 library. -->
-
+  <!-- Suppress warnings for testing only. Rather use supported libraries only. -->
   <!--
   <PropertyGroup>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>

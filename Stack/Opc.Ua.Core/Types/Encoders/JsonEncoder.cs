@@ -355,7 +355,7 @@ namespace Opc.Ua
         public void PushStructure(string fieldName)
         {
             CheckAndIncrementNestingLevel();
-            if (fieldName == null)
+            if (string.IsNullOrEmpty(fieldName))
             {
                 if (m_nestingLevel == 1 && !m_topLevelIsArray)
                 {
@@ -376,7 +376,7 @@ namespace Opc.Ua
         {
             CheckAndIncrementNestingLevel();
 
-            if (fieldName == null)
+            if (string.IsNullOrEmpty(fieldName))
             {
                 if (m_nestingLevel == 1 && !m_topLevelIsArray)
                 {
@@ -1465,7 +1465,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public void WriteEncodeable(string fieldName, IEncodeable value, System.Type systemType)
+        public void WriteEncodeable(string fieldName, IEncodeable value, Type systemType)
         {
             bool isNull = value == null;
 
@@ -2067,18 +2067,6 @@ namespace Opc.Ua
                         "With Array as top level, an encodable array with fieldname creates invalid json." :
                         "With Object as top level, an encodable array without fieldname creates invalid json.");
                 }
-#if mist
-                if (noFieldName && m_topLevelIsArray)
-                {
-                    m_nestingLevel++;
-                    for (int ii = 0; ii < values.Count; ii++)
-                    {
-                        WriteEncodeable(null, values[ii], systemType);
-                    }
-                    m_nestingLevel--;
-                    return;
-                }
-#endif
             }
 
             PushArray(fieldName);
@@ -2377,7 +2365,7 @@ namespace Opc.Ua
 
             if (dv.WrappedValue == Variant.Null)
             {
-                value = TypeInfo.GetDefaultValue(field.BuiltInType, field.ValueRank);
+                value = TypeInfo.GetDefaultValue(NodeId.Create(field.BuiltInType), field.ValueRank);
                 typeInfo = new TypeInfo((BuiltInType)field.BuiltInType, field.ValueRank);
 
                 if (value != null)
@@ -3130,12 +3118,13 @@ namespace Opc.Ua
         /// </summary>
         private void CheckAndIncrementNestingLevel()
         {
-            if (m_nestingLevel > m_context.MaxEncodingNestingLevels)
+            int maxEncodingNestingLevels = m_context.MaxEncodingNestingLevels;
+            if (maxEncodingNestingLevels != 0 && m_nestingLevel > maxEncodingNestingLevels)
             {
                 throw ServiceResultException.Create(
                     StatusCodes.BadEncodingLimitsExceeded,
                     "Maximum nesting level of {0} was exceeded",
-                    m_context.MaxEncodingNestingLevels);
+                    maxEncodingNestingLevels);
             }
             m_nestingLevel++;
         }

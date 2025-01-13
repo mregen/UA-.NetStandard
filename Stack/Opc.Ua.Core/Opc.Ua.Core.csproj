@@ -9,6 +9,7 @@
     <Description>OPC UA Core Class Library</Description>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -94,17 +95,21 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <ZipTmp>$(BaseIntermediateOutputPath)/zipnodeset2</ZipTmp>
+    <ZipTmp>$(BaseIntermediateOutputPath)$(Configuration)/$(TargetFramework)/zipnodeset2</ZipTmp>
     <ZipNodeSet2XML>Schema/Opc.Ua.NodeSet2.xml</ZipNodeSet2XML>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <Target Name="ZipNodeSet2" BeforeTargets="PrepareForBuild" Inputs="$(ZipNodeSet2XML)" Outputs="$(ZipNodeSet2XML).zip">
+  <Target Name="ZipNodeSet2" BeforeTargets="BeforeBuild" Inputs="$(ZipNodeSet2XML)" Outputs="$(ZipNodeSet2XML).zip">
     <Message Text="Zip $(ZipNodeSet2XML) in $(ZipTmp)." Importance="high" />
     <Copy SourceFiles="$(ZipNodeSet2XML)" DestinationFolder="$(ZipTmp)" />
     <ZipDirectory SourceDirectory="$(ZipTmp)" DestinationFile="$(ZipNodeSet2XML).zip" Overwrite="true" />
     <RemoveDir Directories="$(ZipTmp)" />
     <Message Text="Zip NodeSet2 completed, $(ZipTmp) removed." Importance="high" />
+  </Target>
+
+  <Target Name="RemoveZipNodeset2" AfterTargets="Clean" Condition="Exists('$(ZipNodeSet2XML).zip')">
+    <Message Text="Delete Zip $(ZipNodeSet2XML).zip" Importance="high"></Message>
+    <Delete Files="$(ZipNodeSet2XML).zip"></Delete>
   </Target>
 
 </Project>

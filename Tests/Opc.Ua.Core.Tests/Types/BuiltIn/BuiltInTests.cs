@@ -399,8 +399,6 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
             Assert.False(nodeGuid1.Equals(id2));
             Assert.False(nodeGuid1 == id2);
 
-            id.SetIdentifier("Test", IdType.Opaque);
-
             Assert.Throws<ArgumentException>(() => _ = new NodeId((object)(int)123, 123));
             Assert.Throws<ServiceResultException>(() => _ = NodeId.Create((uint)123, "urn:xyz", null));
             Assert.Throws<ServiceResultException>(() => _ = NodeId.Parse("ns="));
@@ -529,7 +527,7 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
             Assert.Throws<ArgumentException>(() => _ = new ExpandedNodeId((object)(int)123, 123, namespaceUri, 1));
             Assert.Throws<ServiceResultException>(() => _ = ExpandedNodeId.Parse("ns="));
             Assert.Throws<ServiceResultException>(() => _ = ExpandedNodeId.Parse("nsu="));
-            Assert.Throws<ArgumentException>(() => id = "Test");
+            Assert.Throws<ServiceResultException>(() => id = "Test");
             Assert.IsNull(NodeId.ToExpandedNodeId(null, null));
 
             string[] testStrings = new string[] {
@@ -702,6 +700,42 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
 
             Assert.AreEqual(nodeIdBasedDataValue.Value, nodeId);
             Assert.AreEqual(nodeIdBasedDataValue.Value.GetHashCode(), nodeId.GetHashCode());
+        }
+
+        [Test]
+        public void ValidateCachedTwoByteNodeIdEntries()
+        {
+            Assert.AreEqual(byte.MaxValue + 1, NodeId.TwoByteNodeIdCached.Length);
+            for (uint ii = 0; ii <= byte.MaxValue; ii++)
+            {
+                NodeId cachedNodeId = NodeId.TwoByteNodeIdCached[ii];
+                Assert.IsNotNull(cachedNodeId);
+                NodeId createdNodeId = NodeId.Create(ii);
+                Assert.IsNotNull(createdNodeId);
+                Assert.AreEqual(cachedNodeId, createdNodeId);
+                Assert.AreEqual(ii, (uint)createdNodeId.Identifier);
+                Assert.AreEqual(ii, (uint)cachedNodeId.Identifier);
+            }
+        }
+
+        [Test]
+        public void ValidateCachedFourByteNodeIdEntries()
+        {
+            Assert.GreaterOrEqual(NodeId.MaxNodeIdCacheCount, NodeId.FourByteNodeIdCached.Count);
+            for (uint ii = 0; ii <= NodeId.MaxNodeIdCacheCount; ii++)
+            {
+                if (!NodeId.FourByteNodeIdCached.TryGetValue(ii, out NodeId cachedNodeId))
+                {
+                    continue;
+                }
+                Assert.IsNotNull(cachedNodeId);
+                NodeId createdNodeId = NodeId.Create(ii);
+                Assert.IsNotNull(createdNodeId);
+                Assert.AreEqual(cachedNodeId, createdNodeId);
+                Assert.AreEqual(ii, (uint)createdNodeId.Identifier);
+                Assert.AreEqual(ii, (uint)cachedNodeId.Identifier);
+                Assert.IsTrue(Object.ReferenceEquals(cachedNodeId, createdNodeId));
+            }
         }
 
         [Test]

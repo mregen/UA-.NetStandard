@@ -12,9 +12,13 @@
 
 using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -54,7 +58,7 @@ namespace Opc.Ua
     /// <br/></para>
     /// </remarks>
     [DataContract(Namespace = Namespaces.OpcUaXsd)]
-    public class NodeId : IComparable, IFormattable, IEquatable<NodeId>, ICloneable
+    public sealed class NodeId : IComparable, IFormattable, IEquatable<NodeId>, ICloneable
     {
         #region Constructors
         /// <summary>
@@ -64,7 +68,7 @@ namespace Opc.Ua
         /// Creates a new instance of the class which will have the default values. The actual
         /// Node Id will need to be defined as this constructor does not specify the id.
         /// </remarks>
-        public NodeId()
+        internal NodeId()
         {
             Initialize();
         }
@@ -101,6 +105,38 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Returns a NodeId with a numeric node identifier.
+        /// </summary>
+        /// <remarks>
+        /// Returns a cached or new NodeId that will have a numeric (unsigned-int) id.
+        /// </remarks>
+        /// <param name="value">The numeric value of the id</param>
+        public static NodeId Create(byte value) => TwoByteNodeIdCached[value];
+
+        /// <summary>
+        /// Returns a NodeId with a numeric node identifier.
+        /// </summary>
+        /// <remarks>
+        /// Returns a cached or new NodeId that will have a numeric (unsigned-int) id.
+        /// </remarks>
+        /// <param name="value">The numeric value of the id</param>
+        public static NodeId Create(uint value)
+        {
+            if (value <= byte.MaxValue)
+            {
+                return TwoByteNodeIdCached[(byte)value];
+            }
+
+            if (value <= MaxNodeIdCacheCount &&
+                FourByteNodeIdCached.TryGetValue(value, out var nodeId))
+            {
+                return nodeId;
+            }
+
+            return new NodeId(value);
+        }
+
+        /// <summary>
         /// Initializes a numeric node identifier with a namespace index.
         /// </summary>
         /// <remarks>
@@ -109,7 +145,6 @@ namespace Opc.Ua
         /// </remarks>
         /// <param name="value">The new (numeric) Id for the node being created</param>
         /// <param name="namespaceIndex">The index of the namespace that this node should belong to</param>
-        /// <seealso cref="SetNamespaceIndex"/>
         public NodeId(uint value, ushort namespaceIndex)
         {
             m_namespaceIndex = namespaceIndex;
@@ -236,35 +271,52 @@ namespace Opc.Ua
 
             if (value is uint)
             {
-                SetIdentifier(IdType.Numeric, value);
+                m_identifierType = IdType.Numeric;
+                m_identifier = value;
                 return;
             }
 
             if (value == null || value is string)
             {
-                SetIdentifier(IdType.String, value);
+                m_identifierType = IdType.String;
+                m_identifier = value;
                 return;
             }
 
-            if (value is Guid)
+            if (value is Guid guid)
             {
-                SetIdentifier(IdType.Guid, value);
+                m_identifierType = IdType.Guid;
+                m_identifier = guid;
                 return;
             }
 
             if (value is Uuid uuid)
             {
-                SetIdentifier(IdType.Guid, (Guid)uuid);
+                m_identifierType = IdType.Guid;
+                m_identifier = (Guid)uuid;
                 return;
             }
 
             if (value is byte[])
             {
-                SetIdentifier(IdType.Opaque, value);
+                m_identifierType = IdType.Opaque;
+                m_identifier = Utils.Clone(value);
                 return;
             }
 
             throw new ArgumentException("Identifier type not supported.", nameof(value));
+        }
+
+        /// <summary>
+        /// Initializes a node identifier with a modified namespace index.
+        /// </summary>
+        /// <param name="value">The identifier</param>
+        /// <param name="namespaceIndex">The index of the namespace that qualifies the node</param>
+        internal NodeId(NodeId value, ushort namespaceIndex)
+        {
+            m_namespaceIndex = namespaceIndex;
+            m_identifier = value.m_identifier;
+            m_identifierType = value.m_identifierType;
         }
 
         /// <summary>
@@ -279,11 +331,14 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes the object during deserialization.
         /// </summary>
+        [Conditional("DEBUG")]
         private void Initialize()
         {
-            m_namespaceIndex = 0;
-            m_identifierType = IdType.Numeric;
-            m_identifier = null;
+#if DEBUG
+            Debug.Assert(m_namespaceIndex == 0);
+            Debug.Assert(m_identifierType == IdType.Numeric);
+            Debug.Assert(m_identifier == null);
+#endif
         }
         #endregion
 
@@ -560,7 +615,7 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="uint"/> to compare this node to.</param>
         public static implicit operator NodeId(uint value)
         {
-            return new NodeId(value);
+            return NodeId.Create(value);
         }
 
         /// <summary>
@@ -811,7 +866,12 @@ namespace Opc.Ua
                 // parse numeric node identifier.
                 if (text.StartsWith("i=", StringComparison.Ordinal))
                 {
-                    return new NodeId(Convert.ToUInt32(text.Substring(2), CultureInfo.InvariantCulture), namespaceIndex);
+                    uint id = Convert.ToUInt32(text.Substring(2), CultureInfo.InvariantCulture);
+                    if (namespaceIndex == 0)
+                    {
+                        return NodeId.Create(id);
+                    }
+                    return new NodeId(id, namespaceIndex);
                 }
 
                 // parse string node identifier.
@@ -978,65 +1038,22 @@ namespace Opc.Ua
                 return null;
             }
 
-            ExpandedNodeId expandedId = new ExpandedNodeId(nodeId);
-
             if (nodeId.NamespaceIndex > 0)
             {
                 string uri = namespaceTable.GetString(nodeId.NamespaceIndex);
 
                 if (uri != null)
                 {
-                    expandedId.SetNamespaceUri(uri);
+                    return new ExpandedNodeId(new NodeId(nodeId, 0), uri);
                 }
             }
 
-            return expandedId;
-        }
-
-        /// <summary>
-        /// Updates the namespace index.
-        /// </summary>
-        internal void SetNamespaceIndex(ushort value)
-        {
-            m_namespaceIndex = value;
-        }
-
-        /// <summary>
-        /// Updates the identifier.
-        /// </summary>
-        internal void SetIdentifier(IdType idType, object value)
-        {
-            m_identifierType = idType;
-
-            switch (idType)
+            if (nodeId.IsNullNodeId)
             {
-                case IdType.Opaque:
-                {
-                    m_identifier = Utils.Clone(value);
-                    break;
-                }
-
-                case IdType.Guid:
-                {
-                    m_identifier = (Guid)value;
-                    break;
-                }
-
-                default:
-                {
-                    m_identifier = value;
-                    break;
-                }
+                return ExpandedNodeId.Null;
             }
-        }
 
-        /// <summary>
-        /// Updates the identifier.
-        /// </summary>
-        internal void SetIdentifier(string value, IdType idType)
-        {
-            m_identifierType = idType;
-            SetIdentifier(IdType.String, value);
+            return new ExpandedNodeId(nodeId);
         }
         #endregion
 
@@ -1323,7 +1340,7 @@ namespace Opc.Ua
 
         #region ICloneable
         /// <inheritdoc/>
-        public virtual object Clone()
+        public object Clone()
         {
             return this.MemberwiseClone();
         }
@@ -1332,11 +1349,10 @@ namespace Opc.Ua
         /// Makes a deep copy of the object.
         /// </summary>
         /// <remarks>
-        /// Returns a copy of this object.
+        /// This object is immutable so no new allocation is necessary.
         /// </remarks>
         public new object MemberwiseClone()
         {
-            // this object cannot be altered after it is created so no new allocation is necessary.
             return this;
         }
         #endregion
@@ -1351,7 +1367,7 @@ namespace Opc.Ua
         /// <param name="obj">The object (NodeId or ExpandedNodeId is desired) to compare to</param>
         public override bool Equals(object obj)
         {
-            return (CompareTo(obj) == 0);
+            return CompareTo(obj) == 0;
         }
 
         /// <summary>
@@ -1396,9 +1412,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns a unique hashcode for the NodeId
         /// </summary>
-        /// <remarks>
-        /// Returns a unique hashcode for the NodeId
-        /// </remarks>
         public override int GetHashCode()
         {
             if (m_identifier == null)
@@ -1446,9 +1459,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the objects are equal.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the objects are equal.
-        /// </remarks>
         public static bool operator ==(NodeId value1, object value2)
         {
             if (Object.ReferenceEquals(value1, null))
@@ -1456,15 +1466,12 @@ namespace Opc.Ua
                 return Object.ReferenceEquals(value2, null);
             }
 
-            return (value1.CompareTo(value2) == 0);
+            return value1.CompareTo(value2) == 0;
         }
 
         /// <summary>
         /// Returns true if the objects are not equal.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the objects are not equal.
-        /// </remarks>
         public static bool operator !=(NodeId value1, object value2)
         {
             if (Object.ReferenceEquals(value1, null))
@@ -1472,7 +1479,7 @@ namespace Opc.Ua
                 return !Object.ReferenceEquals(value2, null);
             }
 
-            return (value1.CompareTo(value2) != 0);
+            return value1.CompareTo(value2) != 0;
         }
         #endregion
 
@@ -1480,32 +1487,26 @@ namespace Opc.Ua
         /// <summary>
         /// The node identifier formatted as a URI.
         /// </summary>
-        /// <remarks>
-        /// The node identifier formatted as a URI.
-        /// </remarks>
-        [DataMember(Name = "Identifier", Order = 1)]
+        [DataMember(Name = "Identifier", Order = 1, IsRequired = true)]
         internal string IdentifierText
         {
             get
             {
                 return Format(CultureInfo.InvariantCulture);
             }
-            set
+
+            init
             {
                 NodeId nodeId = NodeId.Parse(value);
-
-                m_namespaceIndex = nodeId.NamespaceIndex;
-                m_identifierType = nodeId.IdType;
-                m_identifier = nodeId.Identifier;
+                m_namespaceIndex = nodeId.m_namespaceIndex;
+                m_identifierType = nodeId.m_identifierType;
+                m_identifier = nodeId.m_identifier;
             }
         }
 
         /// <summary>
         /// The index of the namespace URI in the server's namespace array.
         /// </summary>
-        /// <remarks>
-        /// The index of the namespace URI in the server's namespace array.
-        /// </remarks>
         public ushort NamespaceIndex => m_namespaceIndex;
 
         /// <summary>
@@ -1616,113 +1617,6 @@ namespace Opc.Ua
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// Compares two node identifiers.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-        private static int CompareIdentifiers(IdType idType1, object id1, IdType idType2, object id2)
-        {
-            if (id1 == null && id2 == null)
-            {
-                return 0;
-            }
-
-            if (idType1 != idType2)
-            {
-                return idType1.CompareTo(idType2);
-            }
-
-            if (id1 == null || id2 == null)
-            {
-                object nonNull = id1;
-
-                if (id1 == null)
-                {
-                    nonNull = id2;
-                }
-
-                switch (idType1)
-                {
-                    case IdType.Numeric:
-                    {
-                        if (nonNull is uint && (uint)nonNull == 0)
-                        {
-                            return 0;
-                        }
-
-                        break;
-                    }
-
-                    case IdType.Guid:
-                    {
-                        if (nonNull is Guid && (Guid)nonNull == Guid.Empty)
-                        {
-                            return 0;
-                        }
-
-                        break;
-                    }
-
-                    case IdType.String:
-                    {
-                        if (nonNull is string text && text.Length == 0)
-                        {
-                            return 0;
-                        }
-
-                        break;
-                    }
-
-                    case IdType.Opaque:
-                    {
-                        if (nonNull is byte[] bytes && bytes.Length == 0)
-                        {
-                            return 0;
-                        }
-
-                        break;
-                    }
-                }
-
-                return (id1 == null) ? -1 : +1;
-            }
-
-
-            if (id1 is byte[] bytes1)
-            {
-                if (!(id2 is byte[] bytes2))
-                {
-                    return +1;
-                }
-
-                if (bytes1.Length != bytes2.Length)
-                {
-                    return bytes1.Length.CompareTo(bytes2.Length);
-                }
-
-                for (int ii = 0; ii < bytes1.Length; ii++)
-                {
-                    int result = bytes1[ii].CompareTo(bytes2[ii]);
-
-                    if (result != 0)
-                    {
-                        return result;
-                    }
-                }
-
-                // both arrays are equal.
-                return 0;
-            }
-
-
-            if (id1 is IComparable comparable1)
-            {
-                return comparable1.CompareTo(id2);
-            }
-
-            return string.CompareOrdinal(id1.ToString(), id2.ToString());
-        }
-
         /// <summary>
         /// Helper to determine if the identifier of specified type is greater/less.
         /// </summary>
@@ -1856,12 +1750,85 @@ namespace Opc.Ua
                 }
             }
         }
+
+        /// <summary>
+        /// Create a cache of two byte encoded int NodeIds which are most frequently used,
+        /// to reduce allocations during encoding and decoding.
+        /// </summary>
+        private static NodeId[] InitializeTwoByteNodeIds(ReadOnlyDictionary<uint, NodeId> dict)
+        {
+            var result = new NodeId[byte.MaxValue + 1];
+            result[0] = NodeId.Null;
+            for (uint i = 1; i <= byte.MaxValue; i++)
+            {
+                if (!dict.TryGetValue(i, out var nodeId))
+                {
+                    nodeId = new NodeId(i);
+                }
+                result[i] = nodeId;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Create a cache of four byte encoded int NodeIds which are frequently used,
+        /// to reduce allocations during encoding and decoding.
+        /// </summary>
+        private static ReadOnlyDictionary<uint, NodeId> InitializeFourByteNodeIds()
+        {
+            var nodeIdTypeDefinitions = new Type[]
+                {
+                    typeof(DataTypeIds),
+                    typeof(MethodIds),
+                    typeof(ObjectIds),
+                    typeof(ObjectTypeIds),
+                    typeof(ReferenceTypeIds),
+                    typeof(VariableIds),
+                    typeof(VariableTypeIds)
+                };
+
+            var nodeIds = new Dictionary<uint, NodeId>(MaxNodeIdCacheCount) { { 0, NodeId.Null } };
+            foreach (var typeIds in nodeIdTypeDefinitions)
+            {
+                var availableNodeIds = typeIds.GetFields(BindingFlags.Public | BindingFlags.Static)
+                    .Where(field => (field.FieldType == typeof(NodeId)))
+                    .Select(field => (NodeId)field.GetValue(typeof(NodeId)));
+                foreach (var nodeId in availableNodeIds)
+                {
+                    uint index = (uint)nodeId.Identifier;
+                    if (index < MaxNodeIdCacheCount)
+                    {
+                        _ = nodeIds.TryAdd(index, nodeId);
+                    }
+                }
+            }
+
+            return FrozenDictionary.ToFrozenDictionary(nodeIds).AsReadOnly();
+        }
+        #endregion
+
+        #region Internal Static NodeId Lookup tables
+        /// <summary>
+        /// 
+        /// </summary>
+        internal const int MaxNodeIdCacheCount = 1024;
+
+        /// <summary>
+        /// Provide a fast lookup for well known NodeId in namespace 0
+        /// to avoid allocations. Contains only static predefined values.
+        /// </summary>
+        internal static readonly ReadOnlyDictionary<uint, NodeId> FourByteNodeIdCached = InitializeFourByteNodeIds();
+
+        /// <summary>
+        /// Provide a fast lookup for the first 256 NodeId in namespace 0 to avoid allocations.
+        /// </summary>
+        internal static readonly NodeId[] TwoByteNodeIdCached = InitializeTwoByteNodeIds(FourByteNodeIdCached);
         #endregion
 
         #region Private Fields
-        private ushort m_namespaceIndex;
-        private IdType m_identifierType;
-        private object m_identifier;
+        private readonly ushort m_namespaceIndex;
+        private readonly IdType m_identifierType;
+        private readonly object m_identifier;
         #endregion
     }
 
@@ -1902,7 +1869,6 @@ namespace Opc.Ua
         /// </remarks>
         /// <param name="capacity">The max. capacity of the collection</param>
         public NodeIdCollection(int capacity) : base(capacity) { }
-
         #endregion
 
         #region public static NodeIdCollection ToNodeIdCollection(NodeId[] values)
@@ -1924,7 +1890,6 @@ namespace Opc.Ua
 
             return new NodeIdCollection();
         }
-
         #endregion
 
         #region public static implicit operator NodeIdCollection(NodeId[] values)
@@ -1939,7 +1904,6 @@ namespace Opc.Ua
         {
             return ToNodeIdCollection(values);
         }
-
         #endregion
 
         #region ICloneable
@@ -1990,6 +1954,7 @@ namespace Opc.Ua
         /// </summary>
         public ushort[] ServerMappings { get; set; }
     }
+
     #region NodeIdComparer Class
     /// <summary>
     /// Helper which implements a NodeId IEqualityComparer for Linq queries.

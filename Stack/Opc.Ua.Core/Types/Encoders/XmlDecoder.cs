@@ -1099,17 +1099,16 @@ namespace Opc.Ua
         /// </summary>
         public NodeId ReadNodeId(string fieldName)
         {
-            NodeId value = new NodeId();
-
             if (BeginField(fieldName, true))
             {
                 PushNamespace(Namespaces.OpcUaXsd);
                 string identifierText = ReadString("Identifier");
                 PopNamespace();
 
+                NodeId value;
                 try
                 {
-                    value.IdentifierText = identifierText;
+                    value = NodeId.Parse(identifierText);
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
                 {
@@ -1121,14 +1120,16 @@ namespace Opc.Ua
                 }
 
                 EndField(fieldName);
+
+                if (m_namespaceMappings != null && m_namespaceMappings.Length > value.NamespaceIndex)
+                {
+                    value = new NodeId(value, m_namespaceMappings[value.NamespaceIndex]);
+                }
+
+                return value;
             }
 
-            if (m_namespaceMappings != null && m_namespaceMappings.Length > value.NamespaceIndex)
-            {
-                value.SetNamespaceIndex(m_namespaceMappings[value.NamespaceIndex]);
-            }
-
-            return value;
+            return NodeId.Null;
         }
 
         /// <summary>
@@ -1136,17 +1137,16 @@ namespace Opc.Ua
         /// </summary>
         public ExpandedNodeId ReadExpandedNodeId(string fieldName)
         {
-            ExpandedNodeId value = new ExpandedNodeId();
-
             if (BeginField(fieldName, true))
             {
                 PushNamespace(Namespaces.OpcUaXsd);
                 string identifierText = ReadString("Identifier");
                 PopNamespace();
 
+                ExpandedNodeId value;
                 try
                 {
-                    value.IdentifierText = identifierText;
+                    value = ExpandedNodeId.Parse(identifierText);
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
                 {
@@ -1158,19 +1158,21 @@ namespace Opc.Ua
                 }
 
                 EndField(fieldName);
+
+                if (m_namespaceMappings != null && m_namespaceMappings.Length > value.NamespaceIndex && !value.IsNull)
+                {
+                    value = new ExpandedNodeId(new NodeId(value.InnerNodeId, m_namespaceMappings[value.NamespaceIndex]), null, value.ServerIndex);
+                }
+
+                if (m_serverMappings != null && m_serverMappings.Length > value.ServerIndex && !value.IsNull)
+                {
+                    value = new ExpandedNodeId(value.InnerNodeId, value.NamespaceUri, m_serverMappings[value.ServerIndex]);
+                }
+
+                return value;
             }
 
-            if (m_namespaceMappings != null && m_namespaceMappings.Length > value.NamespaceIndex && !value.IsNull)
-            {
-                value.SetNamespaceIndex(m_namespaceMappings[value.NamespaceIndex]);
-            }
-
-            if (m_serverMappings != null && m_serverMappings.Length > value.ServerIndex && !value.IsNull)
-            {
-                value.SetServerIndex(m_serverMappings[value.ServerIndex]);
-            }
-
-            return value;
+            return ExpandedNodeId.Null;
         }
 
         /// <summary>

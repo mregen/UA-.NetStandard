@@ -74,7 +74,7 @@ namespace Alarms
             alarm.ConditionName.Value = m_alarmRootName;
             Utils.LogTrace("Alarm ConditionName = {0}", alarm.ConditionName.Value);
 
-            alarm.BranchId.Value = new NodeId();
+            alarm.BranchId.Value = NodeId.Null;
             alarm.Retain.Value = false;
 
             alarm.SetEnableState(SystemContext, true);
