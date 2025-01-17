@@ -45,7 +45,7 @@
          use latest versions only on .NET 5/6/7/8, otherwise 3.1.x -->
     <When Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
       <ItemGroup>
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.32" />
       </ItemGroup>
     </When>
@@ -54,15 +54,20 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
       </ItemGroup>
     </When>
+    <When Condition="'$(TargetFramework)' == 'net8.0'">
+      <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+      </ItemGroup>
+    </When>
     <When Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net48'">
       <ItemGroup>
-        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
       </ItemGroup>
     </Otherwise>
   </Choose>
@@ -89,7 +94,7 @@
 
   <Target Name="GetPackagingOutputs" />
 
-  <!-- Produces a zipped version of the Nodeset 2 to reduce assembly size by 2.7MB ! -->
+  <!-- Produces a zipped version of the Nodeset 2 to reduce assembly size! -->
   <PropertyGroup>
     <ZipTmp>$(BaseIntermediateOutputPath)$(Configuration)/$(TargetFramework)/zipnodeset2</ZipTmp>
     <NodeSet2XML>Schema/Opc.Ua.NodeSet2.xml</NodeSet2XML>
