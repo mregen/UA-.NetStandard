@@ -92,6 +92,25 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Creates a deep copy of the value.
+        /// </summary>
+        /// <remarks>
+        /// Creates a new instance of the class while copying the contents
+        /// of another struct instance.
+        /// </remarks>
+        /// <param name="value">The DataValueStruct to copy.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the value is null</exception>
+        public DataValue(DataValueStruct value)
+        {
+            m_value.Value = Utils.Clone(value.Value);
+            m_statusCode = value.StatusCode;
+            m_sourceTimestamp = value.SourceTimestamp;
+            m_sourcePicoseconds = value.SourcePicoseconds;
+            m_serverTimestamp = value.ServerTimestamp;
+            m_serverPicoseconds = value.ServerPicoseconds;
+        }
+
+        /// <summary>
         /// Initializes the object with a value.
         /// </summary>
         /// <remarks>
@@ -101,7 +120,6 @@ namespace Opc.Ua
         public DataValue(Variant value)
         {
             Initialize();
-
             m_value = value;
         }
 
@@ -214,7 +232,6 @@ namespace Opc.Ua
                 return true;
             }
 
-
             if (obj is DataValue value)
             {
                 if (this.m_statusCode != value.m_statusCode)
@@ -243,6 +260,36 @@ namespace Opc.Ua
                 }
 
                 return Utils.IsEqual(this.m_value.Value, value.m_value.Value);
+            }
+
+            if (obj is DataValueStruct structValue)
+            {
+                if (this.m_statusCode != structValue.StatusCode)
+                {
+                    return false;
+                }
+
+                if (this.m_serverTimestamp != structValue.ServerTimestamp)
+                {
+                    return false;
+                }
+
+                if (this.m_sourceTimestamp != structValue.SourceTimestamp)
+                {
+                    return false;
+                }
+
+                if (this.m_serverPicoseconds != structValue.ServerPicoseconds)
+                {
+                    return false;
+                }
+
+                if (this.m_sourcePicoseconds != structValue.SourcePicoseconds)
+                {
+                    return false;
+                }
+
+                return Utils.IsEqual(this.m_value.Value, structValue.Value);
             }
 
             return false;

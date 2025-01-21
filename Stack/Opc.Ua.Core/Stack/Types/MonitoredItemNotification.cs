@@ -11,18 +11,57 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Opc.Ua
 {
     /// <summary>
     /// A datachange returned in a NotificationMessage.
+    /// Coexists with <see cref="MonitoredItemNotificationStruct"/> and fixes issues
+    /// with equal operators.
     /// </summary>
-	public partial class MonitoredItemNotification
+	public class MonitoredItemNotification : IEncodeable, IJsonEncodeable
     {
+        #region Constructors
+        /// <remarks />
+        public MonitoredItemNotification()
+        {
+            Initialize();
+        }
+
+        [OnDeserializing]
+        private void Initialize(StreamingContext context)
+        {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            m_clientHandle = (uint)0;
+            m_value = new DataValue();
+        }
+        #endregion
+
         #region Public Properties
+        /// <remarks />
+        [DataMember(Name = "ClientHandle", IsRequired = false, Order = 1)]
+        public uint ClientHandle
+        {
+            get { return m_clientHandle; }
+            set { m_clientHandle = value; }
+        }
+
+        /// <remarks />
+        [DataMember(Name = "Value", IsRequired = false, Order = 2)]
+        public DataValue Value
+        {
+            get { return m_value; }
+            set { m_value = value; }
+        }
+        #endregion
+
+        #region Extra Public Members
+#if LEGACY
         /// <summary>
         /// The notification message that the item belongs to.
         /// </summary>
@@ -31,6 +70,7 @@ namespace Opc.Ua
             get { return m_message; }
             set { m_message = value; }
         }
+#endif
 
         /// <summary>
         /// The diagnostic info associated with the notification.
@@ -42,8 +82,90 @@ namespace Opc.Ua
         }
         #endregion
 
+        #region IEncodeable Members
+        /// <summary cref="IEncodeable.TypeId" />
+        public virtual ExpandedNodeId TypeId => DataTypeIds.MonitoredItemNotification;
+
+        /// <summary cref="IEncodeable.BinaryEncodingId" />
+        public virtual ExpandedNodeId BinaryEncodingId => ObjectIds.MonitoredItemNotification_Encoding_DefaultBinary;
+
+        /// <summary cref="IEncodeable.XmlEncodingId" />
+        public virtual ExpandedNodeId XmlEncodingId => ObjectIds.MonitoredItemNotification_Encoding_DefaultXml;
+
+        /// <summary cref="IJsonEncodeable.JsonEncodingId" />
+        public virtual ExpandedNodeId JsonEncodingId => ObjectIds.MonitoredItemNotification_Encoding_DefaultJson;
+
+        /// <summary cref="IEncodeable.Encode(IEncoder)" />
+        public virtual void Encode(IEncoder encoder)
+        {
+            encoder.PushNamespace(Opc.Ua.Namespaces.OpcUaXsd);
+
+            encoder.WriteUInt32("ClientHandle", ClientHandle);
+            encoder.WriteDataValue("Value", Value);
+
+            encoder.PopNamespace();
+        }
+
+        /// <summary cref="IEncodeable.Decode(IDecoder)" />
+        public virtual void Decode(IDecoder decoder)
+        {
+            decoder.PushNamespace(Opc.Ua.Namespaces.OpcUaXsd);
+
+            ClientHandle = decoder.ReadUInt32("ClientHandle");
+            Value = decoder.ReadDataValue("Value");
+
+            decoder.PopNamespace();
+        }
+
+        /// <summary cref="IEncodeable.IsEqual(IEncodeable)" />
+        public virtual bool IsEqual(IEncodeable encodeable)
+        {
+            if (Object.ReferenceEquals(this, encodeable))
+            {
+                return true;
+            }
+
+            if (encodeable is MonitoredItemNotification value)
+            {
+                if (!Utils.IsEqual(m_clientHandle, value.m_clientHandle)) return false;
+                if (!Utils.IsEqual(m_value, value.m_value)) return false;
+                return true;
+            }
+
+            if (encodeable is MonitoredItemNotificationStruct structValue)
+            {
+                if (m_clientHandle != structValue.ClientHandle) return false;
+                if (m_value?.Equals(structValue.Value) != true) return false;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary cref="ICloneable.Clone" />
+        public virtual object Clone()
+        {
+            return (MonitoredItemNotification)this.MemberwiseClone();
+        }
+
+        /// <summary cref="Object.MemberwiseClone" />
+        public new object MemberwiseClone()
+        {
+            MonitoredItemNotification clone = (MonitoredItemNotification)base.MemberwiseClone();
+
+            clone.m_clientHandle = (uint)Utils.Clone(this.m_clientHandle);
+            clone.m_value = (DataValue)Utils.Clone(this.m_value);
+
+            return clone;
+        }
+        #endregion
+
         #region Private Fields
+        private uint m_clientHandle;
+        private DataValue m_value;
+#if LEGACY
         private NotificationMessage m_message;
+#endif
         private DiagnosticInfo m_diagnosticInfo;
         #endregion
     }

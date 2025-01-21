@@ -52,10 +52,10 @@ namespace Opc.Ua
         string CloseAndReturnText();
 
         /// <summary>
-        /// Sets the mapping tables to use during decoding.
+        /// Initializes the tables used to map namespace and server uris during encoding.
         /// </summary>
-        /// <param name="namespaceUris">The namespace uris.</param>
-        /// <param name="serverUris">The server uris.</param>
+        /// <param name="namespaceUris">The namespaces URIs referenced by the data being encoded.</param>
+        /// <param name="serverUris">The server URIs referenced by the data being encoded.</param>
         void SetMappingTables(NamespaceTable namespaceUris, StringTable serverUris);
 
         /// <summary>
@@ -200,14 +200,19 @@ namespace Opc.Ua
         void WriteLocalizedText(string fieldName, LocalizedText value);
 
         /// <summary>
-        /// Writes a Variant array to the stream.
+        /// Writes a Variant to the stream.
         /// </summary>
         void WriteVariant(string fieldName, Variant value);
 
         /// <summary>
-        /// Writes a DataValue array to the stream.
+        /// Writes a DataValue to the stream.
         /// </summary>
         void WriteDataValue(string fieldName, DataValue value);
+
+        /// <summary>
+        /// Writes a DataValueStruct to the stream.
+        /// </summary>
+        void WriteDataValueStruct(string fieldName, ref DataValueStruct value, DataSetFieldContentMask dataSetFieldContentMask);
 
         /// <summary>
         /// Writes an ExtensionObject to the stream.
@@ -218,6 +223,12 @@ namespace Opc.Ua
         /// Writes an encodeable object to the stream.
         /// </summary>
         void WriteEncodeable(string fieldName, IEncodeable value, Type systemType);
+
+        /// <summary>
+        /// Writes an encodeable object to the stream.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="IEncodeable"/> instance to write.</typeparam>
+        void WriteEncodeable<T>(string fieldName, ref T value) where T : IEncodeable, new();
 
         /// <summary>
         /// Writes an enumerated value array to the stream.
@@ -310,7 +321,7 @@ namespace Opc.Ua
         void WriteXmlElementArray(string fieldName, IList<XmlElement> values);
 
         /// <summary>
-        /// Writes an NodeId array to the stream.
+        /// Writes a NodeId array to the stream.
         /// </summary>
         void WriteNodeIdArray(string fieldName, IList<NodeId> values);
 
@@ -320,32 +331,32 @@ namespace Opc.Ua
         void WriteExpandedNodeIdArray(string fieldName, IList<ExpandedNodeId> values);
 
         /// <summary>
-        /// Writes an StatusCode array to the stream.
+        /// Writes a StatusCode array to the stream.
         /// </summary>
         void WriteStatusCodeArray(string fieldName, IList<StatusCode> values);
 
         /// <summary>
-        /// Writes an DiagnosticInfo array to the stream.
+        /// Writes a DiagnosticInfo array to the stream.
         /// </summary>
         void WriteDiagnosticInfoArray(string fieldName, IList<DiagnosticInfo> values);
 
         /// <summary>
-        /// Writes an QualifiedName array to the stream.
+        /// Writes a QualifiedName array to the stream.
         /// </summary>
         void WriteQualifiedNameArray(string fieldName, IList<QualifiedName> values);
 
         /// <summary>
-        /// Writes an LocalizedText array to the stream.
+        /// Writes a LocalizedText array to the stream.
         /// </summary>
         void WriteLocalizedTextArray(string fieldName, IList<LocalizedText> values);
 
         /// <summary>
-        /// Writes an Variant array to the stream.
+        /// Writes a Variant array to the stream.
         /// </summary>
         void WriteVariantArray(string fieldName, IList<Variant> values);
 
         /// <summary>
-        /// Writes an DataValue array to the stream.
+        /// Writes a DataValue array to the stream.
         /// </summary>
         void WriteDataValueArray(string fieldName, IList<DataValue> values);
 
@@ -358,6 +369,12 @@ namespace Opc.Ua
         /// Writes an encodeable object array to the stream.
         /// </summary>
         void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, Type systemType);
+
+        /// <summary>
+        /// Writes an encodeable array segment to the stream.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="IEncodeable"/> instance to write.</typeparam>
+        void WriteEncodeableArray<T>(string fieldName, ArraySegment<T> values) where T : IEncodeable, new();
 
         /// <summary>
         /// Writes an enumerated value array to the stream.

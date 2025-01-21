@@ -23,6 +23,7 @@ namespace Opc.Ua
     public partial class EventFieldList
     {
         #region Public Properties
+#if LEGACY
         /// <summary>
         /// The handle cast to a notification message.
         /// </summary>
@@ -31,6 +32,7 @@ namespace Opc.Ua
             get { return m_handle as NotificationMessage; }
             set { m_handle = value; }
         }
+#endif
 
         /// <summary>
         /// A handle associated withe the event instance.

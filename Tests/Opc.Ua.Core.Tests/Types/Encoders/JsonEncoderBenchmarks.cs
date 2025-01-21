@@ -258,12 +258,12 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         private void TestBufferWriterEncode(ArrayPoolBufferWriter<byte> bufferWriter, bool toArray)
         {
             int length1;
-            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.Reversible, bufferWriter, false, true))
+            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.Reversible, bufferWriter, topLevelIsArray: false))
             {
                 TestEncoding(jsonEncoder);
                 length1 = jsonEncoder.Close();
             }
-            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.NonReversible, bufferWriter, false, true))
+            using (var jsonEncoder = new JsonEncoder(m_context, JsonEncodingType.NonReversible, bufferWriter, topLevelIsArray: false))
             {
                 TestEncoding(jsonEncoder);
                 if (toArray)

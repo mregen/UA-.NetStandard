@@ -20,6 +20,11 @@
     <DefineConstants>$(DefineConstants);SIGNASSEMBLY</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);OPCUA_EXCLUDE_DataChangeNotification</DefineConstants>
+    <DefineConstants>$(DefineConstants);OPCUA_EXCLUDE_MonitoredItemNotification</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Schema\Opc.Ua.NodeSet2.xml.zip" />
     <None Remove="Schema\Opc.Ua.Types.bsd" />
@@ -120,5 +125,5 @@
     <Message Text="Delete Zip $(ZipNodeSet2XML)" Importance="high"></Message>
     <Delete Files="$(ZipNodeSet2XML)"></Delete>
   </Target>
-
+  
 </Project>

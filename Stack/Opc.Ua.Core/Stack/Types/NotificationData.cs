@@ -14,8 +14,34 @@ using System;
 
 namespace Opc.Ua
 {
-    public partial class NotificationData
+    public partial class NotificationData : IDisposable
     {
+        #region IDisposable Methods
+        /// <summary>
+        /// Implement the IDisposable pattern to release unmanaged resources.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!m_disposed)
+            {
+                m_disposed = true;
+            }
+        }
+
+        // ~NotificationData()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
         /// <summary>
         /// Helper variable for a client to pass the sequence number
         /// of the publish response for the data and the event change notification
@@ -43,5 +69,7 @@ namespace Opc.Ua
         /// notifications are expected for this publish interval.
         /// </summary>
         public bool MoreNotifications { get; set; }
+
+        private bool m_disposed;
     }
 }

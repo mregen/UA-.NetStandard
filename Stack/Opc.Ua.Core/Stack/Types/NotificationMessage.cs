@@ -62,6 +62,7 @@ namespace Opc.Ua
             }
         }
 
+#if LEGACY
         /// <summary>
         /// Returns the data changes contained in the notification message.
         /// </summary>
@@ -164,6 +165,7 @@ namespace Opc.Ua
 
             return events;
         }
+#endif
         #endregion
 
         #region Private Fields

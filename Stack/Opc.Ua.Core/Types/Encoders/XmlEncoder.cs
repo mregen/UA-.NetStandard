@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 
@@ -266,40 +267,28 @@ namespace Opc.Ua
         #endregion
 
         #region IEncoder Members
-        /// <summary>
-        /// The type of encoding being used.
-        /// </summary>
+        /// <inheritdoc/>
         public EncodingType EncodingType => EncodingType.Xml;
 
-        /// <summary>
-        /// The message context associated with the encoder.
-        /// </summary>
+        /// <inheritdoc/>
         public IServiceMessageContext Context => m_context;
 
-        /// <summary>
-        /// Xml Encoder always produces reversible encoding.
-        /// </summary>
+        /// <inheritdoc/>
         public bool UseReversibleEncoding => true;
 
-        /// <summary>
-        /// Pushes a namespace onto the namespace stack.
-        /// </summary>
+        /// <inheritdoc/>
         public void PushNamespace(string namespaceUri)
         {
             m_namespaces.Push(namespaceUri);
         }
 
-        /// <summary>
-        /// Pops a namespace from the namespace stack.
-        /// </summary>
+        /// <inheritdoc/>
         public void PopNamespace()
         {
             m_namespaces.Pop();
         }
 
-        /// <summary>
-        /// Encodes a message with its header.
-        /// </summary>
+        /// <inheritdoc/>
         public void EncodeMessage(IEncodeable message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -312,9 +301,7 @@ namespace Opc.Ua
             PopNamespace();
         }
 
-        /// <summary>
-        /// Writes a boolean to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteBoolean(string fieldName, bool value)
         {
             if (BeginField(fieldName, false, false))
@@ -324,9 +311,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a sbyte to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteSByte(string fieldName, sbyte value)
         {
             if (BeginField(fieldName, false, false))
@@ -336,9 +321,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a byte to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteByte(string fieldName, byte value)
         {
             if (BeginField(fieldName, false, false))
@@ -348,9 +331,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a short to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteInt16(string fieldName, short value)
         {
             if (BeginField(fieldName, false, false))
@@ -360,9 +341,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a ushort to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteUInt16(string fieldName, ushort value)
         {
             if (BeginField(fieldName, false, false))
@@ -372,9 +351,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an int to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteInt32(string fieldName, int value)
         {
             if (BeginField(fieldName, false, false))
@@ -384,9 +361,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a uint to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteUInt32(string fieldName, uint value)
         {
             if (BeginField(fieldName, false, false))
@@ -396,9 +371,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a long to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteInt64(string fieldName, long value)
         {
             if (BeginField(fieldName, false, false))
@@ -408,9 +381,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a ulong to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteUInt64(string fieldName, ulong value)
         {
             if (BeginField(fieldName, false, false))
@@ -420,9 +391,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a float to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteFloat(string fieldName, float value)
         {
             if (BeginField(fieldName, false, false))
@@ -432,9 +401,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a double to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteDouble(string fieldName, double value)
         {
             if (BeginField(fieldName, false, false))
@@ -444,9 +411,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a string to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteString(string fieldName, string value)
         {
             WriteString(fieldName, value, false);
@@ -471,9 +436,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a UTC date/time to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteDateTime(string fieldName, DateTime value)
         {
             if (BeginField(fieldName, false, false))
@@ -484,9 +447,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a GUID to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteGuid(string fieldName, Uuid value)
         {
             if (BeginField(fieldName, false, false))
@@ -499,9 +460,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a GUID to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteGuid(string fieldName, Guid value)
         {
             if (BeginField(fieldName, false, false))
@@ -514,26 +473,20 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes a byte string to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteByteString(string fieldName, byte[] value)
         {
             WriteByteString(fieldName, value, 0, value?.Length ?? 0, false);
         }
 
-        /// <summary>
-        /// Writes a byte string to the stream with a given index and count.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteByteString(string fieldName, byte[] value, int index, int count)
         {
             WriteByteString(fieldName, value, index, count, false);
         }
 
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
-        /// <summary>
-        /// Writes a byte string to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2265:Do not compare Span<T> to 'null' or 'default'", Justification = "Null compare works with ReadOnlySpan<byte>")]
         public void WriteByteString(string fieldName, ReadOnlySpan<byte> value)
         {
@@ -567,9 +520,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an XmlElement to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteXmlElement(string fieldName, XmlElement value)
         {
             WriteXmlElement(fieldName, value, false);
@@ -584,9 +535,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an NodeId to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteNodeId(string fieldName, NodeId value)
         {
             if (BeginField(fieldName, value == null, true))
@@ -613,9 +562,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an ExpandedNodeId to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteExpandedNodeId(string fieldName, ExpandedNodeId value)
         {
             if (BeginField(fieldName, value == null, true))
@@ -649,9 +596,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an StatusCode to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteStatusCode(string fieldName, StatusCode value)
         {
             if (BeginField(fieldName, false, false))
@@ -666,17 +611,13 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an DiagnosticInfo to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteDiagnosticInfo(string fieldName, DiagnosticInfo value)
         {
             WriteDiagnosticInfo(fieldName, value, 0);
         }
 
-        /// <summary>
-        /// Writes a DiagnosticInfo to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         private void WriteDiagnosticInfo(string fieldName, DiagnosticInfo value, int depth)
         {
             CheckAndIncrementNestingLevel();
@@ -712,9 +653,7 @@ namespace Opc.Ua
             m_nestingLevel--;
         }
 
-        /// <summary>
-        /// Writes an QualifiedName to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteQualifiedName(string fieldName, QualifiedName value)
         {
             if (BeginField(fieldName, value == null, true))
@@ -740,9 +679,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an LocalizedText to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteLocalizedText(string fieldName, LocalizedText value)
         {
             if (BeginField(fieldName, value == null, true))
@@ -768,9 +705,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an Variant array to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteVariant(string fieldName, Variant value)
         {
             CheckAndIncrementNestingLevel();
@@ -796,9 +731,7 @@ namespace Opc.Ua
             }
         }
 
-        /// <summary>
-        /// Writes an DataValue array to the stream.
-        /// </summary>
+        /// <inheritdoc/>
         public void WriteDataValue(string fieldName, DataValue value)
         {
             if (BeginField(fieldName, value == null, true))
@@ -806,6 +739,31 @@ namespace Opc.Ua
                 PushNamespace(Namespaces.OpcUaXsd);
 
                 if (value != null)
+                {
+                    WriteVariant("Value", value.WrappedValue);
+                    WriteStatusCode("StatusCode", value.StatusCode);
+                    WriteDateTime("SourceTimestamp", value.SourceTimestamp);
+                    WriteUInt16("SourcePicoseconds", value.SourcePicoseconds);
+                    WriteDateTime("ServerTimestamp", value.ServerTimestamp);
+                    WriteUInt16("ServerPicoseconds", value.ServerPicoseconds);
+                }
+
+                PopNamespace();
+
+                EndField(fieldName);
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public void WriteDataValueStruct(string fieldName, ref DataValueStruct value, DataSetFieldContentMask dataSetFieldContentMask)
+        {
+            bool isNull = value.WrappedValue == Variant.Null;
+            if (BeginField(fieldName, isNull, true))
+            {
+                PushNamespace(Namespaces.OpcUaXsd);
+
+                if (!isNull)
                 {
                     WriteVariant("Value", value.WrappedValue);
                     WriteStatusCode("StatusCode", value.StatusCode);
@@ -899,6 +857,26 @@ namespace Opc.Ua
         /// Writes an encodeable object to the stream.
         /// </summary>
         public void WriteEncodeable(string fieldName, IEncodeable value, System.Type systemType)
+        {
+            CheckAndIncrementNestingLevel();
+
+            if (BeginField(fieldName, value == null, true))
+            {
+                if (value != null)
+                {
+                    value.Encode(this);
+                }
+
+                EndField(fieldName);
+            }
+
+            m_nestingLevel--;
+        }
+
+        /// <summary>
+        /// Writes an encodeable object to the stream.
+        /// </summary>
+        public void WriteEncodeable<T>(string fieldName, ref T value) where T : IEncodeable, new()
         {
             CheckAndIncrementNestingLevel();
 
@@ -1741,6 +1719,46 @@ namespace Opc.Ua
             }
         }
 
+        /// <inheritdoc/>
+        public void WriteEncodeableArray<T>(string fieldName, ArraySegment<T> values) where T : IEncodeable, new()
+        {
+            if (BeginField(fieldName, values.Array == null, true, true))
+            {
+                // check the length.
+                if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < values.Count)
+                {
+                    throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                }
+
+                // get name for type being encoded.
+                XmlQualifiedName xmlName = EncodeableFactory.GetXmlName(typeof(T));
+
+                if (xmlName == null)
+                {
+                    xmlName = new XmlQualifiedName("IEncodeable", Namespaces.OpcUaXsd);
+                }
+
+                PushNamespace(xmlName.Namespace);
+
+                // encode each element in the array.
+                int offset = values.Offset;
+                for (int ii = 0; ii < values.Count; ii++)
+                {
+                    if (!typeof(T).IsInstanceOfType(values[ii]))
+                    {
+                        throw new ServiceResultException(
+                            StatusCodes.BadEncodingError,
+                            Utils.Format("Objects with type '{0}' are not allowed in the array being serialized.", typeof(T).FullName));
+                    }
+                    WriteEncodeable<T>(xmlName.Name, ref values.Array[ii + offset]);
+                }
+
+                PopNamespace();
+
+                EndField(fieldName);
+            }
+        }
+
         /// <summary>
         /// Writes an enumerated value array to the stream.
         /// </summary>
@@ -2079,10 +2097,19 @@ namespace Opc.Ua
                                 return;
                             }
 
-
                             if (array is object[] objects)
                             {
                                 WriteObjectArray(fieldName, objects);
+                                return;
+                            }
+
+                            // try to cast array to IEncodeable list, if IEncodeable is a struct
+                            var arrayType = array as Array;
+                            if (arrayType != null &&
+                                (arrayType.Length == 0 || typeof(IEncodeable).IsInstanceOfType(arrayType.GetValue(0))))
+                            {
+                                List<IEncodeable> encodeables = arrayType.Cast<IEncodeable>().ToList();
+                                WriteEncodeableArray(fieldName, encodeables, array.GetType().GetElementType());
                                 return;
                             }
 

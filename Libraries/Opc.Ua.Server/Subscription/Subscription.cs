@@ -36,6 +36,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Opc.Ua.Buffers;
 
 namespace Opc.Ua.Server
 {
@@ -1065,15 +1066,13 @@ namespace Opc.Ua.Server
             if (datachanges.Count > 0 && notificationCount < m_maxNotificationsPerPublish)
             {
                 bool diagnosticsExist = false;
-                DataChangeNotification notification = new DataChangeNotification();
-
-                notification.MonitoredItems = new MonitoredItemNotificationCollection(datachanges.Count);
-                notification.DiagnosticInfos = new DiagnosticInfoCollection(datachanges.Count);
-
+                // allocate buffer for monitored items, so there is no need to dispose.
+                var monitoredItems = AllocatedArraySegment<MonitoredItemNotificationStruct>.Create(new MonitoredItemNotificationStruct[datachanges.Count]);
+                var diagnosticInfos = new DiagnosticInfoCollection(datachanges.Count);
                 while (datachanges.Count > 0 && notificationCount < m_maxNotificationsPerPublish)
                 {
                     MonitoredItemNotification datachange = datachanges.Dequeue();
-                    notification.MonitoredItems.Add(datachange);
+                    monitoredItems[notificationCount] = new MonitoredItemNotificationStruct(datachange);
 
                     DiagnosticInfo diagnosticInfo = datachangeDiagnostics.Dequeue();
 
@@ -1082,10 +1081,17 @@ namespace Opc.Ua.Server
                         diagnosticsExist = true;
                     }
 
-                    notification.DiagnosticInfos.Add(diagnosticInfo);
+                    diagnosticInfos.Add(diagnosticInfo);
 
                     notificationCount++;
                 }
+
+                if (!monitoredItems.TrySetSegment(0, notificationCount))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(notificationCount), "Failed to set ArrayPool buffer size.");
+                }
+
+                var notification = new DataChangeNotification(monitoredItems, diagnosticInfos);
 
                 // clear diagnostics if not used.
                 if (!diagnosticsExist)

@@ -1186,7 +1186,14 @@ namespace Quickstarts
             {
                 // Log MonitoredItem Notification event
                 MonitoredItemNotification notification = e.NotificationValue as MonitoredItemNotification;
-                m_output.WriteLine("Notification: {0} \"{1}\" and Value = {2}.", notification.Message.SequenceNumber, monitoredItem.ResolvedNodeId, notification.Value);
+                if (notification != null)
+                {
+                    m_output.WriteLine("Notification: \"{0}\" and Value = {1}.", monitoredItem.ResolvedNodeId, notification.Value);
+                }
+                if (e.NotificationValue is MonitoredItemNotificationStruct notificationStruct)
+                {
+                    m_output.WriteLine("Notification: \"{0}\" and Value = {1}.", monitoredItem.ResolvedNodeId, notificationStruct.Value);
+                }
             }
             catch (Exception ex)
             {

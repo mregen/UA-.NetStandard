@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -27,7 +28,6 @@ namespace Opc.Ua
     public class JsonEncoder : IJsonEncoder
     {
         #region Private Fields
-        private static readonly string s_null = null;
         private Stream m_stream;
         private IBufferWriter<byte> m_bufferWriter;
         private Utf8JsonWriter m_writer;
@@ -115,18 +115,21 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes the object with default values.
         /// </summary>
+        /// <remarks>
+        /// Unlike a stream, for an IBufferWriter the implicit assumption is
+        /// that the buffer writer is owned and disposed by the caller.
+        /// </remarks>
         public JsonEncoder(
             IServiceMessageContext context,
             JsonEncodingType encoding,
             IBufferWriter<byte> bufferWriter = null,
-            bool topLevelIsArray = false,
-            bool leaveOpen = false)
+            bool topLevelIsArray = false)
         {
             Initialize(encoding);
 
             m_context = context;
             m_bufferWriter = bufferWriter;
-            m_leaveOpen = leaveOpen;
+            m_leaveOpen = true;
             m_topLevelIsArray = topLevelIsArray;
 
             var options = new JsonWriterOptions() {
@@ -1281,7 +1284,6 @@ namespace Opc.Ua
             }
         }
 
-
         /// <inheritdoc/>
         public void WriteDataValue(string fieldName, DataValue value)
         {
@@ -1331,6 +1333,51 @@ namespace Opc.Ua
                     {
                         WriteUInt16("ServerPicoseconds", value.ServerPicoseconds);
                     }
+                }
+            }
+
+            PopStructure();
+        }
+
+        /// <inheritdoc/>
+        public void WriteDataValueStruct(string fieldName, ref DataValueStruct value, DataSetFieldContentMask dataSetFieldContentMask)
+        {
+            PushStructure(fieldName);
+
+            if (value.WrappedValue.TypeInfo != null && value.WrappedValue.TypeInfo.BuiltInType != BuiltInType.Null)
+            {
+                if (EncodingToUse != JsonEncodingType.Compact && EncodingToUse != JsonEncodingType.Verbose)
+                {
+                    WriteVariant("Value", value.WrappedValue);
+                }
+                else
+                {
+                    WriteVariantIntoObject("Value", value.WrappedValue);
+                }
+            }
+
+            if (value.StatusCode != StatusCodes.Good && (dataSetFieldContentMask & DataSetFieldContentMask.StatusCode) != 0)
+            {
+                WriteStatusCode("StatusCode"u8, value.StatusCode);
+            }
+
+            if ((dataSetFieldContentMask & DataSetFieldContentMask.SourceTimestamp) != 0 && value.SourceTimestamp != DateTime.MinValue)
+            {
+                WriteDateTime("SourceTimestamp"u8, value.SourceTimestamp);
+
+                if (value.SourcePicoseconds != 0 && (dataSetFieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0)
+                {
+                    WriteUInt16("SourcePicoseconds", value.SourcePicoseconds);
+                }
+            }
+
+            if ((dataSetFieldContentMask & DataSetFieldContentMask.ServerTimestamp) != 0 && value.ServerTimestamp != DateTime.MinValue)
+            {
+                WriteDateTime("ServerTimestamp"u8, value.ServerTimestamp);
+
+                if (value.ServerPicoseconds != 0 && (dataSetFieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0)
+                {
+                    WriteUInt16("ServerPicoseconds", value.ServerPicoseconds);
                 }
             }
 
@@ -1514,6 +1561,55 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
+        public void WriteEncodeable<T>(string fieldName, ref T value) where T : IEncodeable, new()
+        {
+            bool isNull = value == null;
+
+            if (fieldName != null && isNull && !IncludeDefaultValues)
+            {
+                return;
+            }
+
+            bool noFieldName = string.IsNullOrEmpty(fieldName);
+            bool skipObject = false;
+
+            if (m_nestingLevel == 0)
+            {
+                if (!noFieldName && m_topLevelIsArray)
+                {
+                    throw ServiceResultException.Create(
+                        StatusCodes.BadEncodingError,
+                        "With Array as top level, encodeables with fieldname create invalid json");
+                }
+                skipObject = noFieldName && !m_topLevelIsArray;
+            }
+
+            try
+            {
+                if (skipObject)
+                {
+                    value.Encode(this);
+                }
+                else
+                {
+                    PushStructure(fieldName);
+
+                    value.Encode(this);
+
+                    PopStructure();
+                }
+            }
+            catch (InvalidOperationException ioe)
+            {
+                throw ServiceResultException.Create(
+                    StatusCodes.BadEncodingError,
+                    ioe,
+                    "Failed to write encodable type {0}",
+                    typeof(T).Name);
+            }
+        }
+
+        /// <inheritdoc/>
         public void WriteEnumerated(string fieldName, Enum value)
         {
             int numeric = Convert.ToInt32(value, CultureInfo.InvariantCulture);
@@ -1552,7 +1648,7 @@ namespace Opc.Ua
             if (!writeNumber)
             {
                 string numericString = numeric.ToString(CultureInfo.InvariantCulture);
-                WriteSimpleField(s_null, numericString);
+                WriteSimpleField((string)null, numericString);
             }
             else
             {
@@ -1680,7 +1776,7 @@ namespace Opc.Ua
 
             for (int ii = 0; ii < values.Count; ii++)
             {
-                WriteUInt32(s_null, values[ii]);
+                WriteUInt32((string)null, values[ii]);
             }
 
             PopArray();
@@ -1794,7 +1890,7 @@ namespace Opc.Ua
                 }
                 else
                 {
-                    WriteDateTime(s_null, values[ii]);
+                    WriteDateTime((string)null, values[ii]);
                 }
             }
 
@@ -1927,7 +2023,7 @@ namespace Opc.Ua
                 }
                 else
                 {
-                    WriteStatusCode(s_null, values[ii]);
+                    WriteStatusCode((string)null, values[ii]);
                 }
             }
 
@@ -2006,7 +2102,7 @@ namespace Opc.Ua
                     continue;
                 }
 
-                WriteVariant(s_null, values[ii]);
+                WriteVariant((string)null, values[ii]);
             }
 
             PopArray();
@@ -2049,7 +2145,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, System.Type systemType)
+        public void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, Type systemType)
         {
             if (CheckForSimpleFieldNull(fieldName, values))
             {
@@ -2080,7 +2176,38 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public void WriteEnumeratedArray(string fieldName, Array values, System.Type systemType)
+        public void WriteEncodeableArray<T>(string fieldName, ArraySegment<T> values) where T : IEncodeable, new()
+        {
+            if (CheckForSimpleFieldArraySegmentNull(fieldName, values))
+            {
+                return;
+            }
+
+            if (m_nestingLevel == 0)
+            {
+                bool hasFieldName = !string.IsNullOrWhiteSpace(fieldName);
+                if (hasFieldName && m_topLevelIsArray || !hasFieldName && !m_topLevelIsArray)
+                {
+                    throw ServiceResultException.Create(
+                        StatusCodes.BadEncodingError,
+                        m_topLevelIsArray ?
+                        "With Array as top level, an encodable array with fieldname creates invalid json." :
+                        "With Object as top level, an encodable array without fieldname creates invalid json.");
+                }
+            }
+
+            PushArray(fieldName);
+
+            for (int ii = 0; ii < values.Count; ii++)
+            {
+                WriteEncodeable<T>(null, ref values.Array[ii + values.Offset]);
+            }
+
+            PopArray();
+        }
+
+        /// <inheritdoc/>
+        public void WriteEnumeratedArray(string fieldName, Array values, Type systemType)
         {
             if (fieldName != null && (values == null || values.Length == 0))
             {
@@ -2180,10 +2307,25 @@ namespace Opc.Ua
                             return;
                         }
 
+                        // try to write IEncodeable encodeables
+                        if (array is IList<IEncodeable> encodeableList)
+                        {
+                            WriteEncodeableArray(fieldName, encodeableList, array.GetType().GetElementType());
+                            return;
+                        }
 
                         if (array is object[] objects)
                         {
                             WriteObjectArray(fieldName, objects);
+                            return;
+                        }
+
+                        // try to cast array to IEncodeable encodeables
+                        if (array is Array arrayType &&
+                            (arrayType.Length == 0 || arrayType.GetType().GetElementType().IsInstanceOfType(arrayType.GetValue(0))))
+                        {
+                            List<IEncodeable> encodeables = arrayType.Cast<IEncodeable>().ToList();
+                            WriteEncodeableArray(fieldName, encodeables, array.GetType().GetElementType());
                             return;
                         }
 
@@ -2374,7 +2516,7 @@ namespace Opc.Ua
                 }
                 else if (field.ValueRank >= 0)
                 {
-                    PushArray(s_null);
+                    PushArray((string)null);
                     PopArray();
                 }
                 else if (field.BuiltInType == (byte)BuiltInType.ExtensionObject)
@@ -2524,31 +2666,31 @@ namespace Opc.Ua
                 {
                     switch (typeInfo.BuiltInType)
                     {
-                        case BuiltInType.Boolean: { WriteBoolean(null, (bool)value); return; }
-                        case BuiltInType.SByte: { WriteSByte(null, (sbyte)value); return; }
-                        case BuiltInType.Byte: { WriteByte(null, (byte)value); return; }
-                        case BuiltInType.Int16: { WriteInt16(null, (short)value); return; }
-                        case BuiltInType.UInt16: { WriteUInt16(null, (ushort)value); return; }
-                        case BuiltInType.Int32: { WriteInt32(null, (int)value); return; }
-                        case BuiltInType.UInt32: { WriteUInt32(s_null, (uint)value); return; }
-                        case BuiltInType.Int64: { WriteInt64(null, (long)value); return; }
-                        case BuiltInType.UInt64: { WriteUInt64(null, (ulong)value); return; }
-                        case BuiltInType.Float: { WriteFloat(null, (float)value); return; }
-                        case BuiltInType.Double: { WriteDouble(null, (double)value); return; }
-                        case BuiltInType.String: { WriteString(null, (string)value); return; }
-                        case BuiltInType.DateTime: { WriteDateTime(s_null, (DateTime)value); return; }
-                        case BuiltInType.Guid: { WriteGuid(null, (Uuid)value); return; }
-                        case BuiltInType.ByteString: { WriteByteString(null, (byte[])value); return; }
-                        case BuiltInType.XmlElement: { WriteXmlElement(null, (XmlElement)value); return; }
-                        case BuiltInType.NodeId: { WriteNodeId(s_null, (NodeId)value); return; }
-                        case BuiltInType.ExpandedNodeId: { WriteExpandedNodeId(null, (ExpandedNodeId)value); return; }
-                        case BuiltInType.StatusCode: { WriteStatusCode(s_null, (StatusCode)value); return; }
-                        case BuiltInType.QualifiedName: { WriteQualifiedName(null, (QualifiedName)value); return; }
-                        case BuiltInType.LocalizedText: { WriteLocalizedText(null, (LocalizedText)value); return; }
-                        case BuiltInType.ExtensionObject: { WriteExtensionObject(null, (ExtensionObject)value); return; }
-                        case BuiltInType.DataValue: { WriteDataValue(null, (DataValue)value); return; }
-                        case BuiltInType.Enumeration: { WriteEnumerated(null, (Enum)value); return; }
-                        case BuiltInType.DiagnosticInfo: { WriteDiagnosticInfo(null, (DiagnosticInfo)value); return; }
+                        case BuiltInType.Boolean: { WriteBoolean((string)null, (bool)value); return; }
+                        case BuiltInType.SByte: { WriteSByte((string)null, (sbyte)value); return; }
+                        case BuiltInType.Byte: { WriteByte((string)null, (byte)value); return; }
+                        case BuiltInType.Int16: { WriteInt16((string)null, (short)value); return; }
+                        case BuiltInType.UInt16: { WriteUInt16((string)null, (ushort)value); return; }
+                        case BuiltInType.Int32: { WriteInt32((string)null, (int)value); return; }
+                        case BuiltInType.UInt32: { WriteUInt32((string)null, (uint)value); return; }
+                        case BuiltInType.Int64: { WriteInt64((string)null, (long)value); return; }
+                        case BuiltInType.UInt64: { WriteUInt64((string)null, (ulong)value); return; }
+                        case BuiltInType.Float: { WriteFloat((string)null, (float)value); return; }
+                        case BuiltInType.Double: { WriteDouble((string)null, (double)value); return; }
+                        case BuiltInType.String: { WriteString((string)null, (string)value); return; }
+                        case BuiltInType.DateTime: { WriteDateTime((string)null, (DateTime)value); return; }
+                        case BuiltInType.Guid: { WriteGuid((string)null, (Uuid)value); return; }
+                        case BuiltInType.ByteString: { WriteByteString((string)null, (byte[])value); return; }
+                        case BuiltInType.XmlElement: { WriteXmlElement((string)null, (XmlElement)value); return; }
+                        case BuiltInType.NodeId: { WriteNodeId((string)null, (NodeId)value); return; }
+                        case BuiltInType.ExpandedNodeId: { WriteExpandedNodeId((string)null, (ExpandedNodeId)value); return; }
+                        case BuiltInType.StatusCode: { WriteStatusCode((string)null, (StatusCode)value); return; }
+                        case BuiltInType.QualifiedName: { WriteQualifiedName((string)null, (QualifiedName)value); return; }
+                        case BuiltInType.LocalizedText: { WriteLocalizedText((string)null, (LocalizedText)value); return; }
+                        case BuiltInType.ExtensionObject: { WriteExtensionObject((string)null, (ExtensionObject)value); return; }
+                        case BuiltInType.DataValue: { WriteDataValue((string)null, (DataValue)value); return; }
+                        case BuiltInType.Enumeration: { WriteEnumerated((string)null, (Enum)value); return; }
+                        case BuiltInType.DiagnosticInfo: { WriteDiagnosticInfo((string)null, (DiagnosticInfo)value); return; }
                     }
                 }
                 // write array
@@ -2634,7 +2776,7 @@ namespace Opc.Ua
         private void PushStructure(ReadOnlySpan<byte> fieldName)
         {
             CheckAndIncrementNestingLevel();
-            if (fieldName == null)
+            if (fieldName == null || fieldName.IsEmpty)
             {
                 m_writer.WriteStartObject();
             }
@@ -2915,6 +3057,27 @@ namespace Opc.Ua
             }
 
             PopArray();
+        }
+
+        /// <summary>
+        /// Returns true if a simple field can be written.
+        /// </summary>
+        private bool CheckForSimpleFieldArraySegmentNull<T>(string fieldName, ArraySegment<T> values)
+        {
+            // always include default values for non reversible/verbose
+            // include default values when encoding in a Variant
+            if (values.Array == null || (values.Count == 0 && !m_inVariantWithEncoding && !m_includeDefaultValues))
+            {
+                WriteSimpleFieldNullOrOmit(fieldName);
+                return true;
+            }
+
+            if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < values.Count)
+            {
+                throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+            }
+
+            return false;
         }
 
         /// <summary>

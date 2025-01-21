@@ -12,6 +12,7 @@
 
 using System;
 using System.Xml;
+using Opc.Ua.Buffers;
 
 namespace Opc.Ua
 {
@@ -178,6 +179,11 @@ namespace Opc.Ua
         DataValue ReadDataValue(string fieldName);
 
         /// <summary>
+        /// Reads a DataValue from the stream.
+        /// </summary>
+        void ReadDataValueStruct(string fieldName, ref DataValueStruct dataValue);
+
+        /// <summary>
         /// Reads an ExtensionObject from the stream.
         /// </summary>
         ExtensionObject ReadExtensionObject(string fieldName);
@@ -190,6 +196,15 @@ namespace Opc.Ua
         /// <param name="encodeableTypeId">The TypeId for the <see cref="IEncodeable"/> instance that will be read.</param>
         /// <returns>An <see cref="IEncodeable"/> object that was read from the stream.</returns>
         IEncodeable ReadEncodeable(string fieldName, Type systemType, ExpandedNodeId encodeableTypeId = null);
+
+        /// <summary>
+        /// Reads an encodeable object from the stream.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="IEncodeable"/> instance to read.</typeparam>
+        /// <param name="fieldName">The encodeable object field name</param>
+        /// <param name="encodeable">A reference to the encodeable struct or class to read to.</param>
+        /// <param name="encodeableTypeId">The TypeId for the <see cref="IEncodeable"/> instance that will be read.</param>
+        void ReadEncodeable<T>(string fieldName, ref T encodeable, ExpandedNodeId encodeableTypeId = null) where T : IEncodeable, new();
 
         /// <summary>
         ///  Reads an enumerated value from the stream.
@@ -329,6 +344,15 @@ namespace Opc.Ua
         /// <param name="encodeableTypeId">The TypeId for the <see cref="IEncodeable"/> instances that will be read.</param>
         /// <returns>An <see cref="IEncodeable"/> array that was read from the stream.</returns>
         Array ReadEncodeableArray(string fieldName, Type systemType, ExpandedNodeId encodeableTypeId = null);
+
+        /// <summary>
+        /// Reads an encodeable array from the stream.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="IEncodeable"/> instance to read.</typeparam>
+        /// <param name="fieldName">The encodeable array field name</param>
+        /// <param name="encodeableTypeId">The TypeId for the <see cref="IEncodeable"/> instances that will be read.</param>
+        /// <returns>An <see cref="IEncodeable"/> array that was read from the stream.</returns>
+        IArraySegmentOwner<T> ReadEncodeableArray<T>(string fieldName, ExpandedNodeId encodeableTypeId = null) where T : IEncodeable, new();
 
         /// <summary>
         /// Reads an enumerated value array from the stream.

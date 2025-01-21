@@ -2338,12 +2338,11 @@ namespace Opc.Ua.Client
                         {
                             foreach (ExtensionObject notificationData in message.NotificationData)
                             {
-                                var datachange = notificationData.Body as DataChangeNotification;
-
-                                if (datachange != null)
+                                if (notificationData.Body is DataChangeNotification datachange)
                                 {
                                     datachange.PublishTime = message.PublishTime;
                                     datachange.SequenceNumber = message.SequenceNumber;
+                                    datachange.MoreNotifications = message.MoreNotifications;
 
                                     noNotificationsReceived += datachange.MonitoredItems.Count;
 
@@ -2353,14 +2352,16 @@ namespace Opc.Ua.Client
                                     }
 
                                     datachangeCallback?.Invoke(this, datachange, message.StringTable);
+
+                                    datachange.Dispose();
                                 }
 
-                                var events = notificationData.Body as EventNotificationList;
 
-                                if (events != null)
+                                else if (notificationData.Body is EventNotificationList events)
                                 {
                                     events.PublishTime = message.PublishTime;
                                     events.SequenceNumber = message.SequenceNumber;
+                                    events.MoreNotifications = message.MoreNotifications;
 
                                     noNotificationsReceived += events.Events.Count;
 
@@ -2370,11 +2371,12 @@ namespace Opc.Ua.Client
                                     }
 
                                     eventCallback?.Invoke(this, events, message.StringTable);
+
+                                    events.Dispose();
                                 }
 
-                                StatusChangeNotification statusChanged = notificationData.Body as StatusChangeNotification;
 
-                                if (statusChanged != null)
+                                else if (notificationData.Body is StatusChangeNotification statusChanged)
                                 {
                                     statusChanged.PublishTime = message.PublishTime;
                                     statusChanged.SequenceNumber = message.SequenceNumber;
@@ -2391,6 +2393,8 @@ namespace Opc.Ua.Client
                                     {
                                         publishStateChangedMask |= PublishStateChangedMask.Timeout;
                                     }
+
+                                    statusChanged.Dispose();
                                 }
                             }
                         }
@@ -2694,7 +2698,7 @@ namespace Opc.Ua.Client
         private void SaveDataChange(NotificationMessage message, DataChangeNotification notifications, IList<string> stringTable)
         {
             // check for empty monitored items list.
-            if (notifications.MonitoredItems == null || notifications.MonitoredItems.Count == 0)
+            if (notifications.MonitoredItems.Array == null || notifications.MonitoredItems.Count == 0)
             {
                 Utils.LogInfo("Publish response contains empty MonitoredItems list for SubscriptionId = {0}.", m_id);
                 return;
@@ -2702,7 +2706,7 @@ namespace Opc.Ua.Client
 
             for (int ii = 0; ii < notifications.MonitoredItems.Count; ii++)
             {
-                MonitoredItemNotification notification = notifications.MonitoredItems[ii];
+                ref MonitoredItemNotificationStruct notification = ref notifications.MonitoredItems.Array[ii];
 
                 // lookup monitored item,
                 MonitoredItem monitoredItem = null;
@@ -2716,8 +2720,10 @@ namespace Opc.Ua.Client
                     }
                 }
 
+#if LEGACY
                 // save the message.
                 notification.Message = message;
+#endif
 
                 // get diagnostic info.
                 if (notifications.DiagnosticInfos.Count > ii)
@@ -2726,7 +2732,7 @@ namespace Opc.Ua.Client
                 }
 
                 // save in cache.
-                monitoredItem.SaveValueInCache(notification);
+                monitoredItem.SaveValueInCache(ref notification);
             }
         }
 
@@ -2750,8 +2756,10 @@ namespace Opc.Ua.Client
                     }
                 }
 
+#if LEGACY
                 // save the message.
                 eventFields.Message = message;
+#endif
 
                 // save in cache.
                 monitoredItem.SaveValueInCache(eventFields);
@@ -2807,7 +2815,7 @@ namespace Opc.Ua.Client
 
             return entry;
         }
-        #endregion
+#endregion
 
         #region Private Fields
         private string m_displayName;

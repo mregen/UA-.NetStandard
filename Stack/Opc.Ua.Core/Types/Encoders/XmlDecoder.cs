@@ -17,6 +17,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
+using Opc.Ua.Buffers;
 
 namespace Opc.Ua
 {
@@ -1372,6 +1373,28 @@ namespace Opc.Ua
             return value;
         }
 
+        /// <inheritdoc/>
+        public void ReadDataValueStruct(string fieldName, ref DataValueStruct dataValue)
+        {
+            var value = new DataValueStruct();
+
+            if (BeginField(fieldName, true))
+            {
+                PushNamespace(Namespaces.OpcUaXsd);
+
+                value.WrappedValue = ReadVariant("Value");
+                value.StatusCode = ReadStatusCode("StatusCode");
+                value.SourceTimestamp = ReadDateTime("SourceTimestamp");
+                value.SourcePicoseconds = ReadUInt16("SourcePicoseconds");
+                value.ServerTimestamp = ReadDateTime("ServerTimestamp");
+                value.ServerPicoseconds = ReadUInt16("ServerPicoseconds");
+
+                PopNamespace();
+
+                EndField(fieldName);
+            }
+        }
+
         /// <summary>
         /// Reads an extension object from the stream.
         /// </summary>
@@ -1501,6 +1524,70 @@ namespace Opc.Ua
             }
 
             return value;
+        }
+
+        /// <inheritdoc/>
+        public void ReadEncodeable<T>(string fieldName, ref T encodeable, ExpandedNodeId encodeableTypeId = null) where T : IEncodeable, new()
+        {
+            if (encodeable == null)
+            {
+                encodeable = new T();
+            }
+            else if (!(encodeable is IEncodeable))
+            {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                    "Cannot decode type '{0}'.", typeof(T).FullName);
+            }
+
+            if (encodeableTypeId != null)
+            {
+                // set type identifier for custom complex data types before decode.
+
+                if (encodeable is IComplexTypeInstance complexTypeInstance)
+                {
+                    complexTypeInstance.TypeId = encodeableTypeId;
+                }
+            }
+
+            CheckAndIncrementNestingLevel();
+
+            try
+            {
+                if (BeginField(fieldName, true))
+                {
+                    XmlQualifiedName xmlName = EncodeableFactory.GetXmlName(encodeable, this.Context);
+
+                    PushNamespace(xmlName.Namespace);
+                    encodeable.Decode(this);
+                    PopNamespace();
+
+                    // skip to end of encodeable object.
+                    m_reader.MoveToContent();
+
+                    while (!(m_reader.NodeType == XmlNodeType.EndElement && m_reader.LocalName == fieldName && m_reader.NamespaceURI == m_namespaces.Peek()))
+                    {
+                        if (m_reader.NodeType == XmlNodeType.None)
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                                "Unexpected end of stream decoding field '{0}' for type '{1}'.", fieldName, typeof(T).FullName);
+                        }
+
+                        m_reader.Skip();
+                        m_reader.MoveToContent();
+                    }
+
+                    EndField(fieldName);
+                }
+            }
+            catch (XmlException xe)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                    "Error decoding field '{0}' for type '{1}': {2}", fieldName, typeof(T).Name, xe.Message);
+            }
+            finally
+            {
+                m_nestingLevel--;
+            }
         }
 
         /// <summary>
@@ -2544,6 +2631,65 @@ namespace Opc.Ua
             }
 
             return Array.CreateInstance(systemType, 0);
+        }
+
+        /// <summary>
+        /// Reads an encodeable array from the stream.
+        /// </summary>
+        /// <param name="fieldName">The encodeable array field name</param>
+        /// <param name="encodeableTypeId">The TypeId for the <see cref="IEncodeable"/> instances that will be read.</param>
+        /// <returns>An <see cref="IEncodeable"/> array that was read from the stream.</returns>
+        public IArraySegmentOwner<T> ReadEncodeableArray<T>(string fieldName, ExpandedNodeId encodeableTypeId = null) where T : IEncodeable, new()
+        {
+            bool isNil = false;
+
+            var encodeables = new List<T>(10);
+
+            if (BeginField(fieldName, true, out isNil))
+            {
+                XmlQualifiedName xmlName = EncodeableFactory.GetXmlName(typeof(T));
+                PushNamespace(xmlName.Namespace);
+
+                while (MoveToElement(xmlName.Name))
+                {
+                    T encodeable = default;
+                    ReadEncodeable<T>(xmlName.Name, ref encodeable, encodeableTypeId);
+                    encodeables.Add(encodeable);
+                }
+
+                // check the length.
+                if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < encodeables.Count)
+                {
+                    throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                }
+
+                PopNamespace();
+
+                EndField(fieldName);
+
+                int length = encodeables.Count;
+                if (length == 0)
+                {
+                    return EmptyArraySegment<T>.Instance;
+                }
+
+                var memory = ArrayPoolArraySegment<T>.Rent(length);
+                T[] values = memory.Segment.Array;
+
+                for (int ii = 0; ii < length; ii++)
+                {
+                    values[ii] = (T)encodeables[ii];
+                }
+
+                return memory;
+            }
+
+            if (isNil)
+            {
+                return null;
+            }
+
+            return EmptyArraySegment<T>.Instance;
         }
 
         /// <summary>

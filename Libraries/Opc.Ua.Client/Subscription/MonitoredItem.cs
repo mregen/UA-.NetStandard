@@ -552,6 +552,7 @@ namespace Opc.Ua.Client
             }
         }
 
+#if LEGACY
         /// <summary>
         /// The last message containing a notification for the item.
         /// </summary>
@@ -563,7 +564,7 @@ namespace Opc.Ua.Client
                 {
                     if (m_dataCache != null)
                     {
-                        return ((MonitoredItemNotification)m_lastNotification).Message;
+                        return ((MonitoredItemNotificationStruct)m_lastNotification).Message;
                     }
 
                     if (m_eventCache != null)
@@ -575,6 +576,7 @@ namespace Opc.Ua.Client
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Raised when a new notification arrives.
@@ -611,9 +613,9 @@ namespace Opc.Ua.Client
         }
 
         /// <summary>
-        /// Saves a data change or event in the cache.
+        /// Saves an event change or event in the cache.
         /// </summary>
-        public void SaveValueInCache(IEncodeable newValue)
+        public void SaveValueInCache(EventFieldList eventchange)
         {
             lock (m_cache)
             {
@@ -622,55 +624,116 @@ namespace Opc.Ua.Client
                 // only validate timestamp on first sample
                 bool validateTimestamp = m_lastNotification == null;
 
-                m_lastNotification = newValue;
-
-                if (m_dataCache != null)
-                {
-                    if (newValue is MonitoredItemNotification datachange)
-                    {
-                        if (datachange.Value != null)
-                        {
-                            if (validateTimestamp)
-                            {
-                                var now = DateTime.UtcNow.Add(s_time_epsilon);
-
-                                // validate the ServerTimestamp of the notification.
-                                if (datachange.Value.ServerTimestamp > now)
-                                {
-                                    Utils.LogWarning("Received ServerTimestamp {0} is in the future for MonitoredItemId {1}",
-                                        datachange.Value.ServerTimestamp.ToLocalTime(), ClientHandle);
-                                }
-
-                                // validate SourceTimestamp of the notification.
-                                if (datachange.Value.SourceTimestamp > now)
-                                {
-                                    Utils.LogWarning("Received SourceTimestamp {0} is in the future for MonitoredItemId {1}",
-                                        datachange.Value.SourceTimestamp.ToLocalTime(), ClientHandle);
-                                }
-                            }
-
-                            if (datachange.Value.StatusCode.Overflow)
-                            {
-                                Utils.LogWarning("Overflow bit set for data change with ServerTimestamp {0} and value {1} for MonitoredItemId {2}",
-                                    datachange.Value.ServerTimestamp.ToLocalTime(), datachange.Value.Value, ClientHandle);
-                            }
-                        }
-
-                        m_dataCache.OnNotification(datachange);
-                    }
-                }
+                m_lastNotification = eventchange;
 
                 if (m_eventCache != null)
                 {
-                    if (newValue is EventFieldList eventchange)
-                    {
-                        m_eventCache?.OnNotification(eventchange);
-                    }
+                    m_eventCache?.OnNotification(eventchange);
                 }
 
-                m_Notification?.Invoke(this, new MonitoredItemNotificationEventArgs(newValue));
+                m_Notification?.Invoke(this, new MonitoredItemNotificationEventArgs(eventchange));
             }
         }
+
+        /// <summary>
+        /// Saves a data change or event in the cache.
+        /// </summary>
+        public void SaveValueInCache(ref MonitoredItemNotificationStruct datachangeStruct)
+        {
+            lock (m_cache)
+            {
+                EnsureCacheIsInitialized();
+
+                // only validate timestamp on first sample
+                bool validateTimestamp = m_lastNotification == null;
+
+                m_lastNotification = datachangeStruct;
+
+                if (m_dataCache != null)
+                {
+                    if (validateTimestamp)
+                    {
+                        var now = DateTime.UtcNow.Add(s_time_epsilon);
+
+                        // validate the ServerTimestamp of the notification.
+                        if (datachangeStruct.Value.ServerTimestamp > now)
+                        {
+                            Utils.LogWarning("Received ServerTimestamp {0} is in the future for MonitoredItemId {1}",
+                                datachangeStruct.Value.ServerTimestamp.ToLocalTime(), ClientHandle);
+                        }
+
+                        // validate SourceTimestamp of the notification.
+                        if (datachangeStruct.Value.SourceTimestamp > now)
+                        {
+                            Utils.LogWarning("Received SourceTimestamp {0} is in the future for MonitoredItemId {1}",
+                                datachangeStruct.Value.SourceTimestamp.ToLocalTime(), ClientHandle);
+                        }
+                    }
+
+                    if (datachangeStruct.Value.StatusCode.Overflow)
+                    {
+                        Utils.LogWarning("Overflow bit set for data change with ServerTimestamp {0} and value {1} for MonitoredItemId {2}",
+                            datachangeStruct.Value.ServerTimestamp.ToLocalTime(), datachangeStruct.Value.Value, ClientHandle);
+                    }
+
+                    m_dataCache.OnNotification(ref datachangeStruct);
+                }
+
+                m_Notification?.Invoke(this, new MonitoredItemNotificationEventArgs(datachangeStruct));
+            }
+        }
+
+#if LEGACY
+        /// <summary>
+        /// Saves a data change or event in the cache.
+        /// </summary>
+        public void SaveValueInCache(MonitoredItemNotification datachange)
+        {
+            lock (m_cache)
+            {
+                EnsureCacheIsInitialized();
+
+                // only validate timestamp on first sample
+                bool validateTimestamp = m_lastNotification == null;
+
+                m_lastNotification = datachange;
+
+                if (m_dataCache != null)
+                {
+                    if (datachange.Value != null)
+                    {
+                        if (validateTimestamp)
+                        {
+                            var now = DateTime.UtcNow.Add(s_time_epsilon);
+
+                            // validate the ServerTimestamp of the notification.
+                            if (datachange.Value.ServerTimestamp > now)
+                            {
+                                Utils.LogWarning("Received ServerTimestamp {0} is in the future for MonitoredItemId {1}",
+                                    datachange.Value.ServerTimestamp.ToLocalTime(), ClientHandle);
+                            }
+
+                            // validate SourceTimestamp of the notification.
+                            if (datachange.Value.SourceTimestamp > now)
+                            {
+                                Utils.LogWarning("Received SourceTimestamp {0} is in the future for MonitoredItemId {1}",
+                                    datachange.Value.SourceTimestamp.ToLocalTime(), ClientHandle);
+                            }
+                        }
+
+                        if (datachange.Value.StatusCode.Overflow)
+                        {
+                            Utils.LogWarning("Overflow bit set for data change with ServerTimestamp {0} and value {1} for MonitoredItemId {2}",
+                                datachange.Value.ServerTimestamp.ToLocalTime(), datachange.Value.Value, ClientHandle);
+                        }
+                    }
+
+                    m_dataCache.OnNotification(datachange);
+                }
+                m_Notification?.Invoke(this, new MonitoredItemNotificationEventArgs(datachange));
+            }
+        }
+#endif
         #endregion
 
         #region ICloneable Members
@@ -978,6 +1041,7 @@ namespace Opc.Ua.Client
             return DateTime.MinValue;
         }
 
+#if LEGACY
         /// <summary>
         /// The service result for a data change notification.
         /// </summary>
@@ -1033,13 +1097,12 @@ namespace Opc.Ua.Client
 
             return new ServiceResult(status.StatusCode, status.DiagnosticInfo, message.StringTable);
         }
+#endif
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// To save memory the cache is by default not initialized
-        /// until <see cref="SaveValueInCache(IEncodeable)"/> is called.
-        /// 
+        /// To save memory the cache is by default not initialized.
         /// </summary>
         private void EnsureCacheIsInitialized()
         {
@@ -1251,6 +1314,24 @@ namespace Opc.Ua.Client
             if (m_values != null)
             {
                 m_values.Enqueue(notification.Value);
+                while (m_values.Count > m_queueSize)
+                {
+                    m_values.Dequeue();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves a notification in the cache.
+        /// </summary>
+        public void OnNotification(ref MonitoredItemNotificationStruct notification)
+        {
+            m_lastValue = new DataValue(notification.Value);
+            CoreClientUtils.EventLog.NotificationValue(notification.ClientHandle, m_lastValue.WrappedValue);
+
+            if (m_values != null)
+            {
+                m_values.Enqueue(m_lastValue);
                 while (m_values.Count > m_queueSize)
                 {
                     m_values.Dequeue();
