@@ -92,6 +92,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "actions", "actions", "{82AA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Encoders.Fuzz.Tests", "Fuzzing\Encoders\Fuzz.Tests\Opc.Ua.Encoders.Fuzz.Tests.csproj", "{10C287A7-1FA5-4A6A-AF9F-C37065CDF0F1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OneBranch", "OneBranch", "{D5000DA4-21BF-48BA-9123-E37E00F3B60C}"
+	ProjectSection(SolutionItems) = preProject
+		.pipelines\common-stages.yml = .pipelines\common-stages.yml
+		.pipelines\OneBranch.Buddy.yml = .pipelines\OneBranch.Buddy.yml
+		.pipelines\OneBranch.Official.yml = .pipelines\OneBranch.Official.yml
+		.pipelines\OneBranch.PullRequest.yml = .pipelines\OneBranch.PullRequest.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +214,7 @@ Global
 		{9FC5C47D-5070-4222-B4F4-94EB495AEE4C} = {EE37EB25-F581-4794-9CAC-F15BF13D520C}
 		{82AA8918-FD9F-4477-A131-874673BDC3B9} = {0152A569-8287-4E49-9F02-E27FD700B719}
 		{10C287A7-1FA5-4A6A-AF9F-C37065CDF0F1} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
+		{D5000DA4-21BF-48BA-9123-E37E00F3B60C} = {0152A569-8287-4E49-9F02-E27FD700B719}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EA3AA3AE-CE8A-4DF1-BED8-CA0BAFC87303}
