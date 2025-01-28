@@ -789,9 +789,9 @@ namespace Opc.Ua
             else
             {
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
-                Span<char> valueString = stackalloc char[DateTimeRoundTripKindLength];
+                Span<byte> valueString = stackalloc byte[DateTimeRoundTripKindLength];
                 ConvertUniversalTimeToString(value, valueString, out int charsWritten);
-                WriteSimpleFieldAsCharSpan(fieldName, valueString.Slice(0, charsWritten));
+                WriteSimpleField(fieldName, valueString.Slice(0, charsWritten));
 #else
                 WriteSimpleField(fieldName, ConvertUniversalTimeToString(value));
 #endif
@@ -1096,9 +1096,9 @@ namespace Opc.Ua
 
                 if (EncodingToUse == JsonEncodingType.NonReversible || EncodingToUse == JsonEncodingType.Verbose)
                 {
-                    string symbolicId = StatusCode.LookupSymbolicId(value.CodeBits);
+                    byte[] symbolicId = StatusCode.LookupUtf8SymbolicId(value.CodeBits);
 
-                    if (!String.IsNullOrEmpty(symbolicId))
+                    if (symbolicId != null)
                     {
                         WriteSimpleField("Symbol"u8, symbolicId);
                     }
@@ -1231,9 +1231,10 @@ namespace Opc.Ua
             else if (!string.IsNullOrEmpty(fieldName))
             {
                 m_nestingLevel++;
-                m_writer.WritePropertyName(fieldName);
 
+                m_writer.WritePropertyName(fieldName);
                 WriteVariantContents(value.Value, value.TypeInfo);
+
                 m_nestingLevel--;
             }
         }
@@ -2994,10 +2995,10 @@ namespace Opc.Ua
                 WriteUInt32("Code"u8, value.Code);
                 if (EncodingToUse == JsonEncodingType.NonReversible || EncodingToUse == JsonEncodingType.Verbose)
                 {
-                    string symbolicId = StatusCode.LookupSymbolicId(value.CodeBits);
-                    if (!string.IsNullOrEmpty(symbolicId))
+                    byte[] symbolicId = StatusCode.LookupUtf8SymbolicId(value.CodeBits);
+                    if (symbolicId != null)
                     {
-                        WriteSimpleFieldAsCharSpan("Symbol"u8, symbolicId);
+                        WriteSimpleField("Symbol"u8, symbolicId);
                     }
                 }
             }
@@ -3009,12 +3010,6 @@ namespace Opc.Ua
         private void WriteDateTime(ReadOnlySpan<byte> fieldName, DateTime value)
         {
             Debug.Assert(fieldName != null);
-            /*
-            if (fieldName == null && !IncludeDefaultValues && value == DateTime.MinValue)
-            {
-                return;
-            }
-            */
 
             if (value <= DateTime.MinValue)
             {
@@ -3026,13 +3021,9 @@ namespace Opc.Ua
             }
             else
             {
-#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
-                Span<char> valueString = stackalloc char[DateTimeRoundTripKindLength];
-                ConvertUniversalTimeToString(value, valueString, out int charsWritten);
-                WriteSimpleFieldAsCharSpan(fieldName, valueString.Slice(0, charsWritten));
-#else
-                WriteSimpleField(fieldName, ConvertUniversalTimeToString(value));
-#endif
+                Span<byte> valueUtf8String = stackalloc byte[DateTimeRoundTripKindLength];
+                ConvertUniversalTimeToString(value, valueUtf8String, out int charsWritten);
+                WriteSimpleField(fieldName, valueUtf8String.Slice(0, charsWritten));
             }
         }
 
@@ -3303,27 +3294,27 @@ namespace Opc.Ua
         /// Write Utc time in the format "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK".
         /// </summary>
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
-        internal static void ConvertUniversalTimeToString(DateTime value, Span<char> valueString, out int charsWritten)
+        internal static void ConvertUniversalTimeToString(DateTime value, Span<byte> valueUtf8String, out int bytesWritten)
         {
             // Note: "o" is a shortcut for "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK" and implicitly
             // uses invariant culture and gregorian calendar, but executes up to 10 times faster.
             // But in contrary to the explicit format string, trailing zeroes are not omitted!
             if (value.Kind != DateTimeKind.Utc)
             {
-                value.ToUniversalTime().TryFormat(valueString, out charsWritten, "o", CultureInfo.InvariantCulture);
+                value.ToUniversalTime().TryFormat(valueUtf8String, out bytesWritten, "o", CultureInfo.InvariantCulture);
             }
             else
             {
-                value.TryFormat(valueString, out charsWritten, "o", CultureInfo.InvariantCulture);
+                value.TryFormat(valueUtf8String, out bytesWritten, "o", CultureInfo.InvariantCulture);
             }
 
-            Debug.Assert(charsWritten == DateTimeRoundTripKindLength);
+            Debug.Assert(bytesWritten == DateTimeRoundTripKindLength);
 
             // check if trailing zeroes can be omitted
             int i = DateTimeRoundTripKindLastDigit;
             while (i > DateTimeRoundTripKindFirstDigit)
             {
-                if (valueString[i] != '0')
+                if (valueUtf8String[i] != (byte)'0')
                 {
                     break;
                 }
@@ -3337,8 +3328,8 @@ namespace Opc.Ua
                 {
                     i--;
                 }
-                valueString[i + 1] = 'Z';
-                charsWritten = i + 2;
+                valueUtf8String[i + 1] = (byte)'Z';
+                bytesWritten = i + 2;
             }
         }
 #else

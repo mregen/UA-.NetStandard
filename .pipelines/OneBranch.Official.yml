@@ -55,6 +55,10 @@ variables:
   - name: PushNuget
     value: ${{ parameters.push_nuget }}
 
+  # Control Nuget preview publishing
+  - name: PushNugetPreview
+    value: false
+
 extends:
   # https://aka.ms/obpipelines/templates
   template: v2/OneBranch.Official.CrossPlat.yml@templates

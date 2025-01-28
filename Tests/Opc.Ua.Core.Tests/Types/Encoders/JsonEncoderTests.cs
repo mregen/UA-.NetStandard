@@ -1248,9 +1248,9 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         {
             string resultString = testDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture);
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
-            Span<char> valueString = stackalloc char[JsonEncoder.DateTimeRoundTripKindLength];
+            Span<byte> valueString = stackalloc byte[JsonEncoder.DateTimeRoundTripKindLength];
             JsonEncoder.ConvertUniversalTimeToString(testDateTime, valueString, out int charsWritten);
-            var resultO = valueString.Slice(0, charsWritten).ToString();
+            string resultO = Encoding.UTF8.GetString(valueString.Slice(0, charsWritten));
 #else
             string resultO = JsonEncoder.ConvertUniversalTimeToString(testDateTime);
 #endif

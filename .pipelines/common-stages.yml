@@ -108,7 +108,7 @@ stages:
               msBuildArchitecture: amd64
               rulesetName: Recommended
               rulesetVersion: Latest
-              msBuildCommandline: 'dotnet.exe build "$(Build.SourcesDirectory)/UA Core Library.sln" --configuration $(BuildConfiguration) --output $(Agent.TempDirectory)\outroslyn'
+              msBuildCommandline: 'dotnet.exe build "$(Build.SourcesDirectory)/UA Core Library.sln" -f net9.0 --configuration $(BuildConfiguration) --output $(Agent.TempDirectory)\outroslyn'
               policyName: Microsoft
               loadRoslynConfiguredAnalyzersOption: Enable
 
@@ -312,11 +312,27 @@ stages:
               targetPath: $(Build.SourcesDirectory)/dst/build
 
           - task: NuGetCommand@2
-            condition: and(succeeded(),eq(variables.PushNuget, true))
-            displayName: NuGet push
+            condition: and(succeeded(), eq(variables.PushNugetPreview, true))
+            displayName: Publish Preview Nuget
             inputs:
               command: push
               publishVstsFeed: one/aio-brokers
-              allowPackageConflicts: true
-              packagesToPush: '$(Build.SourcesDirectory)/dst/build/**/*.nupkg;$(Build.SourcesDirectory)/dst/build/**/*.snupkg'
+              allowPackageConflicts: false
+              packagesToPush: |
+                $(Build.SourcesDirectory)/dst/build/**/*-*.nupkg
+                $(Build.SourcesDirectory)/dst/build/**/*-*.snupkg
+
+          - task: NuGetCommand@2
+            condition: and(succeeded(), eq(variables.PushNuget, true))
+            displayName: Publish Release Nuget
+            inputs:
+              command: push
+              publishVstsFeed: one/aio-brokers
+              allowPackageConflicts: false
+              packagesToPush: |
+                $(Build.SourcesDirectory)/dst/build/**/*.nupkg
+                $(Build.SourcesDirectory)/dst/build/**/*.snupkg
+                !$(Build.SourcesDirectory)/dst/build/**/*-*.nupkg
+                !$(Build.SourcesDirectory)/dst/build/**/*-*.snupkg
+
 

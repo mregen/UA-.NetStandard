@@ -53,6 +53,10 @@ variables:
   - name: LinuxContainerImage
     value: mcr.microsoft.com/onebranch/cbl-mariner/build:2.0
 
+  # Control Nuget preview publishing
+  - name: PushNugetPreview
+    value: false
+
   # Control Nuget publishing
   - name: PushNuget
     value: false

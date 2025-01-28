@@ -11,6 +11,7 @@
 */
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -66,28 +67,19 @@ namespace Opc.Ua
         #endregion
 
         #region Static Methods
-        private static bool IsPlatformSupportedUri(string name)
-        {
-            if (name.Equals(nameof(Aes256_Sha256_RsaPss), StringComparison.Ordinal) &&
-                !RsaUtils.IsSupportingRSAPssSign.Value)
-            {
-                return false;
-            }
-            return true;
-        }
+        /// <summary>
+        /// Creates a dictionary of browse names for the attributes.
+        /// </summary>
+        private static readonly Lazy<FrozenDictionary<string, string>> SecurityPolicyUriNames = new(CreateSecurityPolicyUriNamesDictionary);
 
         /// <summary>
         /// Returns the uri associated with the display name.
         /// </summary>
         public static string GetUri(string displayName)
         {
-            FieldInfo[] fields = typeof(SecurityPolicies).GetFields(BindingFlags.Public | BindingFlags.Static);
-            foreach (FieldInfo field in fields)
+            if (SecurityPolicyUriNames.Value.TryGetValue(displayName, out var uri) && IsPlatformSupportedUri(displayName))
             {
-                if (field.Name == displayName && IsPlatformSupportedUri(field.Name))
-                {
-                    return (string)field.GetValue(typeof(SecurityPolicies));
-                }
+                return uri;
             }
 
             return null;
@@ -98,14 +90,11 @@ namespace Opc.Ua
         /// </summary>
         public static string GetDisplayName(string policyUri)
         {
-            FieldInfo[] fields = typeof(SecurityPolicies).GetFields(BindingFlags.Public | BindingFlags.Static);
-
-            foreach (FieldInfo field in fields)
+            foreach (var keyPair in SecurityPolicyUriNames.Value)
             {
-                if (policyUri == (string)field.GetValue(typeof(SecurityPolicies)) &&
-                    IsPlatformSupportedUri(field.Name))
+                if (policyUri == keyPair.Value && IsPlatformSupportedUri(keyPair.Key))
                 {
-                    return field.Name;
+                    return keyPair.Key;
                 }
             }
 
@@ -117,15 +106,14 @@ namespace Opc.Ua
         /// </summary>
         public static string[] GetDisplayNames()
         {
-            FieldInfo[] fields = typeof(SecurityPolicies).GetFields(BindingFlags.Public | BindingFlags.Static);
-            var names = new List<string>();
+            var names = new List<string>(SecurityPolicyUriNames.Value.Count);
 
-            // skip base Uri
-            for (int ii = 1; ii < fields.Length - 1; ii++)
+            // exclude None and Https from the list of supported security policies.
+            foreach (var keyPair in SecurityPolicyUriNames.Value)
             {
-                if (IsPlatformSupportedUri(fields[ii].Name))
+                if (IsPlatformSupportedUri(keyPair.Key))
                 {
-                    names.Add(fields[ii].Name);
+                    names.Add(keyPair.Key);
                 }
             }
 
@@ -438,6 +426,38 @@ namespace Opc.Ua
                 StatusCodes.BadSecurityChecksFailed,
                 "Unexpected security policy Uri: {0}",
                 securityPolicyUri);
+        }
+        #endregion
+
+        #region Private Methods
+        private static bool IsPlatformSupportedUri(string name)
+        {
+            if (name.Equals(nameof(Aes256_Sha256_RsaPss), StringComparison.Ordinal) &&
+                !RsaUtils.IsSupportingRSAPssSign.Value)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private static FrozenDictionary<string, string> CreateSecurityPolicyUriNamesDictionary()
+        {
+            FieldInfo[] fields = typeof(SecurityPolicies).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            var keyValuePairs = new Dictionary<string, string>();
+            foreach (FieldInfo field in fields)
+            {
+                var policyUri = (string)field.GetValue(typeof(SecurityPolicies));
+                if (field.Name == nameof(BaseUri) || field.Name == nameof(Https) ||
+                    !policyUri.StartsWith(BaseUri))
+                {
+                    continue;
+                }
+
+                keyValuePairs.Add(field.Name, policyUri);
+            }
+
+            return keyValuePairs.ToFrozenDictionary();
         }
         #endregion
     }

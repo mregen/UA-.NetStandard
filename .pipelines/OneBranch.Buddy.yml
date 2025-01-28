@@ -35,7 +35,7 @@ parameters:
     default: false
 
   - name: push_nuget
-    displayName: Push Nuget to aio-brokers
+    displayName: Push Nuget preview to aio-brokers
     type: boolean
     default: true
 
@@ -61,9 +61,13 @@ variables:
   - name: LinuxContainerImage
     value: mcr.microsoft.com/onebranch/cbl-mariner/build:2.0
 
+  # Control Nuget preview publishing
+  - name: PushNugetPreview
+    value: ${{ parameters.push_nuget }}
+
   # Control Nuget publishing
   - name: PushNuget
-    value: ${{ parameters.push_nuget }}
+    value: false
 
 extends:
   # https://aka.ms/obpipelines/templates
