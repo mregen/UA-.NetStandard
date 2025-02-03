@@ -318,9 +318,7 @@ stages:
               command: push
               publishVstsFeed: one/aio-brokers
               allowPackageConflicts: false
-              packagesToPush: |
-                $(Build.SourcesDirectory)/dst/build/**/*-preview.nupkg
-                $(Build.SourcesDirectory)/dst/build/**/*-preview.snupkg
+              packagesToPush: $(Build.SourcesDirectory)/dst/build/**/*-*.nupkg;$(Build.SourcesDirectory)/dst/build/**/*-*.snupkg
 
           - task: NuGetCommand@2
             condition: and(succeeded(), eq(variables.PushNuget, true))
@@ -329,10 +327,6 @@ stages:
               command: push
               publishVstsFeed: one/aio-brokers
               allowPackageConflicts: false
-              packagesToPush: |
-                $(Build.SourcesDirectory)/dst/build/**/*.nupkg
-                $(Build.SourcesDirectory)/dst/build/**/*.snupkg
-                !$(Build.SourcesDirectory)/dst/build/**/*-preview.nupkg
-                !$(Build.SourcesDirectory)/dst/build/**/*-preview.snupkg
+              packagesToPush: $(Build.SourcesDirectory)/dst/build/**/*.nupkg;$(Build.SourcesDirectory)/dst/build/**/*.snupkg;!$(Build.SourcesDirectory)/dst/build/**/*-*.nupkg;!$(Build.SourcesDirectory)/dst/build/**/*-*.snupkg
 
 

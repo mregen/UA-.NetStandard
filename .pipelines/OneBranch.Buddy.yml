@@ -59,7 +59,7 @@ variables:
     value: onebranch.azurecr.io/windows/ltsc2022/vse2022:latest
 
   - name: LinuxContainerImage
-    value: mcr.microsoft.com/onebranch/cbl-mariner/build:2.0
+    value: mcr.microsoft.com/onebranch/azurelinux/build:3.0
 
   # Control Nuget preview publishing
   - name: PushNugetPreview

@@ -2040,19 +2040,25 @@ namespace Opc.Ua
             }
 
             // read encoding.
-            ExtensionObjectEncoding encoding = (ExtensionObjectEncoding)Enum.ToObject(typeof(ExtensionObjectEncoding), SafeReadByte());
+            byte encoding = SafeReadByte();
 
             // nothing more to do for empty bodies.
-            if (encoding == ExtensionObjectEncoding.None)
+            if (encoding == (byte)ExtensionObjectEncoding.None)
             {
                 return extension;
+            }
+
+            if (encoding != (byte)ExtensionObjectEncoding.Binary && encoding != (byte)ExtensionObjectEncoding.Xml)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                    "Invalid encoding byte (0x{0:X2}) for ExtensionObject.", encoding);
             }
 
             // check for known type.
             Type systemType = m_context.Factory.GetSystemType(extension.TypeId);
 
             // check for XML bodies.
-            if (encoding == ExtensionObjectEncoding.Xml)
+            if (encoding == (byte)ExtensionObjectEncoding.Xml)
             {
                 extension.Body = ReadXmlElement(null);
 

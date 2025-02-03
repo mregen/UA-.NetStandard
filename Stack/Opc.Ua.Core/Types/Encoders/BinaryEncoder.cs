@@ -829,8 +829,8 @@ namespace Opc.Ua
                 encoding |= (byte)DataValueEncodingBits.Value;
             }
 
-            if ((dataSetFieldContentMask & DataSetFieldContentMask.StatusCode) != 0 &&
-                value.StatusCode != StatusCodes.Good)
+            if (value.StatusCode != StatusCodes.Good &&
+                (dataSetFieldContentMask & DataSetFieldContentMask.StatusCode) != 0)
             {
                 encoding |= (byte)DataValueEncodingBits.StatusCode;
             }
@@ -839,24 +839,24 @@ namespace Opc.Ua
                 value.SourceTimestamp != DateTime.MinValue)
             {
                 encoding |= (byte)DataValueEncodingBits.SourceTimestamp;
-            }
 
-            if ((dataSetFieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0 &&
-                value.SourcePicoseconds != 0)
-            {
-                encoding |= (byte)DataValueEncodingBits.SourcePicoseconds;
+                if ((dataSetFieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0 &&
+                    value.SourcePicoseconds != 0)
+                {
+                    encoding |= (byte)DataValueEncodingBits.SourcePicoseconds;
+                }
             }
 
             if ((dataSetFieldContentMask & DataSetFieldContentMask.ServerTimestamp) != 0 &&
                 value.ServerTimestamp != DateTime.MinValue)
             {
                 encoding |= (byte)DataValueEncodingBits.ServerTimestamp;
-            }
 
-            if ((dataSetFieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0 &&
-                value.ServerPicoseconds != 0)
-            {
-                encoding |= (byte)DataValueEncodingBits.ServerPicoseconds;
+                if ((dataSetFieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0 &&
+                    value.ServerPicoseconds != 0)
+                {
+                    encoding |= (byte)DataValueEncodingBits.ServerPicoseconds;
+                }
             }
 
             // write the encoding.
@@ -901,7 +901,7 @@ namespace Opc.Ua
             if (value == null)
             {
                 WriteNodeId(null, NodeId.Null);
-                WriteByte(null, Convert.ToByte(ExtensionObjectEncoding.None, CultureInfo.InvariantCulture));
+                WriteByte(null, (byte)ExtensionObjectEncoding.None);
                 return;
             }
 
@@ -940,32 +940,29 @@ namespace Opc.Ua
 
             WriteNodeId(null, localTypeId);
 
-            // determine the encoding type.
-            byte encoding = Convert.ToByte(value.Encoding, CultureInfo.InvariantCulture);
-
-            if (value.Encoding == ExtensionObjectEncoding.EncodeableObject)
-            {
-                encoding = Convert.ToByte(ExtensionObjectEncoding.Binary, CultureInfo.InvariantCulture);
-            }
-
             object body = value.Body;
-
             if (body == null)
             {
-                encoding = Convert.ToByte(ExtensionObjectEncoding.None, CultureInfo.InvariantCulture);
+                // nothing more to do for null bodies.
+                WriteByte(null, (byte)ExtensionObjectEncoding.None);
+                return;
+            }
+
+            // determine the encoding type.
+            byte encoding;
+            if (value.Encoding == ExtensionObjectEncoding.EncodeableObject)
+            {
+                encoding = (byte)ExtensionObjectEncoding.Binary;
+            }
+            else
+            {
+                encoding = (byte)value.Encoding;
             }
 
             // write the encoding type.
             WriteByte(null, encoding);
 
-            // nothing more to do for null bodies.
-            if (body == null)
-            {
-                return;
-            }
-
             // write binary bodies.
-
             if (body is byte[] bytes)
             {
                 WriteByteString(null, bytes);
@@ -973,7 +970,6 @@ namespace Opc.Ua
             }
 
             // write XML bodies.
-
             if (body is XmlElement xml)
             {
                 WriteXmlElement(null, xml);
