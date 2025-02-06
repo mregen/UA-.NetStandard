@@ -1712,6 +1712,21 @@ namespace Opc.Ua.Client
         public Task ReconnectAsync(ITransportChannel channel, CancellationToken ct)
             => ReconnectAsync(null, channel, ct);
 
+        /// <inheritdoc/>
+        public async Task ReloadInstanceCertificateAsync(CancellationToken ct = default)
+        {
+            await m_reconnectLock.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                m_instanceCertificate = await LoadCertificate(m_configuration).ConfigureAwait(false);
+                m_instanceCertificateChain = await LoadCertificateChain(m_configuration, m_instanceCertificate).ConfigureAwait(false);
+            }
+            finally
+            {
+                m_reconnectLock.Release();
+            }
+        }
+
         /// <summary>
         /// Reconnects to the server after a network failure using a waiting connection.
         /// </summary>

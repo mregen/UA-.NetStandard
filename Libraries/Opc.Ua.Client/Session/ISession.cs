@@ -346,6 +346,11 @@ namespace Opc.Ua.Client
         /// Reconnects to the server using a new channel.
         /// </summary>
         Task ReconnectAsync(ITransportChannel channel, CancellationToken ct = default);
+
+        /// <summary>
+        ///Reload the own certificate used by the session and the issuer chain when available.
+        /// </summary>
+        Task ReloadInstanceCertificateAsync(CancellationToken ct = default);
 #endif
 
         /// <summary>
@@ -975,7 +980,6 @@ namespace Opc.Ua.Client
 
 #endif
         #endregion ManagedBrowse methods
-
 
         #region Call Methods
         /// <summary>
