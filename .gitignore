@@ -342,8 +342,16 @@ OPC\ Foundation/
 
 # UA Fuzzing findings folders
 /Fuzzing/**/findings/
+/Fuzzing/Encoders/Fuzz.Tests/Assets/*
+/Fuzzing/**/crash-*
+/Fuzzing/**/slow-*
+/Fuzzing/**/timeout-*
 /Fuzzing/**/Testcases/
 !/Fuzzing/**/Testcases/*.bin
+!/Fuzzing/**/Testcases/*.json
+!/Fuzzing/**/Testcases/*.xml
+!/Fuzzing/**/Testcases/*.crl
+!/Fuzzing/**/Testcases/*.der
 
 # Tabs Studio
 *.tss

@@ -456,17 +456,17 @@ namespace Opc.Ua
             // The specail meaning of the regular expression characters not coincident with the
             // OPC UA wildcards must be suppressed so as not to interfere with matching.
             // preceed all '^', '$', '.', '|', '?', '*', '+', '(', ')' with a '\'
-            expression = SuppressUnusedCharacters().Replace(expression, "\\$1");
+            expression = Regex.Replace(expression, "([\\^\\$\\.\\|\\?\\*\\+\\(\\)])", "\\$1", RegexOptions.Compiled);
 
             // 2) Replace all OPC UA wildcards with their regular expression equivalents
             // replace all '%' with ".+", except "\%"
-            expression = ReplaceWildcards().Replace(expression, ".*");
+            expression = Regex.Replace(expression, "(?<!\\\\)%", ".*", RegexOptions.Compiled);
 
             // replace all '_' with '.', except "\_"
-            expression = ReplaceUnderscores().Replace(expression, ".");
+            expression = Regex.Replace(expression, "(?<!\\\\)_", ".", RegexOptions.Compiled);
 
             // replace all "[!" with "[^", except "\[!"
-            expression = ReplaceBrackets().Replace(expression, "[^");
+            expression = Regex.Replace(expression, "(?<!\\\\)(\\[!)", "[^", RegexOptions.Compiled);
 #endif
 
             return Regex.IsMatch(target, expression);

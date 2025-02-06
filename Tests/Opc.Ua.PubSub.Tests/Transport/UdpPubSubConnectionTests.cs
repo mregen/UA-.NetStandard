@@ -331,7 +331,8 @@ namespace Opc.Ua.PubSub.Tests.Transport
                 }
                 foreach (var uniIpAddrInfo in netI.GetIPProperties().UnicastAddresses.Where(x => netI.GetIPProperties().GatewayAddresses.Count > 0))
                 {
-                    if ((uniIpAddrInfo.Address.AddressFamily == AddressFamily.InterNetwork || uniIpAddrInfo.Address.AddressFamily == AddressFamily.InterNetworkV6) &&
+                    if ((uniIpAddrInfo.Address.AddressFamily == AddressFamily.InterNetwork ||
+                        uniIpAddrInfo.Address.AddressFamily == AddressFamily.InterNetworkV6) &&
                         uniIpAddrInfo.AddressPreferredLifetime != uint.MaxValue)
                     {
                         addresses.Add(uniIpAddrInfo.Address);
