@@ -15,6 +15,7 @@
     <Compile Include="..\Fuzz\FuzzableCode.XmlDecoder.cs" Link="FuzzableCode.XmlDecoder.cs" />
     <Compile Include="..\Fuzz\FuzzableCode.Certificates.cs" Link="FuzzableCode.Certificates.cs" />
     <Compile Include="..\Fuzz\FuzzableCode.CRLs.cs" Link="FuzzableCode.CRLs.cs" />
+    <Compile Include="..\OneFuzz\FuzzTargets.cs" Link="FuzzTargets.cs" />
     <Compile Include="..\..\common\Fuzz\FuzzMethods.cs" Link="FuzzMethods.cs" />
     <Compile Include="..\..\common\Fuzz.Tools\Testcases.cs" Link="Testcases.cs" />
   </ItemGroup>

@@ -97,6 +97,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OneBranch", "OneBranch", "{
 		.pipelines\common-stages.yml = .pipelines\common-stages.yml
 		.pipelines\OneBranch.Buddy.yml = .pipelines\OneBranch.Buddy.yml
 		.pipelines\OneBranch.Official.yml = .pipelines\OneBranch.Official.yml
+		.pipelines\OneBranch.OneFuzz.yml = .pipelines\OneBranch.OneFuzz.yml
 		.pipelines\OneBranch.PullRequest.yml = .pipelines\OneBranch.PullRequest.yml
 	EndProjectSection
 EndProject

@@ -414,6 +414,11 @@ namespace Opc.Ua
                     {
                         if (UInt32.TryParse(text, out uint number))
                         {
+                            if (namespaceIndex == 0)
+                            {
+                                return NodeId.Create(number);
+                            }
+
                             return new NodeId(number, (ushort)namespaceIndex);
                         }
 

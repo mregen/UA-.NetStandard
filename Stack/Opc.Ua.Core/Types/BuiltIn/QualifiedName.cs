@@ -506,7 +506,7 @@ namespace Opc.Ua
 
                 if (index < 0)
                 {
-                    throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid QualifiedName ({originalText}).");
+                    throw new ServiceResultException(StatusCodes.BadInvalidArgument, $"Invalid QualifiedName ({originalText}).");
                 }
 
                 var namespaceUri = Utils.UnescapeUri(text.Substring(4, index-4));
@@ -514,7 +514,7 @@ namespace Opc.Ua
 
                 if (namespaceIndex < 0)
                 {
-                    throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"No mapping to NamespaceIndex for NamespaceUri ({namespaceUri}).");
+                    throw new ServiceResultException(StatusCodes.BadInvalidArgument, $"No mapping to NamespaceIndex for NamespaceUri ({namespaceUri}).");
                 }
 
                 text = text.Substring(index + 1);
@@ -531,7 +531,7 @@ namespace Opc.Ua
                     }
                     else
                     {
-                        throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid QualifiedName ({originalText}).");
+                        throw new ServiceResultException(StatusCodes.BadInvalidArgument, $"Invalid QualifiedName ({originalText}).");
                     }
                 }
 

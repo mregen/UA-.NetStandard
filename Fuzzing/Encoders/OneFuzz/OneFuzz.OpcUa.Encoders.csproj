@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OneFuzz.OpcUa.Encoders</RootNamespace>
+    <AssemblyName>OneFuzz.OpcUa.Encoders</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <NoWarn>CA1031;CA2201</NoWarn>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Fuzz\FuzzableCode.cs" Link="FuzzableCode.cs" />
+    <Compile Include="..\Fuzz\FuzzableCode.BinaryDecoder.cs" Link="FuzzableCode.BinaryDecoder.cs" />
+    <Compile Include="..\Fuzz\FuzzableCode.JsonDecoder.cs" Link="FuzzableCode.JsonDecoder.cs" />
+    <Compile Include="..\Fuzz\FuzzableCode.XmlDecoder.cs" Link="FuzzableCode.XmlDecoder.cs" />
+    <Compile Include="..\Fuzz\FuzzableCode.Certificates.cs" Link="FuzzableCode.Certificates.cs" />
+    <Compile Include="..\Fuzz\FuzzableCode.CRLs.cs" Link="FuzzableCode.CRLs.cs" />
+  </ItemGroup>
+
+  <!-- When referencing a local build of the OPC UA stack for testing, define the constant UseLocalOpcUaSdk in the file Directory.Build.targets -->
+  <Choose>
+    <When Condition="'$(Configuration)'=='Debug'">
+      <ItemGroup Condition="$(DefineConstants.Contains(UseNugetOpcUaSdk))">
+        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core" Version="1.5.374.178-preview" />
+      </ItemGroup>
+      <ItemGroup Condition="!$(DefineConstants.Contains(UseNugetOpcUaSdk))">
+        <ProjectReference Include="..\..\..\Libraries\Opc.Ua.Security.Certificates\Opc.Ua.Security.Certificates.csproj" />
+        <ProjectReference Include="..\..\..\Stack\Opc.Ua.Core\Opc.Ua.Core.csproj" />
+      </ItemGroup>
+    </When>
+    <When Condition="'$(Configuration)'=='Release'">
+      <ItemGroup Condition="$(DefineConstants.Contains(UseNugetOpcUaSdk))">
+        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core" Version="1.5.374.178-preview" />
+      </ItemGroup>
+      <ItemGroup Condition="!$(DefineConstants.Contains(UseNugetOpcUaSdk))">
+        <ProjectReference Include="..\..\..\Libraries\Opc.Ua.Security.Certificates\Opc.Ua.Security.Certificates.csproj" />
+        <ProjectReference Include="..\..\..\Stack\Opc.Ua.Core\Opc.Ua.Core.csproj" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <ItemGroup>
+    <None Include="..\..\dictionaries\json.dict" Link="json.dict">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\dictionaries\xml.dict" Link="xml.dict">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="OneFuzzConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,63 @@
+#################################################################################
+#                   OneFuzz Non Production Pipeline                             #
+#################################################################################
+
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# Run OneFuzz task once a week
+schedules:
+- cron: "0 8 * * 1"
+  displayName: Weekly start of the OneFuzz service
+  branches:
+    include:
+    - main
+
+# For OneFuzz testing, remove later
+trigger:
+- mregen/fuzz*
+
+jobs:
+- job: OpcUa_OneFuzz
+  displayName: Onboard OPC UA Encoders to OneFuzz
+
+  pool:
+    vmImage: ubuntu-latest
+
+  steps:
+  - task: UseDotNet@2
+    displayName: Setup .NET
+    inputs:
+      packageType: sdk
+      useGlobalJson: true
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
+  - task: NuGetAuthenticate@1
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore OneFuzz.OpcUa.Encoders'
+    inputs:
+      command: restore
+      includeNuGetOrg: false
+      feedsToUse: select
+      nugetConfigPath: ./NuGet.Config
+      vstsFeed: One/aio-brokers
+      projects: ./Fuzzing/Encoders/OneFuzz/OneFuzz.OpcUa.Encoders.csproj
+      restoreArguments: '--disable-parallel'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish OneFuzz.OpcUa.Encoders'
+    inputs:
+      command: publish
+      publishWebProjects: false
+      projects: ./Fuzzing/Encoders/OneFuzz/OneFuzz.OpcUa.Encoders.csproj
+      zipAfterPublish: false
+      arguments: '--no-restore --framework net8.0 --configuration Release -o $(System.DefaultWorkingDirectory)/Fuzzing/publish'
+
+  - task: onefuzz-task@0
+    inputs:
+      onefuzzOSes: 'ubuntu'
+    env:
+        onefuzzDropDirectory: $(System.DefaultWorkingDirectory)/Fuzzing/publish
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        onefuzzDropPAT: $(onefuzzDropPAT)

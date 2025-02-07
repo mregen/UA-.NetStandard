@@ -1,0 +1,1218 @@
+{
+  "ConfigVersion": 3,
+  "Entries": [
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzBinaryDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzBinaryDecoder",
+          "SeedCorpusContainer": "opcua-sdk-binarydecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzBinaryEncoderIndempotent"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzBinaryEncoderIndempotent",
+          "SeedCorpusContainer": "opcua-sdk-binarydecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzBinaryEncoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzBinaryEncoder",
+          "SeedCorpusContainer": "opcua-sdk-binarydecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzJsonDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzJsonDecoder",
+          "SeedCorpusContainer": "opcua-sdk-jsondecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/json.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "json.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzJsonEncoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzJsonEncoder",
+          "SeedCorpusContainer": "opcua-sdk-jsondecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/json.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "json.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzJsonEncoderNonReversible"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzJsonEncoderNonReversible",
+          "SeedCorpusContainer": "opcua-sdk-jsondecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/json.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "json.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzJsonEncoderCompact"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzJsonEncoderCompact",
+          "SeedCorpusContainer": "opcua-sdk-jsondecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/json.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "json.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzJsonEncoderVerbose"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzJsonEncoderVerbose",
+          "SeedCorpusContainer": "opcua-sdk-jsondecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/json.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "json.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzXmlDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzXmlDecoder",
+          "SeedCorpusContainer": "opcua-sdk-xmldecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/xml.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "xml.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzXmlEncoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzXmlEncoder",
+          "SeedCorpusContainer": "opcua-sdk-xmldecoder",
+          "FuzzingTargetOptions": [
+            "-dict={setup_dir}/xml.dict"
+          ]
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*",
+        "xml.dict"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzCertificateDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzCertificateDecoder",
+          "SeedCorpusContainer": "opcua-sdk-certdecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzCertificateChainDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzCertificateChainDecoder",
+          "SeedCorpusContainer": "opcua-sdk-certdecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzCertificateChainDecoderCustom"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzCertificateChainDecoderCustom",
+          "SeedCorpusContainer": "opcua-sdk-certdecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzCRLDecoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzCRLDecoder",
+          "SeedCorpusContainer": "opcua-sdk-crldecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    },
+    {
+      "JobNotificationEmail": "opcuabroker@microsoft.com",
+      "Skip": false,
+      "Fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "Dll": "OneFuzz.OpcUa.Encoders.dll",
+        "Class": "OneFuzz.OpcUa.Encoders.FuzzTargets",
+        "Method": "FuzzCRLEncoder"
+      },
+      "MinAvailableMemoryMB": 100,
+      "FuzzerTimeoutInSeconds": 120,
+      "OneFuzzJobs": [
+        {
+          "ProjectName": "OneFuzz-OpcUa-Sdk",
+          "TargetName": "FuzzCRLEncoder",
+          "SeedCorpusContainer": "opcua-sdk-crldecoder"
+        }
+      ],
+      "JobDependencies": [
+        "OneFuzz.OpcUa.Encoders.*",
+        "Microsoft.*",
+        "Newtonsoft.*",
+        "Microsoft.Aio.Opc.Ua.*"
+      ],
+      "AdoTemplate": {
+        "Org": "msazure",
+        "Project": "One",
+        "AssignedTo": "mregen@microsoft.com",
+        "AreaPath": "One\\Azure Edge and Platform\\One Edge\\Digital Operations\\1P Connectors\\OPC UA",
+        "IterationPath": "One",
+        "Type": "Bug",
+        "AdoFields": {
+          "System.State": "Committed",
+          "Microsoft.VSTS.Common.Priority": "1"
+        },
+        "UniqueFields": [
+          "System.Title"
+        ],
+        "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+        "OnDuplicate": {
+          // Increment
+          // desc: Fields to increment when updating an existing bug when the same
+          // crash was found by OneFuzz
+          "Increment": [
+            "One_custom.HitCount"
+          ],
+          // Comment
+          // desc: Comment template that will be expanded and added to the existing
+          // bug by OneFuzz
+          "Comment": "<a href='{{ input_url }}'>This input</a> caused the <a href='{{ target_url }}'>fuzz target</a> {{ report.executable }} to crash. The faulting input SHA256 hash is {{ report.input_sha256 }} <br>",
+          // Set state
+          // desc: Move bug to a new state if needed
+          "SetState": {
+            // Resolved
+            // desc: If bug is in 'Resolved' state, then move it to the specified
+            // state
+            "Resolved": "Active"
+          },
+          // Unless filter
+          // desc: Which duplicate work items should not be updated
+          "Unless": [
+            {
+              // System.State
+              // desc: Work Item state
+              "System.State": "Removed",
+              // System.Reason
+              // desc: Work item resolution reason
+              "System.Reason": "Wont Fix"
+            }
+          ]
+        }
+      },
+      "CodeCoverage": {
+        "Org": "msazure",
+        "Project": "One",
+        "PipelineId": "383013"
+      },
+      "SdlWorkItemId": 27588857
+    }
+  ]
+}

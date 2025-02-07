@@ -1218,7 +1218,6 @@ namespace Opc.Ua
                 }
 
                 m_writer.WritePropertyName("Body"u8);
-
                 WriteVariantContents(value.Value, value.TypeInfo);
 
                 if (value.Value is Matrix matrix)
@@ -1395,12 +1394,19 @@ namespace Opc.Ua
                 return;
             }
 
-            var encodeable = value.Body as IEncodeable;
+            if (isNull)
+            {
+                PushStructure(fieldName);
+                PopStructure();
+                return;
+            }
 
+            object body = value?.Body;
+            var encodeable = body as IEncodeable;
             if (encodeable != null && EncodingToUse == JsonEncodingType.NonReversible)
             {
                 // non reversible encoding, only the content of the Body field is encoded.
-                if (value.Body is IStructureTypeInfo structureType && structureType.StructureType == StructureType.Union)
+                if (body is IStructureTypeInfo structureType && structureType.StructureType == StructureType.Union)
                 {
                     m_writer.WritePropertyName(fieldName ?? "Value");
                     encodeable.Encode(this);
@@ -1415,7 +1421,7 @@ namespace Opc.Ua
 
             PushStructure(fieldName);
 
-            var typeId = (!NodeId.IsNull(value.TypeId)) ? value.TypeId : encodeable?.TypeId ?? NodeId.Null;
+            ExpandedNodeId typeId = (!NodeId.IsNull(value.TypeId)) ? value.TypeId : encodeable?.TypeId ?? NodeId.Null;
             var localTypeId = ExpandedNodeId.ToNodeId(typeId, Context.NamespaceUris);
 
             if (EncodingToUse == JsonEncodingType.Compact || EncodingToUse == JsonEncodingType.Verbose)
@@ -1431,7 +1437,7 @@ namespace Opc.Ua
                 }
                 else
                 {
-                    if (value.Body is JObject json)
+                    if (body is JObject json)
                     {
                         if (!SuppressArtifacts && !NodeId.IsNull(localTypeId))
                         {
@@ -1449,7 +1455,7 @@ namespace Opc.Ua
                         }
 
                         WriteByte("UaEncoding", (byte)ExtensionObjectEncoding.Binary);
-                        WriteByteString("UaBody", value.Body as byte[]);
+                        WriteByteString("UaBody", body as byte[]);
                     }
                     else if (value.Encoding == ExtensionObjectEncoding.Xml)
                     {
@@ -1459,7 +1465,7 @@ namespace Opc.Ua
                         }
 
                         WriteByte("UaEncoding", (byte)ExtensionObjectEncoding.Xml);
-                        WriteXmlElement("UaBody", value.Body as XmlElement);
+                        WriteXmlElement("UaBody", body as XmlElement);
                     }
                 }
 
@@ -1485,7 +1491,7 @@ namespace Opc.Ua
             }
             else
             {
-                if (value.Body is JObject json)
+                if (body is JObject json)
                 {
                     string text = json.ToString(Newtonsoft.Json.Formatting.None);
                     m_writer.WriteRawValue(text.Substring(1, text.Length - 2));
@@ -1496,15 +1502,15 @@ namespace Opc.Ua
 
                     if (value.Encoding == ExtensionObjectEncoding.Binary)
                     {
-                        WriteByteString("Body", value.Body as byte[]);
+                        WriteByteString("Body", body as byte[]);
                     }
                     else if (value.Encoding == ExtensionObjectEncoding.Xml)
                     {
-                        WriteXmlElement("Body", value.Body as XmlElement);
+                        WriteXmlElement("Body", body as XmlElement);
                     }
                     else if (value.Encoding == ExtensionObjectEncoding.Json)
                     {
-                        WriteSimpleField("Body"u8, value.Body as string);
+                        WriteSimpleField("Body"u8, body as string);
                     }
                 }
             }
@@ -2479,7 +2485,7 @@ namespace Opc.Ua
             {
                 PushArray(null);
 
-                foreach (var ii in list)
+                foreach (Variant ii in list)
                 {
                     if (ii is Variant vt)
                     {
@@ -2547,7 +2553,7 @@ namespace Opc.Ua
                     PushStructure();
                     PushArray("Array");
 
-                    foreach (var ii in matrix.Elements)
+                    foreach (object ii in matrix.Elements)
                     {
                         if (field.BuiltInType == (byte)BuiltInType.ExtensionObject)
                         {
@@ -2582,7 +2588,7 @@ namespace Opc.Ua
                     {
                         PushArray(null);
 
-                        foreach (var element in list)
+                        foreach (ExtensionObject element in list)
                         {
                             WriteRawExtensionObject(element);
                         }
@@ -2659,6 +2665,7 @@ namespace Opc.Ua
                 // check for null.
                 if (value == null)
                 {
+                    m_writer.WriteNullValue();
                     return;
                 }
 
