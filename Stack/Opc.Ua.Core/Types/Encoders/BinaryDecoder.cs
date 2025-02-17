@@ -2279,7 +2279,7 @@ namespace Opc.Ua
 
                         if (dimensions.Count == 1)
                         {
-                            value = new Variant(array, new TypeInfo(builtInType, 1));
+                            value = new Variant(array, TypeInfo.CreateArray(builtInType));
                         }
                         else
                         {
@@ -2288,7 +2288,7 @@ namespace Opc.Ua
                     }
                     else
                     {
-                        value = new Variant(array, new TypeInfo(builtInType, 1));
+                        value = new Variant(array, TypeInfo.CreateArray(builtInType));
                     }
                 }
             }

@@ -181,7 +181,7 @@ public static class FuzzTargets
     /// </summary>
     public static void FuzzCRLDecoder(ReadOnlySpan<byte> input)
     {
-        _ = FuzzableCode.FuzzCRLDecoderCore(input);
+        _ = FuzzableCode.FuzzCRLDecoderCore(input, false, false);
     }
 
     /// <summary>
@@ -192,7 +192,7 @@ public static class FuzzTargets
         X509CRL? crl = null;
         try
         {
-            crl = FuzzableCode.FuzzCRLDecoderCore(input, true);
+            crl = FuzzableCode.FuzzCRLDecoderCore(input, false, true);
         }
         catch
         {

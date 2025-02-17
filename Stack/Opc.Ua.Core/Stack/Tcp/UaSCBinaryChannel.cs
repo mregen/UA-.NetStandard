@@ -131,6 +131,8 @@ namespace Opc.Ua.Bindings
             m_maxResponseChunkCount = CalculateChunkCount(m_maxResponseMessageSize, TcpMessageLimits.MinBufferSize);
 
             CalculateSymmetricKeySizes();
+
+            m_lastActiveTickCount = HiResClock.TickCount;
         }
         #endregion
 
@@ -883,7 +885,7 @@ namespace Opc.Ua.Bindings
 
         private TcpChannelStateEventHandler m_StateChanged;
 
-        private int m_lastActiveTickCount = HiResClock.TickCount;
+        private int m_lastActiveTickCount;
         #endregion
     }
 

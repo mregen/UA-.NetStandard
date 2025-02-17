@@ -11,12 +11,15 @@
 */
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
+
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
 
 namespace Opc.Ua
 {
@@ -29,7 +32,7 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a dictionary of browse names for the attributes.
         /// </summary>
-        private static readonly Lazy<FrozenDictionary<uint, string>> AttributeNames = new Lazy<FrozenDictionary<uint, string>>(CreateAttributeNamesDictionary);
+        private static readonly Lazy<ReadOnlyDictionary<uint, string>> AttributeNames = new Lazy<ReadOnlyDictionary<uint, string>>(CreateAttributeNamesDictionary);
 
         /// <summary>
         /// Returns true if the attribute id is valid.
@@ -388,7 +391,7 @@ namespace Opc.Ua
         #endregion
 
         #region Private Methods
-        private static FrozenDictionary<uint, string> CreateAttributeNamesDictionary()
+        private static ReadOnlyDictionary<uint, string> CreateAttributeNamesDictionary()
         {
             FieldInfo[] fields = typeof(Attributes).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -397,8 +400,11 @@ namespace Opc.Ua
             {
                 keyValuePairs.Add((uint)field.GetValue(typeof(Attributes)), field.Name);
             }
-
-            return keyValuePairs.ToFrozenDictionary();
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
+            return new ReadOnlyDictionary<uint, string>(keyValuePairs);
+#endif
         }
         #endregion
     }

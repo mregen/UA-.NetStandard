@@ -394,7 +394,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                 new Variant(new string[] {"1", "2", "3", "4", "5" }),
                 //TODO: works as expected, but the expected need to be tweaked for the Int32 result
                 //new Variant(new TestEnumType[] { TestEnumType.One, TestEnumType.Two, TestEnumType.Hundred }),
-                new Variant(new Int32[] { 2, 3, 10 }, new TypeInfo(BuiltInType.Enumeration, 1))
+                new Variant(new Int32[] { 2, 3, 10 }, TypeInfo.Arrays.Enumeration)
             };
             EncodeDecodeDataValue(encoderType, jsonEncodingType, BuiltInType.Variant, MemoryStreamType.ArraySegmentStream, variant);
         }
@@ -527,7 +527,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             Assume.That(builtInType != BuiltInType.Null);
             int arrayDimension = RandomSource.NextInt32(99) + 1;
             Array randomData = DataGenerator.GetRandomArray(builtInType, false, arrayDimension, true);
-            var variant = new Variant(randomData, new TypeInfo(builtInType, 1));
+            var variant = new Variant(randomData, TypeInfo.CreateArray(builtInType));
             EncodeDecodeDataValue(encoderType, jsonEncodingType, BuiltInType.Variant, MemoryStreamType.RecyclableMemoryStream, variant);
         }
 
@@ -973,6 +973,30 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
 
                 Assert.AreEqual((StatusCode)StatusCodes.BadEncodingLimitsExceeded, (StatusCode)sre.StatusCode, sre.Message);
             }
+        }
+
+        /// <summary>
+        /// Test if deserializing an extensionObject alters the Null NodeId.
+        /// </summary>
+        /// <remarks>
+        /// Issue was raised in github #2974.
+        /// </remarks>
+        [Test]
+        public void EnsureNodeIdNullIsNotModified()
+        {
+            var text1 = "[{\"Body\":{\"KeyValuePair\":{\"@xmlns\":\"http://opcfoundation.org/UA/2008/02/Types.xsd\"," +
+                "\"Key\":{\"Name\":\"o\",\"NamespaceIndex\":\"0\"},\"Value\":{\"Value\":" +
+                "{\"ListOfExtensionObject\":{\"ExtensionObject\":[" +
+                "{\"Body\":{\"KeyValuePair\":{\"Key\":{\"Name\":\"stringProp\",\"NamespaceIndex\":\"0\"},\"Value\":{\"Value\":" +
+                "{\"String\":\"EinString\"}}}},\"TypeId\":{\"Identifier\":\"i=14801\"}},{\"Body\":{\"KeyValuePair\":{\"Key\":" +
+                "{\"Name\":\"intProp\",\"NamespaceIndex\":\"0\"},\"Value\":{\"Value\":{\"Int32\":\"1\"}}}},\"TypeId\":" +
+                "{\"Identifier\":\"i=14802\"}}]}}}}},\"TypeId\":" +
+                "{\"Identifier\":\"i=14803\"}}]";
+
+            JsonConvert.DeserializeObject<ExtensionObject[]>(text1);
+
+            Assert.NotNull(NodeId.Null);
+            Assert.True(NodeId.Null.IsNullNodeId);
         }
         #endregion
 

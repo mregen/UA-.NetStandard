@@ -3255,7 +3255,7 @@ namespace Opc.Ua
                     // Create a slice of values for the top dimension
                     var copy = Array.CreateInstance(matrix.Elements.GetType().GetElementType(), arrayLen);
                     Array.Copy(matrix.Elements, index, copy, 0, arrayLen);
-                    WriteVariantContents(copy, new TypeInfo(typeInfo.BuiltInType, 1));
+                    WriteVariantContents(copy, TypeInfo.CreateArray(typeInfo.BuiltInType));
                     index += arrayLen;
                 }
                 else
@@ -3277,6 +3277,7 @@ namespace Opc.Ua
         /// <summary>
         /// Test and increment the nesting level.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckAndIncrementNestingLevel()
         {
             int maxEncodingNestingLevels = m_context.MaxEncodingNestingLevels;
@@ -3300,6 +3301,7 @@ namespace Opc.Ua
         /// <summary>
         /// Write Utc time in the format "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK".
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
         internal static void ConvertUniversalTimeToString(DateTime value, Span<byte> valueUtf8String, out int bytesWritten)
         {

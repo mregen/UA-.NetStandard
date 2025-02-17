@@ -11,11 +11,15 @@
 */
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
 
 namespace Opc.Ua
 {
@@ -28,12 +32,12 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a dictionary of browse names for the status codes.
         /// </summary>
-        private static readonly Lazy<FrozenDictionary<uint, string>> BrowseNames = new Lazy<FrozenDictionary<uint, string>>(CreateBrowseNamesDictionary);
+        private static readonly Lazy<ReadOnlyDictionary<uint, string>> BrowseNames = new Lazy<ReadOnlyDictionary<uint, string>>(CreateBrowseNamesDictionary);
 
         /// <summary>
         /// Creates a dictionary of Utf8 browse names for the status codes.
         /// </summary>
-        private static readonly Lazy<FrozenDictionary<uint, byte[]>> Utf8BrowseNames = new Lazy<FrozenDictionary<uint, byte[]>>(CreateUtf8BrowseNamesDictionary);
+        private static readonly Lazy<ReadOnlyDictionary<uint, byte[]>> Utf8BrowseNames = new Lazy<ReadOnlyDictionary<uint, byte[]>>(CreateUtf8BrowseNamesDictionary);
 
         /// <summary>
 		/// Returns the browse utf8BrowseName for the attribute.
@@ -49,8 +53,8 @@ namespace Opc.Ua
         }
 
         /// <summary>
-		/// Returns the browse utf8BrowseName for the attribute.
-		/// </summary>
+	/// Returns the browse utf8BrowseName for the attribute.
+        /// </summary>
         public static byte[] GetUtf8BrowseName(uint identifier)
         {
             if (Utf8BrowseNames.Value.TryGetValue(identifier, out var utf8BrowseName))
@@ -87,7 +91,7 @@ namespace Opc.Ua
         #endregion
 
         #region Private Methods
-        private static FrozenDictionary<uint, string> CreateBrowseNamesDictionary()
+        private static ReadOnlyDictionary<uint, string> CreateBrowseNamesDictionary()
         {
             FieldInfo[] fields = typeof(StatusCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -96,11 +100,14 @@ namespace Opc.Ua
             {
                 keyValuePairs.Add((uint)field.GetValue(typeof(StatusCodes)), field.Name);
             }
-
-            return keyValuePairs.ToFrozenDictionary();
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
+            return new ReadOnlyDictionary<uint, string>(keyValuePairs);
+#endif
         }
 
-        private static FrozenDictionary<uint, byte[]> CreateUtf8BrowseNamesDictionary()
+        private static ReadOnlyDictionary<uint, byte[]> CreateUtf8BrowseNamesDictionary()
         {
             FieldInfo[] fields = typeof(StatusCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -110,7 +117,11 @@ namespace Opc.Ua
                 keyValuePairs.Add((uint)field.GetValue(typeof(StatusCodes)), Encoding.UTF8.GetBytes(field.Name));
             }
 
-            return keyValuePairs.ToFrozenDictionary();
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
+            return new ReadOnlyDictionary<uint, byte[]>(keyValuePairs);
+#endif
         }
         #endregion
     }
