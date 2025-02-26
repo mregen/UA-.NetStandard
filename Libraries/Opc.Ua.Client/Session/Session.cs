@@ -3718,8 +3718,6 @@ namespace Opc.Ua.Client
         #endregion
 
         #region Combined Browse/BrowseNext
-
-
         /// <inheritdoc/>
         public void ManagedBrowse(
             RequestHeader requestHeader,

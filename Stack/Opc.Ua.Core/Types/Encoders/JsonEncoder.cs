@@ -85,6 +85,8 @@ namespace Opc.Ua
             bool leaveOpen = false,
             int streamSize = 0)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             Initialize(encoding);
 
             m_context = context;
@@ -125,6 +127,8 @@ namespace Opc.Ua
             IBufferWriter<byte> bufferWriter = null,
             bool topLevelIsArray = false)
         {
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             Initialize(encoding);
 
             m_context = context;

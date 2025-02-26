@@ -467,6 +467,20 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Returns an absolute version of the expanded NodeId.
+        /// Converts the NodeId based on the table if not absolute.
+        /// </summary>
+        public ExpandedNodeId AbsoluteExpandedNodeId(NamespaceTable namespaceTable)
+        {
+            if (IsAbsolute)
+            {
+                return this;
+            }
+
+            return NodeId.ToExpandedNodeId(InnerNodeId, namespaceTable);
+        }
+
+        /// <summary>
         /// Returns the inner node id.
         /// </summary>
         internal NodeId InnerNodeId
@@ -716,7 +730,7 @@ namespace Opc.Ua
         /// </summary>
         private const string kHexDigits = "0123456789ABCDEF";
         #endregion
-        #endregion
+#endregion
 
         #region IComparable Members
         /// <summary>
@@ -1031,7 +1045,7 @@ namespace Opc.Ua
                 return Null;
             }
 
-            var originalText = text;
+            string originalText = text;
             int serverIndex = 0;
 
             if (text.StartsWith("svu=", StringComparison.Ordinal))
@@ -1043,7 +1057,7 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid ExpandedNodeId ({originalText}).");
                 }
 
-                var serverUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+                string serverUri = Utils.UnescapeUri(text.Substring(4, index - 4));
                 serverIndex = (options?.UpdateTables == true) ? context.ServerUris.GetIndexOrAppend(serverUri) : context.ServerUris.GetIndex(serverUri);
 
                 if (serverIndex < 0)
@@ -1063,7 +1077,7 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid ExpandedNodeId ({originalText}).");
                 }
 
-                if (ushort.TryParse(text.Substring(4, index - 4), out ushort ns))
+                if (ushort.TryParse(text.AsSpan(4, index - 4), out ushort ns))
                 {
                     serverIndex = ns;
 
@@ -1127,7 +1141,7 @@ namespace Opc.Ua
             {
                 if (useUris)
                 {
-                    var serverUri = context.ServerUris.GetString(m_serverIndex);
+                    string serverUri = context.ServerUris.GetString(m_serverIndex);
 
                     if (!string.IsNullOrEmpty(serverUri))
                     {
@@ -1157,7 +1171,7 @@ namespace Opc.Ua
                 buffer.Append(';');
             }
 
-            var id = m_nodeId.Format(context, useUris);
+            string id = m_nodeId.Format(context, useUris);
             buffer.Append(id);
 
             return buffer.ToString();
