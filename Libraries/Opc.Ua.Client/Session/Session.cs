@@ -3743,9 +3743,7 @@ namespace Opc.Ua.Client
                 nodeClassMask
                 ).GetAwaiter().GetResult();
         }
-
         #endregion
-
 
         #region Call Methods
         /// <inheritdoc/>

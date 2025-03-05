@@ -249,9 +249,9 @@ namespace Opc.Ua.Server
                 return null;
             }
 
-            if (m_namespaceMetadataStates.ContainsKey(namespaceUri))
+            if (m_namespaceMetadataStates.TryGetValue(namespaceUri, out NamespaceMetadataState value))
             {
-                return m_namespaceMetadataStates[namespaceUri];
+                return value;
             }
 
             NamespaceMetadataState namespaceMetadataState = FindNamespaceMetadataState(namespaceUri);
@@ -693,13 +693,13 @@ namespace Opc.Ua.Server
             //TODO support multiple Application Instance Certificates
             if (certificateTypeId != null)
             {
-                certificateTypeIds = new NodeId[1] { certificateTypeId };
+                certificateTypeIds = new NodeId[] { certificateTypeId };
                 certificates = new byte[1][];
                 certificates[0] = certificateGroup.ApplicationCertificate.Certificate.RawData;
             }
             else
             {
-                certificateTypeIds = new NodeId[0];
+                certificateTypeIds = Array.Empty<NodeId>();
                 certificates = Array.Empty<byte[]>();
             }
 

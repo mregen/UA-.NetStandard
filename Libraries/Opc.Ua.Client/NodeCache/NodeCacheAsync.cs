@@ -96,7 +96,7 @@ namespace Opc.Ua.Client
             }
 
             int count = nodeIds.Count;
-            IList<INode> nodes = new List<INode>(count);
+            var nodes = new List<INode>(count);
             var fetchNodeIds = new ExpandedNodeIdCollection();
 
             int ii;
@@ -385,7 +385,7 @@ namespace Opc.Ua.Client
             bool includeSubtypes,
             CancellationToken ct)
         {
-            IList<INode> targets = new List<INode>();
+            var targets = new List<INode>();
             if (nodeIds.Count == 0 || referenceTypeIds.Count == 0)
             {
                 return targets;
