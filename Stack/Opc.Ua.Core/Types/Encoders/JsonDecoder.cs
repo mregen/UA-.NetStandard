@@ -18,6 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Opc.Ua
 {
@@ -185,7 +186,7 @@ namespace Opc.Ua
 
             if (actualType == null)
             {
-                throw new ServiceResultException(StatusCodes.BadDecodingError, Utils.Format("Cannot decode message with type id: {0}.", absoluteId));
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError, Utils.Format("Cannot decode message with type id: {0}.", absoluteId));
             }
 
             // read the message.
@@ -737,7 +738,7 @@ namespace Opc.Ua
 
             if (m_context.MaxStringLength > 0 && m_context.MaxStringLength < value.Length)
             {
-                throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "String length invalid. Length={0}", value.Length);
             }
 
             return (string)value;
@@ -830,7 +831,7 @@ namespace Opc.Ua
 
             if (m_context.MaxByteStringLength > 0 && m_context.MaxByteStringLength < bytes.Length)
             {
-                throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "ByteString length invalid. Length={0}", bytes.Length);
             }
 
             return bytes;
@@ -848,22 +849,18 @@ namespace Opc.Ua
                 return null;
             }
 
-
             if (!(token is string value))
             {
                 return null;
             }
 
-            var bytes = SafeConvertFromBase64String(value);
-
-            if (bytes != null && bytes.Length > 0)
+            if (!string.IsNullOrEmpty(value))
             {
                 try
                 {
                     XmlDocument document = new XmlDocument();
-                    string xmlString = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
-                    using (XmlReader reader = XmlReader.Create(new StringReader(xmlString), Utils.DefaultXmlReaderSettings()))
+                    using (XmlReader reader = XmlReader.Create(new StringReader(value), Utils.DefaultXmlReaderSettings()))
                     {
                         document.Load(reader);
                     }
@@ -893,9 +890,11 @@ namespace Opc.Ua
 
             if (token is string text)
             {
+                NodeId nodeId;
+
                 try
                 {
-                    var nodeId = NodeId.Parse(
+                    nodeId = NodeId.Parse(
                         m_context,
                         text,
                         new NodeIdParsingOptions() {
@@ -903,12 +902,15 @@ namespace Opc.Ua
                             NamespaceMappings = m_namespaceMappings,
                             ServerMappings = m_serverMappings
                         });
-
-                    return nodeId;
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
                 {
-                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode NodeId: {0}", sre.Message);
+                    // fallback on error. this allows the application to sort out the problem.
+                    nodeId = new NodeId(text, 0);
+                }
+                catch (Exception ex)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, ex, "Failed to decode NodeId");
                 }
             }
 
@@ -999,9 +1001,11 @@ namespace Opc.Ua
 
             if (token is string text)
             {
+                ExpandedNodeId nodeId;
+
                 try
                 {
-                    var nodeId = ExpandedNodeId.Parse(
+                    nodeId = ExpandedNodeId.Parse(
                         m_context,
                         text,
                         new NodeIdParsingOptions() {
@@ -1014,9 +1018,13 @@ namespace Opc.Ua
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
                 {
-                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode ExpandedNodeId: {0}", sre.Message);
+                    // fallback on error. this allows the application to sort out the problem.
+                    nodeId = new NodeId(text, 0);
                 }
-
+                catch (Exception ex)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, ex, "Failed to decode ExpandedNodeId");
+                }
             }
 
             if (!(token is Dictionary<string, object> value))
@@ -1187,24 +1195,30 @@ namespace Opc.Ua
 
             if (token is string text)
             {
-                QualifiedName qn;
+                var qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable);
+
                 try
                 {
                     qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable);
-                }
-                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadInvalidArgument)
-                {
-                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode QualifiedName: {0}", sre.Message);
-                }
 
-                if (qn.NamespaceIndex != 0)
-                {
-                    var ns = ToNamespaceIndex(qn.NamespaceIndex);
-
-                    if (ns != qn.NamespaceIndex)
+                    if (qn.NamespaceIndex != 0)
                     {
-                        qn = new QualifiedName(qn.Name, ns);
+                        var ns = ToNamespaceIndex(qn.NamespaceIndex);
+
+                        if (ns != qn.NamespaceIndex)
+                        {
+                            qn = new QualifiedName(qn.Name, ns);
+                        }
                     }
+                }
+                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
+                {
+                    // fallback on error. this allows the application to sort out the problem.
+                    qn = new QualifiedName(text, 0);
+                }
+                catch (Exception ex)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, ex, "Failed to decode QualifiedName");
                 }
 
                 return qn;
@@ -1330,47 +1344,14 @@ namespace Opc.Ua
             try
             {
                 m_stack.Push(value);
+                BuiltInType builtInType = (value.ContainsKey("UaType")) ? (BuiltInType)ReadByte("UaType") : (BuiltInType)ReadByte("Type");
 
-                BuiltInType type = (BuiltInType)ReadByte("Type");
-
-                var context = m_stack.Peek() as Dictionary<string, object>;
-
-                if (!context.TryGetValue("Body", out token))
+                if (value.ContainsKey("Value"))
                 {
-                    return Variant.Null;
+                    return ReadVariantFromObject("Value", builtInType, value);
                 }
 
-                Variant array;
-                if (token is Array)
-                {
-                    array = ReadVariantBody("Body", type);
-                }
-                else if (token is List<object>)
-                {
-                    array = ReadVariantArrayBody("Body", type);
-                }
-                else
-                {
-                    return ReadVariantBody("Body", type);
-                }
-                Int32Collection dimensions = ReadInt32Array("Dimensions");
-
-                if (array.Value is Array arrayValue && dimensions != null && dimensions.Count > 1)
-                {
-                    int length = arrayValue.Length;
-                    var dimensionsArray = dimensions.ToArray();
-                    (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensionsArray, length, Context.MaxArrayLength);
-
-                    if (!valid || (matrixLength != length))
-                    {
-                        throw ServiceResultException.Create(StatusCodes.BadDecodingError,
-                            "ArrayDimensions length does not match with the ArrayLength in Variant object.");
-                    }
-
-                    array = new Variant(new Matrix(arrayValue, type, dimensionsArray));
-                }
-
-                return array;
+                return ReadVariantFromObject("Body", builtInType, value);
             }
             finally
             {
@@ -1403,7 +1384,16 @@ namespace Opc.Ua
             {
                 m_stack.Push(value);
 
-                dv.WrappedValue = ReadVariant("Value");
+                if (value.ContainsKey("UaType"))
+                {
+                    var builtInType = (BuiltInType)ReadByte("UaType");
+                    dv.WrappedValue = ReadVariantFromObject("Value", builtInType, value);
+                }
+                else
+                {
+                    dv.WrappedValue = ReadVariant("Value");
+                }
+
                 dv.StatusCode = ReadStatusCode("StatusCode");
                 dv.SourceTimestamp = ReadDateTime("SourceTimestamp");
                 dv.SourcePicoseconds = ReadUInt16("SourcePicoseconds");
@@ -1431,7 +1421,7 @@ namespace Opc.Ua
                 return extension;
             }
 
-            if (!(token is Dictionary<string, object> value))
+            if (!(token is Dictionary<string, object> value) || value.Count == 0)
             {
                 return extension;
             }
@@ -1440,7 +1430,15 @@ namespace Opc.Ua
             {
                 m_stack.Push(value);
 
-                ExpandedNodeId typeId = ReadExpandedNodeId("TypeId");
+                bool inlineValues = true;
+                ExpandedNodeId typeId = ReadExpandedNodeId("UaTypeId");
+
+                if (NodeId.IsNull(typeId))
+                {
+                    typeId = ReadExpandedNodeId("TypeId");
+                    inlineValues = false;
+                }
+
                 ExpandedNodeId absoluteId =
                     typeId.IsAbsolute ?
                     typeId :
@@ -1455,17 +1453,30 @@ namespace Opc.Ua
                     typeId = absoluteId;
                 }
 
-                byte encoding = ReadByte("Encoding");
+                ExtensionObjectEncoding encoding = 0;
+                var encodingFieldName = (inlineValues) ? "UaEncoding" : "Encoding";
 
-                if (encoding == (byte)ExtensionObjectEncoding.Binary)
+                encoding = (ExtensionObjectEncoding)ReadByte(encodingFieldName);
+
+                if (value.ContainsKey(encodingFieldName))
                 {
-                    var bytes = ReadByteString("Body");
+                    encoding = (ExtensionObjectEncoding)ReadByte(encodingFieldName);
+
+                    if (encoding == ExtensionObjectEncoding.None)
+                    {
+                        return extension;
+                    }
+                }
+
+                if (encoding == ExtensionObjectEncoding.Binary)
+                {
+                    var bytes = ReadByteString((inlineValues) ? "UaBody" : "Body");
                     return new ExtensionObject(typeId, bytes ?? Array.Empty<byte>());
                 }
 
-                if (encoding == (byte)ExtensionObjectEncoding.Xml)
+                if (encoding == ExtensionObjectEncoding.Xml)
                 {
-                    var xml = ReadXmlElement("Body");
+                    var xml = ReadXmlElement((inlineValues) ? "UaBody" : "Body");
                     if (xml == null)
                     {
                         return extension;
@@ -1473,9 +1484,9 @@ namespace Opc.Ua
                     return new ExtensionObject(typeId, xml);
                 }
 
-                if (encoding == (byte)ExtensionObjectEncoding.Json)
+                if (encoding == ExtensionObjectEncoding.Json)
                 {
-                    var json = ReadString("Body");
+                    var json = ReadString((inlineValues) ? "UaBody" : "Body");
                     if (string.IsNullOrEmpty(json))
                     {
                         return extension;
@@ -1487,10 +1498,27 @@ namespace Opc.Ua
 
                 if (systemType != null)
                 {
-                    var encodeable = ReadEncodeable("Body", systemType, typeId);
-                    if (encodeable == null)
+                    IEncodeable encodeable = null;
+
+                    if (inlineValues)
                     {
-                        return extension;
+                        encodeable = Activator.CreateInstance(systemType) as IEncodeable;
+
+                        if (encodeable == null)
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadDecodingError, "Type does not support IEncodeable interface: '{0}'", systemType.FullName);
+                        }
+
+                        encodeable.Decode(this);
+                    }
+                    else
+                    {
+                        encodeable = ReadEncodeable("Body", systemType, typeId);
+
+                        if (encodeable == null)
+                        {
+                            return extension;
+                        }
                     }
 
                     return new ExtensionObject(typeId, encodeable);
@@ -1534,10 +1562,9 @@ namespace Opc.Ua
                 return null;
             }
 
-
             if (!(Activator.CreateInstance(systemType) is IEncodeable value))
             {
-                throw new ServiceResultException(StatusCodes.BadDecodingError, Utils.Format("Type does not support IEncodeable interface: '{0}'", systemType.FullName));
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError, "Type does not support IEncodeable interface: '{0}'", systemType.FullName);
             }
 
             if (encodeableTypeId != null)
@@ -2531,9 +2558,9 @@ namespace Opc.Ua
                             return ReadEncodeableArray(fieldName, systemType, encodeableTypeId);
                         }
 
-                        throw new ServiceResultException(
+                        throw ServiceResultException.Create(
                             StatusCodes.BadDecodingError,
-                            Utils.Format("Cannot decode unknown type in Array object with BuiltInType: {0}.", builtInType));
+                            "Cannot decode unknown type in Array object with BuiltInType: {0}.", builtInType);
                     }
                 }
             }
@@ -2563,8 +2590,19 @@ namespace Opc.Ua
                     var array2 = ReadArray("Array", 1, builtInType, systemType, encodeableTypeId);
                     m_stack.Pop();
 
-                    var matrix2 = new Matrix(array2, builtInType, dimensions2.ToArray());
-                    return matrix2.ToArray();
+                    try
+                    {
+                        var matrix2 = new Matrix(array2, builtInType, dimensions2.ToArray());
+                        return matrix2.ToArray();
+                    }
+                    catch (ArgumentException e)
+                    {
+                        throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, e, "Invalid Matrix arguments.");
+                    }
+                    catch (Exception e)
+                    {
+                        throw ServiceResultException.Create(StatusCodes.BadDecodingError, e, "Failed to decode matrix.");
+                    }
                 }
 
                 if (!(token is List<object> array))
@@ -2594,136 +2632,242 @@ namespace Opc.Ua
                 }
 
                 Matrix matrix = null;
-                switch (builtInType)
-                {
-                    case BuiltInType.Boolean:
-                        matrix = new Matrix(elements.Cast<bool>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.SByte:
-                        matrix = new Matrix(elements.Cast<sbyte>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Byte:
-                        matrix = new Matrix(elements.Cast<byte>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Int16:
-                        matrix = new Matrix(elements.Cast<Int16>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.UInt16:
-                        matrix = new Matrix(elements.Cast<UInt16>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Int32:
-                        matrix = new Matrix(elements.Cast<Int32>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.UInt32:
-                        matrix = new Matrix(elements.Cast<UInt32>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Int64:
-                        matrix = new Matrix(elements.Cast<Int64>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.UInt64:
-                        matrix = new Matrix(elements.Cast<UInt64>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Float:
-                        matrix = new Matrix(elements.Cast<float>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Double:
-                        matrix = new Matrix(elements.Cast<double>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.String:
-                        matrix = new Matrix(elements.Cast<string>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.DateTime:
-                        matrix = new Matrix(elements.Cast<DateTime>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Guid:
-                        matrix = new Matrix(elements.Cast<Uuid>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.ByteString:
-                        matrix = new Matrix(elements.Cast<byte[]>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.XmlElement:
-                        matrix = new Matrix(elements.Cast<XmlElement>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.NodeId:
-                        matrix = new Matrix(elements.Cast<NodeId>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.ExpandedNodeId:
-                        matrix = new Matrix(elements.Cast<ExpandedNodeId>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.StatusCode:
-                        matrix = new Matrix(elements.Cast<StatusCode>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.QualifiedName:
-                        matrix = new Matrix(elements.Cast<QualifiedName>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.LocalizedText:
-                        matrix = new Matrix(elements.Cast<LocalizedText>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.DataValue:
-                        matrix = new Matrix(elements.Cast<DataValue>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.Enumeration:
-                    {
-                        if (systemType?.IsEnum == true)
-                        {
-                            var newElements = Array.CreateInstance(systemType, elements.Count);
-                            int ii = 0;
-                            foreach (var element in elements)
-                            {
-                                newElements.SetValue(Convert.ChangeType(element, systemType, CultureInfo.InvariantCulture), ii++);
-                            }
-                            matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
-                        }
-                        else
-                        {
-                            matrix = new Matrix(elements.Cast<Int32>().ToArray(), builtInType, dimensions.ToArray());
-                        }
-                        break;
-                    }
-                    case BuiltInType.Variant:
-                    {
-                        if (DetermineIEncodeableSystemType(ref systemType, encodeableTypeId))
-                        {
-                            Array newElements = Array.CreateInstance(systemType, elements.Count);
-                            for (int i = 0; i < elements.Count; i++)
-                            {
-                                newElements.SetValue(Convert.ChangeType(elements[i], systemType, CultureInfo.InvariantCulture), i);
-                            }
-                            matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
-                            break;
-                        }
-                        matrix = new Matrix(elements.Cast<Variant>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    }
-                    case BuiltInType.ExtensionObject:
-                        matrix = new Matrix(elements.Cast<ExtensionObject>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    case BuiltInType.DiagnosticInfo:
-                        matrix = new Matrix(elements.Cast<DiagnosticInfo>().ToArray(), builtInType, dimensions.ToArray());
-                        break;
-                    default:
-                    {
-                        if (DetermineIEncodeableSystemType(ref systemType, encodeableTypeId))
-                        {
-                            Array newElements = Array.CreateInstance(systemType, elements.Count);
-                            for (int i = 0; i < elements.Count; i++)
-                            {
-                                newElements.SetValue(Convert.ChangeType(elements[i], systemType, CultureInfo.InvariantCulture), i);
-                            }
-                            matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
-                            break;
-                        }
 
-                        throw ServiceResultException.Create(
-                            StatusCodes.BadDecodingError,
-                            "Cannot decode unknown type in Array object with BuiltInType: {0}.",
-                            builtInType);
+                try
+                {
+                    switch (builtInType)
+                    {
+                        case BuiltInType.Boolean:
+                            matrix = new Matrix(elements.Cast<bool>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.SByte:
+                            matrix = new Matrix(elements.Cast<sbyte>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Byte:
+                            matrix = new Matrix(elements.Cast<byte>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Int16:
+                            matrix = new Matrix(elements.Cast<Int16>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.UInt16:
+                            matrix = new Matrix(elements.Cast<UInt16>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Int32:
+                            matrix = new Matrix(elements.Cast<Int32>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.UInt32:
+                            matrix = new Matrix(elements.Cast<UInt32>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Int64:
+                            matrix = new Matrix(elements.Cast<Int64>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.UInt64:
+                            matrix = new Matrix(elements.Cast<UInt64>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Float:
+                            matrix = new Matrix(elements.Cast<float>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Double:
+                            matrix = new Matrix(elements.Cast<double>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.String:
+                            matrix = new Matrix(elements.Cast<string>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.DateTime:
+                            matrix = new Matrix(elements.Cast<DateTime>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Guid:
+                            matrix = new Matrix(elements.Cast<Uuid>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.ByteString:
+                            matrix = new Matrix(elements.Cast<byte[]>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.XmlElement:
+                            matrix = new Matrix(elements.Cast<XmlElement>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.NodeId:
+                            matrix = new Matrix(elements.Cast<NodeId>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.ExpandedNodeId:
+                            matrix = new Matrix(elements.Cast<ExpandedNodeId>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.StatusCode:
+                            matrix = new Matrix(elements.Cast<StatusCode>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.QualifiedName:
+                            matrix = new Matrix(elements.Cast<QualifiedName>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.LocalizedText:
+                            matrix = new Matrix(elements.Cast<LocalizedText>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.DataValue:
+                            matrix = new Matrix(elements.Cast<DataValue>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.Enumeration:
+                        {
+                            if (systemType?.IsEnum == true)
+                            {
+                                var newElements = Array.CreateInstance(systemType, elements.Count);
+                                int ii = 0;
+                                foreach (var element in elements)
+                                {
+                                    newElements.SetValue(Convert.ChangeType(element, systemType, CultureInfo.InvariantCulture), ii++);
+                                }
+                                matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
+                            }
+                            else
+                            {
+                                matrix = new Matrix(elements.Cast<Int32>().ToArray(), builtInType, dimensions.ToArray());
+                            }
+                            break;
+                        }
+                        case BuiltInType.Variant:
+                        {
+                            if (DetermineIEncodeableSystemType(ref systemType, encodeableTypeId))
+                            {
+                                Array newElements = Array.CreateInstance(systemType, elements.Count);
+                                for (int i = 0; i < elements.Count; i++)
+                                {
+                                    newElements.SetValue(Convert.ChangeType(elements[i], systemType, CultureInfo.InvariantCulture), i);
+                                }
+                                matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
+                                break;
+                            }
+                            matrix = new Matrix(elements.Cast<Variant>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        }
+                        case BuiltInType.ExtensionObject:
+                            matrix = new Matrix(elements.Cast<ExtensionObject>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        case BuiltInType.DiagnosticInfo:
+                            matrix = new Matrix(elements.Cast<DiagnosticInfo>().ToArray(), builtInType, dimensions.ToArray());
+                            break;
+                        default:
+                        {
+                            if (DetermineIEncodeableSystemType(ref systemType, encodeableTypeId))
+                            {
+                                Array newElements = Array.CreateInstance(systemType, elements.Count);
+                                for (int i = 0; i < elements.Count; i++)
+                                {
+                                    newElements.SetValue(Convert.ChangeType(elements[i], systemType, CultureInfo.InvariantCulture), i);
+                                }
+                                matrix = new Matrix(newElements, builtInType, dimensions.ToArray());
+                                break;
+                            }
+
+                            throw ServiceResultException.Create(
+                                StatusCodes.BadDecodingError,
+                                "Cannot decode unknown type in Array object with BuiltInType: {0}.",
+                                builtInType);
+                        }
                     }
+                }
+                catch (ServiceResultException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, e, "");
                 }
 
                 return matrix.ToArray();
             }
             return null;
+        }
+
+        /// <inheritdoc/>
+        public uint ReadSwitchField(IList<string> switches, out string fieldName)
+        {
+            fieldName = null;
+
+            if (m_stack.Peek() is Dictionary<string, object> context)
+            {
+                long index = -1;
+
+                if (context.ContainsKey("SwitchField"))
+                {
+                    index = ReadUInt32("SwitchField");
+                }
+
+                if (switches == null)
+                {
+                    return 0;
+                }
+
+                if (index >= switches.Count)
+                {
+                    return (uint)index;
+                }
+
+                if (index >= 0)
+                {
+                    if (!context.ContainsKey("Value"))
+                    {
+                        fieldName = switches[(int)index];
+                    }
+                    else
+                    {
+                        fieldName = "Value";
+                    }
+
+                    return (uint)index;
+                }
+
+                foreach (var ii in context)
+                {
+                    if (ii.Key == "UaTypeId")
+                    {
+                        continue;
+                    }
+
+                    index = switches.IndexOf(ii.Key);
+
+                    if (index >= 0)
+                    {
+                        fieldName = ii.Key;
+                        return (uint)index;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        /// <inheritdoc/>
+        public uint ReadEncodingMask(IList<string> masks)
+        {
+            if (m_stack.Peek() is Dictionary<string, object> context)
+            {
+                if (context.ContainsKey("EncodingMask"))
+                {
+                    return ReadUInt32("EncodingMask");
+                }
+
+                uint mask = 0;
+
+                if (masks == null)
+                {
+                    return 0;
+                }
+
+                foreach (var fieldName in masks)
+                {
+                    if (context.ContainsKey(fieldName))
+                    {
+                        var index = masks.IndexOf(fieldName);
+
+                        if (index >= 0)
+                        {
+                            mask |= (uint)(1 << index);
+                        }
+                    }
+                }
+
+                return mask;
+            }
+
+            return 0;
         }
         #endregion
 
@@ -2811,7 +2955,7 @@ namespace Opc.Ua
 
             if (index < 0 || index >= m_namespaceMappings.Length)
             {
-                throw new ServiceResultException(StatusCodes.BadDecodingError, $"No mapping for NamespaceIndex={index}.");
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError, "No mapping for NamespaceIndex={0}.", index);
             }
 
             return m_namespaceMappings[index];
@@ -2845,7 +2989,7 @@ namespace Opc.Ua
 
             if (index < 0 || index >= m_serverMappings.Length)
             {
-                throw new ServiceResultException(StatusCodes.BadDecodingError, $"No mapping for ServerIndex(={index}.");
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError, "No mapping for ServerIndex={0}.", index);
             }
 
             return m_serverMappings[index];
@@ -2985,6 +3129,44 @@ namespace Opc.Ua
                 systemType = Context.Factory.GetSystemType(encodeableTypeId);
             }
             return typeof(IEncodeable).IsAssignableFrom(systemType);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private Variant ReadVariantFromObject(string valueName, BuiltInType builtInType, Dictionary<string, object> value)
+        {
+            if (value.TryGetValue(valueName, out var innerValue))
+            {
+                if (innerValue is List<object>)
+                {
+                    var array = ReadVariantArrayBody(valueName, builtInType);
+
+                    if (value.ContainsKey("Dimensions"))
+                    {
+                        var dimensions = ReadInt32Array("Dimensions");
+
+                        try
+                        {
+                            return new Variant(new Matrix(array.Value as Array, builtInType, dimensions.ToArray()));
+                        }
+                        catch (ArgumentException e)
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, e, "Unable to read Matrix in Variant");
+                        }
+                        catch (Exception e)
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadDecodingError, e, "Unable to read Matrix in Variant");
+                        }
+                    }
+
+                    return array;
+                }
+
+                return ReadVariantBody(valueName, builtInType);
+            }
+
+            return Variant.Null;
         }
 
         /// <summary>
@@ -3297,7 +3479,6 @@ namespace Opc.Ua
                     return;
                 }
 
-
                 if (value is List<object> list)
                 {
                     writer.WriteStartArray();
@@ -3332,6 +3513,9 @@ namespace Opc.Ua
             writer.WriteEndObject();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private bool ReadArrayField(string fieldName, out List<object> array)
         {
             array = null;
@@ -3351,7 +3535,7 @@ namespace Opc.Ua
 
             if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < array.Count)
             {
-                throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "Array dimensions invalid. Dimension={0}", array.Count);
             }
 
             return true;
