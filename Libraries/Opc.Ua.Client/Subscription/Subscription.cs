@@ -767,7 +767,14 @@ namespace Opc.Ua.Client
         /// </summary>
         public void ChangesCompleted()
         {
-            m_StateChanged?.Invoke(this, new SubscriptionStateChangedEventArgs(m_changeMask));
+            try
+            {
+                m_StateChanged?.Invoke(this, new SubscriptionStateChangedEventArgs(m_changeMask));
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError(ex, "Subscription state change callback exception with change mask 0x{0:X2}", m_changeMask);
+            }
             m_changeMask = SubscriptionChangeMask.None;
         }
 
@@ -1488,17 +1495,7 @@ namespace Opc.Ua.Client
             }
 
             // send notification that publishing received a keep alive or has to republish.
-            if (callback != null)
-            {
-                try
-                {
-                    callback(this, new PublishStateChangedEventArgs(PublishStateChangedMask.Recovered));
-                }
-                catch (Exception e)
-                {
-                    Utils.LogError(e, "Error while raising PublishStateChanged event.");
-                }
-            }
+            PublishingStateChanged(callback, PublishStateChangedMask.Recovered);
 
             // process messages.
             m_messageWorkerEvent.Set();
@@ -1929,17 +1926,7 @@ namespace Opc.Ua.Client
 
             TraceState("PUBLISHING STOPPED");
 
-            if (callback != null)
-            {
-                try
-                {
-                    callback(this, new PublishStateChangedEventArgs(PublishStateChangedMask.Stopped));
-                }
-                catch (Exception e)
-                {
-                    Utils.LogError(e, "Error while raising PublishStateChanged event.");
-                }
-            }
+            PublishingStateChanged(callback, PublishStateChangedMask.Stopped);
 
             // try to send a publish to recover stopped publishing.
             m_session?.BeginPublish(BeginPublishTimeout());
@@ -2405,16 +2392,10 @@ namespace Opc.Ua.Client
                                 Id, noNotificationsReceived, MaxNotificationsPerPublish);
                         }
                     }
-                    if ((callback != null) && (publishStateChangedMask != PublishStateChangedMask.None))
+
+                    if (publishStateChangedMask != PublishStateChangedMask.None)
                     {
-                        try
-                        {
-                            callback(this, new PublishStateChangedEventArgs(publishStateChangedMask));
-                        }
-                        catch (Exception e)
-                        {
-                            Utils.LogError(e, "Error while raising PublishStateChanged event.");
-                        }
+                        PublishingStateChanged(callback, publishStateChangedMask);
                     }
                 }
 
@@ -2806,6 +2787,21 @@ namespace Opc.Ua.Client
             }
 
             return entry;
+        }
+
+        /// <summary>
+        /// Helper to callback event handlers and to catch exceptions.
+        /// </summary>
+        private void PublishingStateChanged(PublishStateChangedEventHandler callback, PublishStateChangedMask newState)
+        {
+            try
+            {
+                callback?.Invoke(this, new PublishStateChangedEventArgs(newState));
+            }
+            catch (Exception e)
+            {
+                Utils.LogError(e, "Error while raising PublishStateChanged event for state {0}.", newState.ToString());
+            }
         }
         #endregion
 
