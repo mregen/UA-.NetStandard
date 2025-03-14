@@ -893,16 +893,23 @@ namespace Opc.Ua
 
             if (token is string text)
             {
-                var nodeId = NodeId.Parse(
-                    m_context,
-                    text,
-                    new NodeIdParsingOptions() {
-                        UpdateTables = UpdateNamespaceTable,
-                        NamespaceMappings = m_namespaceMappings,
-                        ServerMappings = m_serverMappings
-                    });
+                try
+                {
+                    var nodeId = NodeId.Parse(
+                        m_context,
+                        text,
+                        new NodeIdParsingOptions() {
+                            UpdateTables = UpdateNamespaceTable,
+                            NamespaceMappings = m_namespaceMappings,
+                            ServerMappings = m_serverMappings
+                        });
 
-                return nodeId;
+                    return nodeId;
+                }
+                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode NodeId: {0}", sre.Message);
+                }
             }
 
             if (!(token is Dictionary<string, object> value))
@@ -992,16 +999,24 @@ namespace Opc.Ua
 
             if (token is string text)
             {
-                var nodeId = ExpandedNodeId.Parse(
-                    m_context,
-                    text,
-                    new NodeIdParsingOptions() {
-                        UpdateTables = UpdateNamespaceTable,
-                        NamespaceMappings = m_namespaceMappings,
-                        ServerMappings = m_serverMappings
-                    });
+                try
+                {
+                    var nodeId = ExpandedNodeId.Parse(
+                        m_context,
+                        text,
+                        new NodeIdParsingOptions() {
+                            UpdateTables = UpdateNamespaceTable,
+                            NamespaceMappings = m_namespaceMappings,
+                            ServerMappings = m_serverMappings
+                        });
 
-                return nodeId;
+                    return nodeId;
+                }
+                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadNodeIdInvalid)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode ExpandedNodeId: {0}", sre.Message);
+                }
+
             }
 
             if (!(token is Dictionary<string, object> value))
@@ -1068,6 +1083,10 @@ namespace Opc.Ua
                     if (UInt16.MaxValue != namespaceIndex)
                     {
                         namespaceUri = null;
+                    }
+                    else
+                    {
+                        namespaceIndex = 0;
                     }
                 }
 
@@ -1168,7 +1187,15 @@ namespace Opc.Ua
 
             if (token is string text)
             {
-                var qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable);
+                QualifiedName qn;
+                try
+                {
+                    qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable);
+                }
+                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadInvalidArgument)
+                {
+                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode QualifiedName: {0}", sre.Message);
+                }
 
                 if (qn.NamespaceIndex != 0)
                 {

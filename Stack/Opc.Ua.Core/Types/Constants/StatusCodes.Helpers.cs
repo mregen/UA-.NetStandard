@@ -17,6 +17,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
+
 namespace Opc.Ua
 {
     /// <summary>
@@ -78,8 +82,11 @@ namespace Opc.Ua
             {
                 keyValuePairs.Add((uint)field.GetValue(typeof(StatusCodes)), field.Name);
             }
-
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
             return new ReadOnlyDictionary<uint, string>(keyValuePairs);
+#endif
         }
         #endregion
     }

@@ -2165,7 +2165,7 @@ namespace Opc.Ua
                 if (value != null)
                 {
                     m_writer.WriteStartElement("Elements", Namespaces.OpcUaXsd);
-                    WriteVariantContents(value.Elements, new TypeInfo(value.TypeInfo.BuiltInType, ValueRanks.OneDimension));
+                    WriteVariantContents(value.Elements, TypeInfo.CreateArray(value.TypeInfo.BuiltInType));
                     m_writer.WriteEndElement();
 
                     WriteInt32Array("Dimensions", value.Dimensions);

@@ -503,7 +503,7 @@ namespace Opc.Ua.Test
         {
             Array array = GetRandomArray(builtInType, useBoundaryValues, length, fixedLength);
             Variant[] variants = new Variant[array.Length];
-            TypeInfo typeInfo = new TypeInfo(builtInType, ValueRanks.Scalar);
+            TypeInfo typeInfo = TypeInfo.CreateScalar(builtInType);
 
             for (int ii = 0; ii < variants.Length; ii++)
             {
