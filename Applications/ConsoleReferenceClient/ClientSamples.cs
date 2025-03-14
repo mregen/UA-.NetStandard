@@ -1065,6 +1065,9 @@ namespace Quickstarts
                 };
                 session.AddSubscription(subscription);
 
+                // hook state changed event handler
+                subscription.StateChanged += OnSubscriptionStateChanged;
+
                 // Create the subscription on Server side
                 await subscription.CreateAsync().ConfigureAwait(false);
                 m_output.WriteLine("New Subscription created with SubscriptionId = {0}.", subscription.Id);
@@ -1178,7 +1181,18 @@ namespace Quickstarts
         }
 
         /// <summary>
-        /// Handle DataChange notifications from Server
+        /// A suscription callback sample.
+        /// </summary>
+        private void OnSubscriptionStateChanged(Subscription subscription, SubscriptionStateChangedEventArgs newState)
+        {
+            if ((newState.Status & ~SubscriptionChangeMask.ItemsAdded) != 0)
+            {
+                m_output.WriteLine("Subscription Status Changed {0}", newState.Status.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Handle DataChange notifications from Server.
         /// </summary>
         private void OnMonitoredItemNotification(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs e)
         {
