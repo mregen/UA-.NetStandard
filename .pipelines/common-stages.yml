@@ -41,7 +41,8 @@ stages:
             displayName: Versioning
             inputs:
               targetType: filePath
-              filePath: ./.azurepipelines/set-version.ps1
+              filePath: ./.pipelines/set-version.ps1 
+              arguments: $(BuildTemplate)
 
           - task: onebranch.pipeline.version@1
             displayName: Update pipeline title
@@ -92,7 +93,8 @@ stages:
             displayName: Versioning
             inputs:
               targetType: filePath
-              filePath: ./.azurepipelines/set-version.ps1
+              filePath: ./.pipelines/set-version.ps1
+              arguments: $(BuildTemplate)
 
           - task: DotNetCoreCLI@2
             displayName: Build
@@ -150,7 +152,8 @@ stages:
             displayName: Versioning
             inputs:
               targetType: filePath
-              filePath: ./.azurepipelines/set-version.ps1
+              filePath: ./.pipelines/set-version.ps1
+              arguments: $(BuildTemplate)
 
           - task: DotNetCoreCLI@2
             displayName: Run Tests
@@ -204,8 +207,6 @@ stages:
           ob_sdl_binskim_enabled: false
           msbuildversion: '/p:Version=$(NBGV_Version) /p:AssemblyVersion=$(NBGV_SimpleVersion) /p:FileVersion=$(NBGV_AssemblyFileVersion)'
           msbuildsign: '/p:AssemblyOriginatorKeyFile=$(strongnamefile.secureFilePath) /p:SignAssembly=true'
-          nugetpreviewversion: '$(NBGV_NuGetPackageVersion)'
-          nugetpublicversion: '$(NBGV_Version)$(NBGV_PrereleaseVersion)'
 
         steps:
           - task: UseDotNet@2
@@ -227,7 +228,12 @@ stages:
             displayName: Versioning
             inputs:
               targetType: filePath
-              filePath: ./.azurepipelines/set-version.ps1
+              filePath: ./.pipelines/set-version.ps1
+              arguments: $(BuildTemplate)
+
+          - script: |
+                set NBGV
+            displayName: Cloud build environment variables
 
           - task: DotNetCoreCLI@2
             displayName: Build $(BuildConfiguration)

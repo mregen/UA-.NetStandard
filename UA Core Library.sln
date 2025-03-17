@@ -59,13 +59,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azurepipelines", "azurepipe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Bindings.Https", "Stack\Opc.Ua.Bindings.Https\Opc.Ua.Bindings.Https.csproj", "{759563A2-AF35-4E7B-B813-082F047C8705}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.PubSub", "Libraries\Opc.Ua.PubSub\Opc.Ua.PubSub.csproj", "{93A5176D-AB2C-4A65-9745-ECCCEE55C689}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Security.Certificates", "Libraries\Opc.Ua.Security.Certificates\Opc.Ua.Security.Certificates.csproj", "{484FB34A-4DCF-4F63-976B-C00F0230BE28}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Security.Certificates.Tests", "Tests\Opc.Ua.Security.Certificates.Tests\Opc.Ua.Security.Certificates.Tests.csproj", "{A727180B-4AA8-4182-B35F-5B6D6CB79593}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.PubSub.Tests", "Tests\Opc.Ua.PubSub.Tests\Opc.Ua.PubSub.Tests.csproj", "{223B581D-8D1E-4ED5-B99B-D6775C41838D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Opc.Ua.Configuration.Tests", "Tests\Opc.Ua.Configuration.Tests\Opc.Ua.Configuration.Tests.csproj", "{707A1C12-9C29-40A1-8091-2891E0FE0907}"
 EndProject
@@ -95,10 +91,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OneBranch", "OneBranch", "{D5000DA4-21BF-48BA-9123-E37E00F3B60C}"
 	ProjectSection(SolutionItems) = preProject
 		.pipelines\common-stages.yml = .pipelines\common-stages.yml
+		.pipelines\get-version.ps1 = .pipelines\get-version.ps1
 		.pipelines\OneBranch.Buddy.yml = .pipelines\OneBranch.Buddy.yml
 		.pipelines\OneBranch.Official.yml = .pipelines\OneBranch.Official.yml
 		.pipelines\OneBranch.OneFuzz.yml = .pipelines\OneBranch.OneFuzz.yml
 		.pipelines\OneBranch.PullRequest.yml = .pipelines\OneBranch.PullRequest.yml
+		.pipelines\set-version.ps1 = .pipelines\set-version.ps1
 	EndProjectSection
 EndProject
 Global
@@ -151,10 +149,6 @@ Global
 		{759563A2-AF35-4E7B-B813-082F047C8705}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{759563A2-AF35-4E7B-B813-082F047C8705}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{759563A2-AF35-4E7B-B813-082F047C8705}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93A5176D-AB2C-4A65-9745-ECCCEE55C689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93A5176D-AB2C-4A65-9745-ECCCEE55C689}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93A5176D-AB2C-4A65-9745-ECCCEE55C689}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93A5176D-AB2C-4A65-9745-ECCCEE55C689}.Release|Any CPU.Build.0 = Release|Any CPU
 		{484FB34A-4DCF-4F63-976B-C00F0230BE28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{484FB34A-4DCF-4F63-976B-C00F0230BE28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{484FB34A-4DCF-4F63-976B-C00F0230BE28}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -163,10 +157,6 @@ Global
 		{A727180B-4AA8-4182-B35F-5B6D6CB79593}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A727180B-4AA8-4182-B35F-5B6D6CB79593}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A727180B-4AA8-4182-B35F-5B6D6CB79593}.Release|Any CPU.Build.0 = Release|Any CPU
-		{223B581D-8D1E-4ED5-B99B-D6775C41838D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{223B581D-8D1E-4ED5-B99B-D6775C41838D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{223B581D-8D1E-4ED5-B99B-D6775C41838D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{223B581D-8D1E-4ED5-B99B-D6775C41838D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{707A1C12-9C29-40A1-8091-2891E0FE0907}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{707A1C12-9C29-40A1-8091-2891E0FE0907}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{707A1C12-9C29-40A1-8091-2891E0FE0907}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -205,10 +195,8 @@ Global
 		{F69ABCC3-ED93-446B-AC70-D6AA5F047781} = {0152A569-8287-4E49-9F02-E27FD700B719}
 		{1C25BE72-C337-42AE-9F7C-D6B45F7B7079} = {0152A569-8287-4E49-9F02-E27FD700B719}
 		{759563A2-AF35-4E7B-B813-082F047C8705} = {12710D16-90C2-44B1-8B62-8046C1023055}
-		{93A5176D-AB2C-4A65-9745-ECCCEE55C689} = {4D6FF413-CA8A-4A1F-87B0-4A95FC3894D3}
 		{484FB34A-4DCF-4F63-976B-C00F0230BE28} = {4D6FF413-CA8A-4A1F-87B0-4A95FC3894D3}
 		{A727180B-4AA8-4182-B35F-5B6D6CB79593} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
-		{223B581D-8D1E-4ED5-B99B-D6775C41838D} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
 		{707A1C12-9C29-40A1-8091-2891E0FE0907} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
 		{D9985EA3-0A0F-4552-8BFA-65E282EFC6EA} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
 		{FC588507-282A-426E-8BC9-940860C76610} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}

@@ -7,9 +7,7 @@
   },
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
-    "^refs/heads/master$",
-    "^refs/heads/develop/",    
-    "^refs/heads/release/\\d+\\.\\d+\\.\\d+"
+    "^refs/heads/release/v\\d+\\.\\d+\\.\\d+"
   ],
   "cloudBuild": {
     "setVersionVariables": true,
