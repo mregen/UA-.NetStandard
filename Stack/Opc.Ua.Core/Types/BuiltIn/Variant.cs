@@ -2587,9 +2587,6 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes the collection with the specified capacity.
         /// </summary>
-        /// <remarks>
-        /// Initializes the collection with the specified capacity.
-        /// </remarks>
         /// <param name="capacity">The capacity to constrain the collection to</param>
         public VariantCollection(int capacity) : base(capacity) { }
 
@@ -2632,9 +2629,6 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a deep copy of the collection.
         /// </summary>
-        /// <remarks>
-        /// Creates a deep copy of the collection.
-        /// </remarks>
         public new object MemberwiseClone()
         {
             VariantCollection clone = new VariantCollection(this.Count);
