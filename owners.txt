@@ -1,3 +1,2 @@
 # Information about Ownership Enforcer can be found at https://aka.ms/ownershipenforcer.
 aio-connectors
-!mregen

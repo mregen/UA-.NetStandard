@@ -292,7 +292,7 @@ namespace Opc.Ua.Server.UserDatabase
         [NonSerialized]
         private const int kSaltSize = 16; // 128 bit
         [NonSerialized]
-        private const int kIterations = 10000; // 10k
+        private const int kIterations = 100_000; // 100k
         [NonSerialized]
         private const int kKeySize = 32; // 256 bit
         [JsonProperty]
