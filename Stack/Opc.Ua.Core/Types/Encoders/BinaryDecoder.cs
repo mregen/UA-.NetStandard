@@ -393,7 +393,6 @@ namespace Opc.Ua
             }
 
             // length is always >= 1 here
-
 #if NET6_0_OR_GREATER
             const int maxStackAlloc = 1024;
             byte[] buffer = null;
@@ -665,25 +664,37 @@ namespace Opc.Ua
                 value.StatusCode = ReadStatusCode(null);
             }
 
+            ushort sourcePicoseconds = 0;
+            bool hasPicoseconds = (encodingByte & (byte)DataValueEncodingBits.SourcePicoseconds) != 0;
             if ((encodingByte & (byte)DataValueEncodingBits.SourceTimestamp) != 0)
             {
                 value.SourceTimestamp = ReadDateTime(null);
+                if (hasPicoseconds)
+                {
+                    sourcePicoseconds = ReadUInt16(null);
+                }
             }
-
-            if ((encodingByte & (byte)DataValueEncodingBits.SourcePicoseconds) != 0)
+            else if (hasPicoseconds)
             {
-                value.SourcePicoseconds = ReadUInt16(null);
+                _ = ReadUInt16(null);
             }
+            value.SourcePicoseconds = sourcePicoseconds;
 
+            ushort serverPicoseconds = 0;
+            hasPicoseconds = (encodingByte & (byte)DataValueEncodingBits.ServerPicoseconds) != 0;
             if ((encodingByte & (byte)DataValueEncodingBits.ServerTimestamp) != 0)
             {
                 value.ServerTimestamp = ReadDateTime(null);
+                if (hasPicoseconds)
+                {
+                    serverPicoseconds = ReadUInt16(null);
+                }
             }
-
-            if ((encodingByte & (byte)DataValueEncodingBits.ServerPicoseconds) != 0)
+            else if (hasPicoseconds)
             {
-                value.ServerPicoseconds = ReadUInt16(null);
+                _ = ReadUInt16(null);
             }
+            value.ServerPicoseconds = serverPicoseconds;
 
             return value;
         }
@@ -699,13 +710,37 @@ namespace Opc.Ua
 
             value.StatusCode = (encodingByte & (byte)DataValueEncodingBits.StatusCode) != 0 ? ReadStatusCode(null) : (StatusCode)StatusCodes.Good;
 
-            value.SourceTimestamp = (encodingByte & (byte)DataValueEncodingBits.SourceTimestamp) != 0 ? ReadDateTime(null) : DateTime.MinValue;
+            ushort sourcePicoseconds = 0;
+            bool hasPicoseconds = (encodingByte & (byte)DataValueEncodingBits.SourcePicoseconds) != 0;
+            if ((encodingByte & (byte)DataValueEncodingBits.SourceTimestamp) != 0)
+            {
+                value.SourceTimestamp = ReadDateTime(null);
+                if (hasPicoseconds)
+                {
+                    sourcePicoseconds = ReadUInt16(null);
+                }
+            }
+            else if (hasPicoseconds)
+            {
+                _ = ReadUInt16(null);
+            }
+            value.SourcePicoseconds = sourcePicoseconds;
 
-            value.SourcePicoseconds = (encodingByte & (byte)DataValueEncodingBits.SourcePicoseconds) != 0 ? SafeReadUInt16(null) : (ushort)0;
-
-            value.ServerTimestamp = (encodingByte & (byte)DataValueEncodingBits.ServerTimestamp) != 0 ? ReadDateTime(null) : DateTime.MinValue;
-
-            value.ServerPicoseconds = (encodingByte & (byte)DataValueEncodingBits.ServerPicoseconds) != 0 ? SafeReadUInt16(null) : (ushort)0;
+            ushort serverPicoseconds = 0;
+            hasPicoseconds = (encodingByte & (byte)DataValueEncodingBits.ServerPicoseconds) != 0;
+            if ((encodingByte & (byte)DataValueEncodingBits.ServerTimestamp) != 0)
+            {
+                value.ServerTimestamp = ReadDateTime(null);
+                if (hasPicoseconds)
+                {
+                    serverPicoseconds = ReadUInt16(null);
+                }
+            }
+            else if (hasPicoseconds)
+            {
+                _ = ReadUInt16(null);
+            }
+            value.ServerPicoseconds = serverPicoseconds;
         }
 
         /// <inheritdoc/>
@@ -1946,7 +1981,7 @@ namespace Opc.Ua
         /// <summary>
         /// Reads the length of an array.
         /// </summary>
-        private int ReadArrayLength()
+        private int ReadArrayLength([CallerMemberName] string callerMemberName = "")
         {
             int length = SafeReadInt32();
 
@@ -1958,7 +1993,7 @@ namespace Opc.Ua
             if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < length)
             {
                 throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
-                    "MaxArrayLength {0} < {1}", m_context.MaxArrayLength, length);
+                    "MaxArrayLength exceeded in {0}: {1} < {2}", callerMemberName, m_context.MaxArrayLength, length);
             }
 
             return length;
@@ -2195,7 +2230,7 @@ namespace Opc.Ua
                 if (m_context.MaxByteStringLength > 0 && m_context.MaxByteStringLength < length)
                 {
                     throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
-                        "MaxByteStringLength {0} < {1}", m_context.MaxByteStringLength, length);
+                        "MaxByteStringLength exceeded in ExtensionObject: {0} < {1}", m_context.MaxByteStringLength, length);
                 }
 
                 // read the bytes of the body.

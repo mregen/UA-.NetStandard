@@ -1682,7 +1682,7 @@ namespace Opc.Ua
                 // check the length.
                 if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < values.Count)
                 {
-                    throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                    throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "Encodeable Array length={0}", values.Count);
                 }
 
                 // get name for type being encoded.
@@ -1727,7 +1727,7 @@ namespace Opc.Ua
                 // check the length.
                 if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < values.Count)
                 {
-                    throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                    throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "Encodeable Array length={0}", values.Count);
                 }
 
                 // get name for type being encoded.
@@ -1769,7 +1769,7 @@ namespace Opc.Ua
                 // check the length.
                 if (m_context.MaxArrayLength > 0 && m_context.MaxArrayLength < values.Length)
                 {
-                    throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
+                    throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded, "Enumerated Array length={0}", values.Length);
                 }
 
                 // get name for type being encoded.
@@ -1858,6 +1858,12 @@ namespace Opc.Ua
                 // write array.
                 else if (typeInfo.ValueRank <= 1)
                 {
+                    // Use elements if application encoded Array in Matrix 
+                    if (value is Matrix matrix)
+                    {
+                        value = matrix.Elements;
+                    }
+
                     switch (typeInfo.BuiltInType)
                     {
                         case BuiltInType.Boolean: { WriteBooleanArray("ListOfBoolean", (bool[])value); return; }
@@ -1890,9 +1896,9 @@ namespace Opc.Ua
                             {
                                 if (!(value is Enum[] enums))
                                 {
-                                    throw new ServiceResultException(
+                                    throw ServiceResultException.Create(
                                         StatusCodes.BadEncodingError,
-                                        Utils.Format("Type '{0}' is not allowed in an Enumeration.", value.GetType().FullName));
+                                        "Type '{0}' is not allowed in an Enumeration.", value.GetType().FullName);
                                 }
                                 ints = new int[enums.Length];
                                 for (int ii = 0; ii < enums.Length; ii++)
@@ -1912,7 +1918,6 @@ namespace Opc.Ua
                                 WriteVariantArray("ListOfVariant", variants);
                                 return;
                             }
-
 
                             if (value is object[] objects)
                             {

@@ -2266,6 +2266,11 @@ namespace Opc.Ua
             // write array.
             if (valueRank == ValueRanks.OneDimension)
             {
+                if (array is Matrix matrix)
+                {
+                    array = matrix.Elements;
+                }
+
                 switch (builtInType)
                 {
                     case BuiltInType.Boolean: { WriteBooleanArray(fieldName, (bool[])array); return; }

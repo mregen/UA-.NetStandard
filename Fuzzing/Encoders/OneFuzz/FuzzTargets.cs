@@ -91,31 +91,16 @@ public static class FuzzTargets
     /// </summary>
     public static void FuzzJsonEncoder(ReadOnlySpan<byte> input)
     {
-        FuzzableCode.FuzzJsonEncoderCore(input, JsonEncodingType.Reversible);
+        FuzzableCode.FuzzJsonEncoderCore(input);
     }
 
     /// <summary>
-    /// The fuzz target for the Json encoder. Non Reversible encoding.
+    /// The fuzz target for the Json encoder. Uses binary encoded fuzz source.
+    /// Tests all Json encoding types for a valid binary fuzz input.
     /// </summary>
-    public static void FuzzJsonEncoderNonReversible(ReadOnlySpan<byte> input)
+    public static void FuzzBinaryJsonEncoder(ReadOnlySpan<byte> input)
     {
-        FuzzableCode.FuzzJsonEncoderCore(input, JsonEncodingType.NonReversible);
-    }
-
-    /// <summary>
-    /// The fuzz target for the Json encoder. Compact encoding.
-    /// </summary>
-    public static void FuzzJsonEncoderCompact(ReadOnlySpan<byte> input)
-    {
-        FuzzableCode.FuzzJsonEncoderCore(input, JsonEncodingType.Compact);
-    }
-
-    /// <summary>
-    /// The fuzz target for the Json encoder. Verbose encoding.
-    /// </summary>
-    public static void FuzzJsonEncoderVerbose(ReadOnlySpan<byte> input)
-    {
-        FuzzableCode.FuzzJsonEncoderCore(input, JsonEncodingType.Verbose);
+        FuzzableCode.FuzzBinaryJsonEncoderCore(input);
     }
 
     /// <summary>

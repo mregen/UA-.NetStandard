@@ -16,7 +16,7 @@ namespace Opc.Ua.Buffers
     /// <remarks>
     /// Implemented as a class to ensure that memory can not be disposed multiple times.
     /// </remarks>
-    public sealed class ArrayPoolArraySegment<T> : IArraySegmentOwner<T>
+    public sealed class ArrayPoolArraySegment<T> : IArraySegmentOwner<T>, IEquatable<ArrayPoolArraySegment<T>>
     {
 #if DEBUG
         // for testing clear buffers when returned
@@ -66,7 +66,7 @@ namespace Opc.Ua.Buffers
         /// <inheritdoc/>
         public void Dispose()
         {
-            var array = Segment.Array;
+            T[] array = Segment.Array;
             if (array != null)
             {
                 ArrayPool<T>.Shared.Return(array, ClearArray);
@@ -77,7 +77,7 @@ namespace Opc.Ua.Buffers
         /// <inheritdoc/>
         public bool TrySetSegment(int offset, int length)
         {
-            var array = Segment.Array;
+            T[] array = Segment.Array;
             if (array?.Length >= offset + length)
             {
                 Segment = new ArraySegment<T>(array, offset, length);
@@ -85,6 +85,72 @@ namespace Opc.Ua.Buffers
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(ArrayPoolArraySegment<T> other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            int count = Segment.Count;
+            if (count != other.Segment.Count)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this.Segment.Array, other.Segment.Array) &&
+                this.Segment.Offset == other.Segment.Offset)
+            {
+                return true;
+            }
+
+            if (Segment.Array != null)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (!Segment[i].Equals(other.Segment[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (other.Segment.Array != null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ArrayPoolArraySegment<T>);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            int count = Segment.Count;
+            if (Segment.Array != null && count > 0)
+            {
+                var hashCode = new HashCode();
+                for (int i = 0; i < count; i++)
+                {
+                    hashCode.Add(Segment[i].GetHashCode());
+                }
+                return hashCode.ToHashCode();
+            }
+
+            return base.GetHashCode();
         }
     }
 }

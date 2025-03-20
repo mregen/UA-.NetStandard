@@ -28,6 +28,7 @@
  * ======================================================================*/
 
 using System;
+using System.IO;
 using System.Text;
 using Opc.Ua;
 
@@ -49,7 +50,7 @@ public static partial class FuzzableCode
     /// </summary>
     public static void AflfuzzJsonEncoder(string input)
     {
-        FuzzJsonEncoderCore(input, JsonEncodingType.Compact);
+        FuzzJsonEncoderCore(input);
     }
 
     /// <summary>
@@ -70,7 +71,7 @@ public static partial class FuzzableCode
     /// </summary>
     public static void LibfuzzJsonEncoder(ReadOnlySpan<byte> input)
     {
-        FuzzJsonEncoderCore(input, JsonEncodingType.Compact);
+        FuzzJsonEncoderCore(input);
     }
 
     /// <summary>
@@ -106,7 +107,7 @@ public static partial class FuzzableCode
     /// <summary>
     /// The fuzz target for the Json encoder core.
     /// </summary>
-    internal static void FuzzJsonEncoderCore(ReadOnlySpan<byte> input, JsonEncodingType jsonEncodingType)
+    internal static void FuzzJsonEncoderCore(ReadOnlySpan<byte> input)
     {
 #if NETFRAMEWORK
         string json = Encoding.UTF8.GetString(input.ToArray());
@@ -114,13 +115,13 @@ public static partial class FuzzableCode
         string json = Encoding.UTF8.GetString(input);
 #endif
 
-        FuzzJsonEncoderCore(json, jsonEncodingType);
+        FuzzJsonEncoderCore(json);
     }
 
     /// <summary>
     /// The fuzz target for the Json encoder core.
     /// </summary>
-    internal static void FuzzJsonEncoderCore(string json, JsonEncodingType jsonEncodingType)
+    internal static void FuzzJsonEncoderCore(string json)
     {
         IEncodeable deserialized;
         try
@@ -134,22 +135,69 @@ public static partial class FuzzableCode
 
         if (deserialized != null)
         {
-            // see if this throws
-            using (var encoder = new JsonEncoder(messageContext, jsonEncodingType))
+            foreach (JsonEncodingType jsonEncodingType in Enum.GetValues<JsonEncodingType>())
             {
-                switch (jsonEncodingType)
+                // see if this throws
+                using (var encoder = new JsonEncoder(messageContext, jsonEncodingType))
                 {
-                    case JsonEncodingType.NonReversible:
-                        encoder.EncodeNodeIdAsString = true;
-                        encoder.ForceNamespaceUriForIndex1 = true;
-                        break;
+                    switch (jsonEncodingType)
+                    {
+                        case JsonEncodingType.NonReversible:
+                            encoder.EncodeNodeIdAsString = true;
+                            encoder.ForceNamespaceUriForIndex1 = true;
+                            break;
+                    }
+
+                    encoder.EncodeMessage(deserialized);
+                    json = encoder.CloseAndReturnText();
                 }
 
-                encoder.EncodeMessage(deserialized);
-                json = encoder.CloseAndReturnText();
+                _ = FuzzableCode.FuzzJsonDecoderCore(json);
             }
+        }
+    }
 
-            _ = FuzzableCode.FuzzJsonDecoderCore(json);
+    /// <summary>
+    /// The fuzz target for the Json encoder core with a binary encoded fuzz input.
+    /// Tests all Json encoding types if it throws.
+    /// </summary>
+    internal static void FuzzBinaryJsonEncoderCore(ReadOnlySpan<byte> input)
+    {
+        IEncodeable encodeable = null;
+        using (var memoryStream = new MemoryStream(input.ToArray()))
+        {
+            try
+            {
+                encodeable = FuzzBinaryDecoderCore(memoryStream, true);
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        // see if this throws
+        if (encodeable != null)
+        {
+            foreach (JsonEncodingType jsonEncodingType in Enum.GetValues<JsonEncodingType>())
+            {
+                string json;
+                using (var encoder = new JsonEncoder(messageContext, jsonEncodingType))
+                {
+                    switch (jsonEncodingType)
+                    {
+                        case JsonEncodingType.NonReversible:
+                            encoder.EncodeNodeIdAsString = true;
+                            encoder.ForceNamespaceUriForIndex1 = true;
+                            break;
+                    }
+
+                    encoder.EncodeMessage(encodeable);
+                    json = encoder.CloseAndReturnText();
+                }
+
+                _ = FuzzableCode.FuzzJsonDecoderCore(json);
+            }
         }
     }
 }

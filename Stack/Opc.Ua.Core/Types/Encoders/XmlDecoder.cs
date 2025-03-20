@@ -499,6 +499,11 @@ namespace Opc.Ua
                         {
                             Matrix matrix = ReadMatrix(typeName);
                             typeInfo = matrix.TypeInfo;
+                            // return Array for a one dimensional Matrix
+                            if (typeInfo.ValueRank == 1)
+                            {
+                                return matrix.Elements;
+                            }
                             return matrix;
                         }
                     }
