@@ -3513,9 +3513,6 @@ namespace Opc.Ua
             writer.WriteEndObject();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private bool ReadArrayField(string fieldName, out List<object> array)
         {
             array = null;
