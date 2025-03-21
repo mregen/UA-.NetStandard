@@ -46,6 +46,12 @@
     <When Condition="'$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net48'">
       <ItemGroup>
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.1" />
+        <PackageReference Include="Microsoft.Bcl.Cryptography" Version="9.0.3" />
+        <PackageReference Include="System.Formats.Asn1" Version="9.0.3" />
+      </ItemGroup>
+    </When>
+    <When Condition="'$(TargetFramework)' == 'net6.0'">
+      <ItemGroup>
         <PackageReference Include="System.Formats.Asn1" Version="8.0.2" />
       </ItemGroup>
     </When>
@@ -56,7 +62,8 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="System.Formats.Asn1" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Bcl.Cryptography" Version="9.0.3" />
+        <PackageReference Include="System.Formats.Asn1" Version="9.0.3" />
       </ItemGroup>
     </Otherwise>
   </Choose>
