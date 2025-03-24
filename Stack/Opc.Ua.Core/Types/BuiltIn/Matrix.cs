@@ -269,17 +269,16 @@ namespace Opc.Ua
         private TypeInfo m_typeInfo;
         #endregion
 
-        #region Helper methods
-
+        #region Validation Methods
         /// <summary>
         /// A function that performes a validation on a given index into the dimensions array
         /// </summary>
         /// <param name="idx">The index into the dimensions array</param>
-        /// <param name="dimensions">The dimensions collection describing a matrix</param>
+        /// <param name="dimension">The dimension of the index</param>
         /// <returns>The validation result</returns>
-        public delegate bool ValidateDimensionsFunction(int idx, Int32Collection dimensions);
+        public delegate bool ValidateDimensionsFunction(int idx, int dimension);
 
-        #region Publis Static
+        #region Public Static
         /// <summary>
         /// Validate the dimensions of a given matrix.
         /// As a side effect will bring to 0 negative dimensions.
@@ -293,24 +292,22 @@ namespace Opc.Ua
         /// <exception cref="ServiceResultException"></exception>
         public static (bool valid, int flatLength) ValidateDimensions(bool allowZeroDimension, Int32Collection dimensions, int maxArrayLength)
         {
-            bool ValidateWithSideEffect(int i, Int32Collection dimCollection)
+            bool ValidateWithSideEffect(int i, int dimension)
             {
-                bool zeroCompFails = allowZeroDimension ? dimCollection[i] < 0 : dimCollection[i] <= 0;
+                bool zeroCompFails = allowZeroDimension ? dimension < 0 : dimension <= 0;
 
                 if (zeroCompFails)
                 {
-                    /* The number of values is 0 if one or more dimension is less than or equal to 0.*/
-                    Utils.LogTrace("ReadArray read dimensions[{0}] = {1}. Matrix will have 0 elements.", i, dimCollection);
-                    dimCollection[i] = 0;
+                    /* Treat as zero dimension */
                     return false;
                 }
-                else if ((maxArrayLength > 0) && (dimCollection[i] > maxArrayLength))
+                else if ((maxArrayLength > 0) && (dimension > maxArrayLength))
                 {
                     throw ServiceResultException.Create(
                         StatusCodes.BadEncodingLimitsExceeded,
                         "ArrayDimensions [{0}] = {1} is greater than MaxArrayLength {2}.",
                         i,
-                        dimCollection[i],
+                        dimension,
                         maxArrayLength);
                 }
                 return true;
@@ -331,19 +328,19 @@ namespace Opc.Ua
         /// <exception cref="ServiceResultException"></exception>
         public static (bool valid, int flatLength) ValidateDimensions(Int32Collection dimensions, int flatLength, int maxArrayLength)
         {
-            bool ValidateAgainstExpectedFlatLength(int i, Int32Collection dimCollection)
+            bool ValidateAgainstExpectedFlatLength(int i, int dimension)
             {
-                if (dimCollection[i] == 0 && flatLength > 0)
+                if (dimension == 0 && flatLength > 0)
                 {
-                    throw new ServiceResultException(
+                    throw ServiceResultException.Create(
                         StatusCodes.BadDecodingError,
-                        Utils.Format("ArrayDimensions [{0}] is zero in Variant object.", i));
+                        "ArrayDimensions [{0}] is zero in Variant object.", i);
                 }
-                else if (dimCollection[i] > flatLength && flatLength > 0)
+                else if (dimension > flatLength && flatLength > 0)
                 {
-                    throw new ServiceResultException(
+                    throw ServiceResultException.Create(
                         StatusCodes.BadDecodingError,
-                        Utils.Format("ArrayDimensions [{0}] = {1} is greater than length {2}.", i, dimCollection[i], flatLength));
+                        "ArrayDimensions [{0}] = {1} is greater than length {2}.", i, dimension, flatLength);
                 }
                 return true;
             }
@@ -375,25 +372,26 @@ namespace Opc.Ua
         /// <returns>The calculated length of the flattended matrix</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ServiceResultException"></exception>
-        private static (bool valid, int flatLength) ValidateDimensions(Int32Collection dimensions, int maxArrayLength,
-            ValidateDimensionsFunction customValidation)
+        private static (bool valid, int flatLength) ValidateDimensions(Int32Collection dimensions, int maxArrayLength, ValidateDimensionsFunction customValidation)
         {
-            (bool valid, int flatLength) = (false, 1);
+            (bool valid, int flatLength) = (true, 1);
             try
             {
                 for (int ii = 0; ii < dimensions.Count; ii++)
                 {
+                    int dimension = dimensions[ii];
                     if (customValidation != null)
                     {
-                        valid = customValidation(ii, dimensions);
-                        if (!valid)
+                        // false if the dimension is zero or negative
+                        if (!customValidation(ii, dimension))
                         {
-                            return (valid, 0);
-                        };
+                            valid = false;
+                            dimension = 0;
+                        }
                     }
                     checked
                     {
-                        flatLength *= dimensions[ii];
+                        flatLength *= dimension;
                     }
                 }
             }
@@ -413,9 +411,7 @@ namespace Opc.Ua
             return (valid, flatLength);
         }
         #endregion
-
         #endregion
-
     }
 }
 

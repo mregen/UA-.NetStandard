@@ -54,7 +54,16 @@ public static partial class FuzzableCode
     }
 
     /// <summary>
-    /// The json decoder fuzz target for libfuzzer.
+    /// The binary encoder Json decoder fuzz target for afl-fuzz.
+    /// </summary>
+    /// <param name="stream">The stdin stream from the afl-fuzz process.</param>
+    public static void AflfuzzBinaryJsonEncoder(Stream stream)
+    {
+        FuzzBinaryJsonEncoderCore(stream);
+    }
+
+    /// <summary>
+    /// The Json decoder fuzz target for libfuzzer.
     /// </summary>
     public static void LibfuzzJsonDecoder(ReadOnlySpan<byte> input)
     {
@@ -67,11 +76,19 @@ public static partial class FuzzableCode
     }
 
     /// <summary>
-    /// The binary encoder fuzz target for afl-fuzz.
+    /// The Json encoder fuzz target for libfuzzer.
     /// </summary>
     public static void LibfuzzJsonEncoder(ReadOnlySpan<byte> input)
     {
         FuzzJsonEncoderCore(input);
+    }
+
+    /// <summary>
+    /// The Json encoder fuzz target for libfuzzer.
+    /// </summary>
+    public static void LibfuzzBinaryJsonEncoder(ReadOnlySpan<byte> input)
+    {
+        FuzzBinaryJsonEncoderCore(input);
     }
 
     /// <summary>
@@ -163,17 +180,26 @@ public static partial class FuzzableCode
     /// </summary>
     internal static void FuzzBinaryJsonEncoderCore(ReadOnlySpan<byte> input)
     {
-        IEncodeable encodeable = null;
         using (var memoryStream = new MemoryStream(input.ToArray()))
         {
-            try
-            {
-                encodeable = FuzzBinaryDecoderCore(memoryStream, true);
-            }
-            catch
-            {
-                return;
-            }
+            FuzzBinaryJsonEncoderCore(memoryStream);
+        }
+    }
+
+    /// <summary>
+    /// The fuzz target for the Json encoder core with a binary encoded fuzz input.
+    /// Tests all Json encoding types if it throws.
+    /// </summary>
+    internal static void FuzzBinaryJsonEncoderCore(Stream stream)
+    {
+        IEncodeable encodeable = null;
+        try
+        {
+            encodeable = FuzzBinaryDecoderCore(stream, true);
+        }
+        catch
+        {
+            return;
         }
 
         // see if this throws

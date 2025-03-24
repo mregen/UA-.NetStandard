@@ -100,36 +100,6 @@ namespace Opc.Ua
 
         #region Public Methods
         /// <summary>
-        /// Initializes the tables used to map namespace and server uris during decoding.
-        /// </summary>
-        /// <param name="namespaceUris">The namespaces URIs referenced by the data being decoded.</param>
-        /// <param name="serverUris">The server URIs referenced by the data being decoded.</param>
-        public void SetMappingTables(NamespaceTable namespaceUris, StringTable serverUris)
-        {
-            m_namespaceMappings = null;
-
-            if (namespaceUris != null && m_context.NamespaceUris != null)
-            {
-                m_namespaceMappings = m_context.NamespaceUris.CreateMapping(namespaceUris, false);
-            }
-
-            m_serverMappings = null;
-
-            if (serverUris != null && m_context.ServerUris != null)
-            {
-                m_serverMappings = m_context.ServerUris.CreateMapping(serverUris, false);
-            }
-        }
-
-        /// <summary>
-        /// Completes reading and closes the stream.
-        /// </summary>
-        public void Close()
-        {
-            m_reader.Close();
-        }
-
-        /// <summary>
         /// Returns the current position in the stream.
         /// </summary>
         public int Position
@@ -151,6 +121,27 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Reads a byte string from a stream (throws an exception if length is exceeded).
+        /// </summary>
+        public byte[] ReadByteString(string fieldName, int maxByteStringLength)
+        {
+            int length = SafeReadInt32();
+
+            if (length < 0)
+            {
+                return null;
+            }
+
+            if (maxByteStringLength > 0 && maxByteStringLength < length)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
+                    "MaxByteStringLength {0} < {1}", maxByteStringLength, length);
+            }
+
+            return SafeReadBytes(length);
+        }
+
+        /// <summary>
         /// Gets the stream that the decoder is reading from.
         /// </summary>
         public Stream BaseStream => m_reader?.BaseStream;
@@ -158,7 +149,7 @@ namespace Opc.Ua
         /// <summary>
         /// Decodes a message from a stream.
         /// </summary>
-        public static IEncodeable DecodeMessage(Stream stream, System.Type expectedType, IServiceMessageContext context)
+        public static IEncodeable DecodeMessage(Stream stream, Type expectedType, IServiceMessageContext context)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -220,43 +211,6 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Decodes an object from a buffer.
-        /// </summary>
-        public IEncodeable DecodeMessage(System.Type expectedType)
-        {
-            int start = Position;
-
-            // read the node id.
-            NodeId typeId = ReadNodeId(null);
-
-            // convert to absolute node id.
-            ExpandedNodeId absoluteId = NodeId.ToExpandedNodeId(typeId, m_context.NamespaceUris);
-
-            // lookup message type.
-            Type actualType = m_context.Factory.GetSystemType(absoluteId);
-
-            if (actualType == null)
-            {
-                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
-                    "Cannot decode message with type id: {0}.", absoluteId);
-            }
-
-            // read the message.
-            IEncodeable message = ReadEncodeable(null, actualType, absoluteId);
-
-            // check that the max message size was not exceeded.
-            int messageLength = Position - start;
-            if (m_context.MaxMessageSize > 0 && m_context.MaxMessageSize < messageLength)
-            {
-                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
-                    "MaxMessageSize {0} < {1}", m_context.MaxMessageSize, messageLength);
-            }
-
-            // return the message.
-            return message;
-        }
-
-        /// <summary>
         /// Loads a string table from a binary stream.
         /// </summary>
         public bool LoadStringTable(StringTable stringTable)
@@ -294,6 +248,67 @@ namespace Opc.Ua
         public void PopNamespace()
         {
             // not used in the binary encoding.
+        }
+
+        /// <summary>
+        /// Decodes an object from a buffer.
+        /// </summary>
+        public IEncodeable DecodeMessage(Type expectedType)
+        {
+            int start = Position;
+
+            // read the node id.
+            NodeId typeId = ReadNodeId(null);
+
+            // convert to absolute node id.
+            ExpandedNodeId absoluteId = NodeId.ToExpandedNodeId(typeId, m_context.NamespaceUris);
+
+            // lookup message type.
+            Type actualType = m_context.Factory.GetSystemType(absoluteId);
+
+            if (actualType == null)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                    "Cannot decode message with type id: {0}.", absoluteId);
+            }
+
+            // read the message.
+            IEncodeable message = ReadEncodeable(null, actualType, absoluteId);
+
+            // check that the max message size was not exceeded.
+            int messageLength = Position - start;
+            if (m_context.MaxMessageSize > 0 && m_context.MaxMessageSize < messageLength)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
+                    "MaxMessageSize {0} < {1}", m_context.MaxMessageSize, messageLength);
+            }
+
+            // return the message.
+            return message;
+        }
+
+        /// <inheritdoc/>
+        public void SetMappingTables(NamespaceTable namespaceUris, StringTable serverUris)
+        {
+            m_namespaceMappings = null;
+
+            if (namespaceUris != null && m_context.NamespaceUris != null)
+            {
+                m_namespaceMappings = m_context.NamespaceUris.CreateMapping(namespaceUris, false);
+            }
+
+            m_serverMappings = null;
+
+            if (serverUris != null && m_context.ServerUris != null)
+            {
+                m_serverMappings = m_context.ServerUris.CreateMapping(serverUris, false);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Close()
+        {
+            m_reader.Close();
         }
 
         /// <inheritdoc/>
@@ -469,25 +484,6 @@ namespace Opc.Ua
         public byte[] ReadByteString(string fieldName)
         {
             return ReadByteString(fieldName, m_context.MaxByteStringLength);
-        }
-
-        /// <inheritdoc/>
-        public byte[] ReadByteString(string fieldName, int maxByteStringLength)
-        {
-            int length = SafeReadInt32();
-
-            if (length < 0)
-            {
-                return null;
-            }
-
-            if (maxByteStringLength > 0 && maxByteStringLength < length)
-            {
-                throw ServiceResultException.Create(StatusCodes.BadEncodingLimitsExceeded,
-                    "MaxByteStringLength {0} < {1}", maxByteStringLength, length);
-            }
-
-            return SafeReadBytes(length);
         }
 
         /// <inheritdoc/>
@@ -750,7 +746,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public IEncodeable ReadEncodeable(string fieldName, System.Type systemType, ExpandedNodeId encodeableTypeId = null)
+        public IEncodeable ReadEncodeable(string fieldName, Type systemType, ExpandedNodeId encodeableTypeId = null)
         {
             if (systemType == null) throw new ArgumentNullException(nameof(systemType));
 
@@ -820,7 +816,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public Enum ReadEnumerated(string fieldName, System.Type enumType)
+        public Enum ReadEnumerated(string fieldName, Type enumType)
         {
             return (Enum)Enum.ToObject(enumType, SafeReadInt32());
         }
@@ -1326,7 +1322,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public Array ReadEncodeableArray(string fieldName, System.Type systemType, ExpandedNodeId encodeableTypeId = null)
+        public Array ReadEncodeableArray(string fieldName, Type systemType, ExpandedNodeId encodeableTypeId = null)
         {
             int length = ReadArrayLength();
 
@@ -1365,14 +1361,14 @@ namespace Opc.Ua
 
             for (int ii = 0; ii < length; ii++)
             {
-                ReadEncodeable<T>(null, ref values[ii], encodeableTypeId);
+                ReadEncodeable(null, ref values[ii], encodeableTypeId);
             }
 
             return memory;
         }
 
         /// <inheritdoc/>
-        public Array ReadEnumeratedArray(string fieldName, System.Type enumType)
+        public Array ReadEnumeratedArray(string fieldName, Type enumType)
         {
             int length = ReadArrayLength();
 

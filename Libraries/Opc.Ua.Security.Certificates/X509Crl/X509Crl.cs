@@ -335,7 +335,7 @@ namespace Opc.Ua.Security.Certificates
                     m_decoded = true;
                     return;
                 }
-                throw new CryptographicException("The CRL contains ivalid data.");
+                throw new CryptographicException("The CRL contains invalid data.");
             }
             catch (AsnContentException ace)
             {

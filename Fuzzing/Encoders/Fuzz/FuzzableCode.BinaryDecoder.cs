@@ -164,7 +164,7 @@ public static partial class FuzzableCode
     /// The fuzz target for the BinaryDecoder.
     /// </summary>
     /// <param name="stream">A memory stream with fuzz content.</param>
-    internal static IEncodeable FuzzBinaryDecoderCore(MemoryStream stream, bool throwAll = false)
+    internal static IEncodeable FuzzBinaryDecoderCore(Stream stream, bool throwAll = false)
     {
         try
         {

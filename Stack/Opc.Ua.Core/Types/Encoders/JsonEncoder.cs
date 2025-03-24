@@ -3223,7 +3223,12 @@ namespace Opc.Ua
             // check if matrix is well formed
             (bool valid, int sizeFromDimensions) = Matrix.ValidateDimensions(true, matrix.Dimensions, Context.MaxArrayLength);
 
-            if (!valid || (sizeFromDimensions != matrix.Elements.Length))
+            if (!valid && sizeFromDimensions != 0)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadEncodingError, "The matrix dimensions are invalid.");
+            }
+
+            if (sizeFromDimensions != matrix.Elements.Length)
             {
                 throw ServiceResultException.Create(StatusCodes.BadEncodingError,
                     "The number of elements in the matrix does not match the dimensions.");
@@ -3248,7 +3253,12 @@ namespace Opc.Ua
             // check if matrix is well formed
             (bool valid, int sizeFromDimensions) = Matrix.ValidateDimensions(true, matrix.Dimensions, Context.MaxArrayLength);
 
-            if (!valid || (sizeFromDimensions != matrix.Elements.Length))
+            if (!valid && sizeFromDimensions != 0)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadEncodingError, "The matrix dimensions are invalid.");
+            }
+
+            if (sizeFromDimensions != matrix.Elements.Length)
             {
                 throw ServiceResultException.Create(StatusCodes.BadEncodingError,
                     "The number of elements in the matrix does not match the dimensions.");

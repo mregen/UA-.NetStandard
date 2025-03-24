@@ -241,6 +241,7 @@ public static partial class Testcases
     {
         FuzzableCode.LibfuzzBinaryDecoder(message);
         FuzzableCode.LibfuzzBinaryEncoder(message);
+        FuzzableCode.LibfuzzBinaryJsonEncoder(message);
         using (var stream = new MemoryStream(message))
         {
             FuzzableCode.AflfuzzBinaryDecoder(stream);
@@ -248,6 +249,10 @@ public static partial class Testcases
         using (var stream = new MemoryStream(message))
         {
             FuzzableCode.AflfuzzBinaryEncoder(stream);
+        }
+        using (var stream = new MemoryStream(message))
+        {
+            FuzzableCode.AflfuzzBinaryJsonEncoder(stream);
         }
         using (var stream = new MemoryStream(message))
         {
