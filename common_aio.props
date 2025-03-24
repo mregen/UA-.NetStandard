@@ -7,8 +7,8 @@
     <VersionPrefix>1.05.374</VersionPrefix>
     <VersionSuffix>preview-$([System.DateTime]::Now.ToString("yyyyMMdd"))</VersionSuffix>
     <Copyright>
-      © Microsoft Corporation. All rights reserved. 
-      Portions copyright © by OPC Foundation, Inc. and licensed under the Reciprocal Community License (RCL). https://opcfoundation.org/license/rcl/1.00/ 
+      © Microsoft Corporation. All rights reserved.
+      Portions copyright © by OPC Foundation, Inc. and licensed under the Reciprocal Community License (RCL). https://opcfoundation.org/license/rcl.html
     </Copyright>
     <PackagePrefix>Microsoft.Aio</PackagePrefix>
     <AssemblyPrefix>Microsoft.Aio.Opc.Ua</AssemblyPrefix>
@@ -20,7 +20,7 @@
     <IsPackable>false</IsPackable>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Highest language version supported by .NET Standard 2.0 and .NET Framework -->
+    <!-- Highest language version supported by Visual Studio 2019 -->
     <LangVersion>12</LangVersion>
     <EnablePackageValidation>true</EnablePackageValidation>
     <!-- to check the package validation on a release build, uncomment here -->
@@ -35,8 +35,9 @@
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <!--<IsAotCompatible>true</IsAotCompatible>-->
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>images/logo.jpg</PackageIcon>
@@ -51,7 +52,7 @@
   <ItemGroup Condition="'$(IsPackable)' != 'false' AND '$(PackageLicenseExpression)' == 'MIT'">
     <None Include="$(MSBuildThisFileDirectory)/licenses/Microsoft MIT license.txt" Pack="true" PackagePath="licenses/LICENSE.txt"/>
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(IsPackable)' != 'false' AND '$(PackageLicenseExpression)' == ''">
     <None Include="$(MSBuildThisFileDirectory)/LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
   </ItemGroup>
@@ -78,6 +79,6 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-  
+
 </Project>
 

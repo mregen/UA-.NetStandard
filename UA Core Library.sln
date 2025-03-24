@@ -100,6 +100,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OneBranch", "OneBranch", "{
 		.pipelines\set-version.ps1 = .pipelines\set-version.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licenses", "Licenses", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		Licenses\Microsoft MIT License.txt = Licenses\Microsoft MIT License.txt
+		Licenses\OPC Foundation Dual LICENSE.txt = Licenses\OPC Foundation Dual LICENSE.txt
+		Licenses\OPC Foundation GPLv2 License.txt = Licenses\OPC Foundation GPLv2 License.txt
+		Licenses\OPC Foundation MIT License.txt = Licenses\OPC Foundation MIT License.txt
+		Licenses\OPC Foundation RCL License.txt = Licenses\OPC Foundation RCL License.txt
+		README.md = README.md
+		SECURITY.md = SECURITY.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -205,6 +217,7 @@ Global
 		{82AA8918-FD9F-4477-A131-874673BDC3B9} = {0152A569-8287-4E49-9F02-E27FD700B719}
 		{10C287A7-1FA5-4A6A-AF9F-C37065CDF0F1} = {DDDC86D8-79F7-488B-B445-AD176FAE1603}
 		{D5000DA4-21BF-48BA-9123-E37E00F3B60C} = {0152A569-8287-4E49-9F02-E27FD700B719}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {0152A569-8287-4E49-9F02-E27FD700B719}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EA3AA3AE-CE8A-4DF1-BED8-CA0BAFC87303}
