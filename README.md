@@ -27,7 +27,6 @@ More samples based on the official [Nuget](https://www.nuget.org/packages/OPCFou
 * [Reverse Connect](Docs/ReverseConnect.md) for the UA-TCP transport (client and server).
 * Folder & OS-level (X509Store) [Certificate Stores](Docs/Certificates.md) with *Global Discovery Server* and *Server Push* support.
 * Sessions and Subscriptions.
-* A [PubSub](Docs/PubSub.md) library with samples.
 
 ### Key Features and Updates in OPC UA 1.05
 
