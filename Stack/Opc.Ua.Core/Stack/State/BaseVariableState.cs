@@ -2136,7 +2136,7 @@ namespace Opc.Ua
         /// </summary>
         protected override NodeId GetDefaultTypeDefinitionId(NamespaceTable namespaceUris)
         {
-            return VariableTypes.PropertyType;
+            return VariableTypeIds.PropertyType;
         }
         #endregion
     }
@@ -2260,7 +2260,7 @@ namespace Opc.Ua
         /// </summary>
         protected override NodeId GetDefaultTypeDefinitionId(NamespaceTable namespaceUris)
         {
-            return VariableTypes.BaseDataVariableType;
+            return VariableTypeIds.BaseDataVariableType;
         }
         #endregion
 
