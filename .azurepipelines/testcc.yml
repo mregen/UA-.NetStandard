@@ -5,7 +5,7 @@ parameters:
   configuration: 'Release'
   framework: net8.0
   agent: 'linux'
-  poolImage: 'ubuntu-22.04'
+  poolImage: 'ubuntu-latest'
   jobnamesuffix: 'net80cc'
   customtestarget: ''
 jobs:
