@@ -323,7 +323,7 @@ namespace Opc.Ua
         private static void TraceWriteLine(string message, params object[] args)
         {
             // null strings not supported.
-            if (String.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(message))
             {
                 return;
             }
@@ -362,7 +362,7 @@ namespace Opc.Ua
 
                 string traceFileName = s_traceFileName;
 
-                if (s_traceOutput != (int)TraceOutput.Off && !String.IsNullOrEmpty(traceFileName))
+                if (s_traceOutput != (int)TraceOutput.Off && !string.IsNullOrEmpty(traceFileName))
                 {
                     try
                     {
@@ -406,7 +406,7 @@ namespace Opc.Ua
             lock (s_traceFileLock)
             {
                 // check if tracing is being turned off.
-                if (String.IsNullOrEmpty(filePath))
+                if (string.IsNullOrEmpty(filePath))
                 {
                     s_traceFileName = null;
                     return;
@@ -433,7 +433,7 @@ namespace Opc.Ua
                     TraceWriteLine(
                         "{1} Logging started at {0}",
                         DateTime.Now,
-                        new String('*', 25));
+                        new string('*', 25));
                 }
                 catch (Exception e)
                 {
@@ -526,7 +526,7 @@ namespace Opc.Ua
                 {
                     message.AppendLine();
                     message.AppendLine();
-                    var separator = new String('=', 40);
+                    var separator = new string('=', 40);
                     message.AppendLine(separator);
                     message.AppendLine(new ServiceResult(e).ToLongString());
                     message.AppendLine(separator);
@@ -597,7 +597,7 @@ namespace Opc.Ua
                 message.Append(formatter(state, exception));
                 if (exception != null)
                 {
-                    message.Append(TraceExceptionMessage(exception, String.Empty, null));
+                    message.Append(TraceExceptionMessage(exception, string.Empty, null));
                 }
             }
             catch (Exception)
@@ -687,7 +687,7 @@ namespace Opc.Ua
         public static string ReplaceSpecialFolderNames(string input)
         {
             // nothing to do for nulls.
-            if (String.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(input))
             {
                 return null;
             }
@@ -713,7 +713,7 @@ namespace Opc.Ua
             if (index == -1)
             {
                 folder = input.Substring(1);
-                path = String.Empty;
+                path = string.Empty;
             }
             else
             {
@@ -760,7 +760,7 @@ namespace Opc.Ua
         /// <returns>The path to the file. Null if not found.</returns>
         public static string FindInstalledFile(string fileName)
         {
-            if (String.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(fileName))
             {
                 return null;
             }
@@ -806,7 +806,7 @@ namespace Opc.Ua
         {
             filePath = Utils.ReplaceSpecialFolderNames(filePath);
 
-            if (!String.IsNullOrEmpty(filePath))
+            if (!string.IsNullOrEmpty(filePath))
             {
                 FileInfo file = new FileInfo(filePath);
 
@@ -936,7 +936,7 @@ namespace Opc.Ua
             string originalPath = dirPath;
             dirPath = Utils.ReplaceSpecialFolderNames(dirPath);
 
-            if (!String.IsNullOrEmpty(dirPath))
+            if (!string.IsNullOrEmpty(dirPath))
             {
                 DirectoryInfo directory = new DirectoryInfo(dirPath);
 
@@ -1131,7 +1131,7 @@ namespace Opc.Ua
         /// </summary>
         public static int GetTimeout(TimeSpan timeSpan)
         {
-            if (timeSpan.TotalMilliseconds > Int32.MaxValue)
+            if (timeSpan.TotalMilliseconds > int.MaxValue)
             {
                 return -1;
             }
@@ -1176,7 +1176,7 @@ namespace Opc.Ua
             catch
             {
             }
-            if (String.IsNullOrEmpty(domainName))
+            if (string.IsNullOrEmpty(domainName))
             {
                 return Dns.GetHostName();
             }
@@ -1205,13 +1205,13 @@ namespace Opc.Ua
         public static string ReplaceLocalhost(string uri, string hostname = null)
         {
             // ignore nulls.
-            if (String.IsNullOrEmpty(uri))
+            if (string.IsNullOrEmpty(uri))
             {
                 return uri;
             }
 
             // IPv6 address needs a surrounding [] 
-            if (!String.IsNullOrEmpty(hostname) && hostname.Contains(':'))
+            if (!string.IsNullOrEmpty(hostname) && hostname.Contains(':'))
             {
                 hostname = "[" + hostname + "]";
             }
@@ -1245,13 +1245,13 @@ namespace Opc.Ua
         public static string ReplaceDCLocalhost(string subjectName, string hostname = null)
         {
             // ignore nulls.
-            if (String.IsNullOrEmpty(subjectName))
+            if (string.IsNullOrEmpty(subjectName))
             {
                 return subjectName;
             }
 
             // IPv6 address needs a surrounding [] 
-            if (!String.IsNullOrEmpty(hostname) && hostname.Contains(':'))
+            if (!string.IsNullOrEmpty(hostname) && hostname.Contains(':'))
             {
                 hostname = "[" + hostname + "]";
             }
@@ -1310,9 +1310,23 @@ namespace Opc.Ua
                 }
                 return buffer.ToString();
             }
-            return String.Empty;
+            return string.Empty;
         }
 
+#if NET9_0_OR_GREATER
+        /// <summary>
+        /// Unescapes a URI string using the percent encoding.
+        /// </summary>
+        public static string UnescapeUri(ReadOnlySpan<char> uri)
+        {
+            if (!uri.IsWhiteSpace())
+            {
+                return Uri.UnescapeDataString(uri);
+            }
+
+            return string.Empty;
+        }
+#else
         /// <summary>
         /// Unescapes a URI string using the percent encoding.
         /// </summary>
@@ -1323,8 +1337,9 @@ namespace Opc.Ua
                 return Uri.UnescapeDataString(uri);
             }
 
-            return String.Empty;
+            return string.Empty;
         }
+#endif
 
         /// <summary>
         /// Parses a URI string. Returns null if it is invalid.
@@ -1333,7 +1348,7 @@ namespace Opc.Ua
         {
             try
             {
-                if (String.IsNullOrEmpty(uri))
+                if (string.IsNullOrEmpty(uri))
                 {
                     return null;
                 }
@@ -1396,12 +1411,12 @@ namespace Opc.Ua
         /// <returns>True if they are equal.</returns>
         public static bool AreDomainsEqual(string domain1, string domain2)
         {
-            if (String.IsNullOrEmpty(domain1) || String.IsNullOrEmpty(domain2))
+            if (string.IsNullOrEmpty(domain1) || string.IsNullOrEmpty(domain2))
             {
                 return false;
             }
 
-            if (String.Equals(domain1, domain2, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(domain1, domain2, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -1415,7 +1430,7 @@ namespace Opc.Ua
         public static string UpdateInstanceUri(string instanceUri)
         {
             // check for null.
-            if (String.IsNullOrEmpty(instanceUri))
+            if (string.IsNullOrEmpty(instanceUri))
             {
                 UriBuilder builder = new UriBuilder();
 
@@ -1479,7 +1494,7 @@ namespace Opc.Ua
         /// </summary>
         public static uint IncrementIdentifier(ref long identifier)
         {
-            System.Threading.Interlocked.CompareExchange(ref identifier, 0, UInt32.MaxValue);
+            System.Threading.Interlocked.CompareExchange(ref identifier, 0, uint.MaxValue);
             return (uint)System.Threading.Interlocked.Increment(ref identifier);
         }
 
@@ -1488,7 +1503,7 @@ namespace Opc.Ua
         /// </summary>
         public static int IncrementIdentifier(ref int identifier)
         {
-            System.Threading.Interlocked.CompareExchange(ref identifier, 0, Int32.MaxValue);
+            System.Threading.Interlocked.CompareExchange(ref identifier, 0, int.MaxValue);
             return System.Threading.Interlocked.Increment(ref identifier);
         }
 
@@ -1497,12 +1512,12 @@ namespace Opc.Ua
         /// </summary>
         public static int ToInt32(uint identifier)
         {
-            if (identifier <= (uint)Int32.MaxValue)
+            if (identifier <= (uint)int.MaxValue)
             {
                 return (int)identifier;
             }
 
-            return -(int)((long)UInt32.MaxValue - (long)identifier + 1);
+            return -(int)((long)uint.MaxValue - (long)identifier + 1);
         }
 
         /// <summary>
@@ -1515,7 +1530,7 @@ namespace Opc.Ua
                 return (uint)identifier;
             }
 
-            return (uint)((long)UInt32.MaxValue + 1 + (long)identifier);
+            return (uint)((long)uint.MaxValue + 1 + (long)identifier);
         }
 
         /// <summary>
@@ -1568,7 +1583,7 @@ namespace Opc.Ua
         {
             if (buffer == null || buffer.Length == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             return ToHexString(new ReadOnlySpan<byte>(buffer), invertEndian);
@@ -1581,7 +1596,7 @@ namespace Opc.Ua
         {
             if (buffer.Length == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 #else
         public static string ToHexString(byte[] buffer, bool invertEndian = false)
@@ -1690,7 +1705,7 @@ namespace Opc.Ua
                 return string.Format(CultureInfo.InvariantCulture, "{0}", source);
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
         /// <summary>
@@ -1706,7 +1721,7 @@ namespace Opc.Ua
         /// </summary>
         public static bool IsValidLocaleId(string localeId)
         {
-            if (String.IsNullOrEmpty(localeId))
+            if (string.IsNullOrEmpty(localeId))
             {
                 return false;
             }
@@ -1735,7 +1750,7 @@ namespace Opc.Ua
         {
             if (localeId == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             int index = localeId.IndexOf('-');
@@ -1775,7 +1790,7 @@ namespace Opc.Ua
                         continue;
                     }
 
-                    if (String.Equals(names[jj].Locale, localeIds[ii], StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(names[jj].Locale, localeIds[ii], StringComparison.OrdinalIgnoreCase))
                     {
                         return names[jj];
                     }
@@ -1796,7 +1811,7 @@ namespace Opc.Ua
 
                     string actualLanguageId = GetLanguageId(names[jj].Locale);
 
-                    if (String.Equals(languageId, actualLanguageId, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(languageId, actualLanguageId, StringComparison.OrdinalIgnoreCase))
                     {
                         return names[jj];
                     }
@@ -2273,7 +2288,7 @@ namespace Opc.Ua
             }
             else
             {
-                if (String.Equals(target, pattern, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(target, pattern, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -2437,7 +2452,7 @@ namespace Opc.Ua
                     {
                         c = target[tIndex++];
 
-                        if (!Char.IsDigit(c))
+                        if (!char.IsDigit(c))
                         {
                             return false; // not a digit
                         }
@@ -2477,7 +2492,7 @@ namespace Opc.Ua
         // ConvertCase
         private static char ConvertCase(char c, bool caseSensitive)
         {
-            return (caseSensitive) ? c : Char.ToUpperInvariant(c);
+            return (caseSensitive) ? c : char.ToUpperInvariant(c);
         }
 
         /// <summary>
@@ -2673,7 +2688,7 @@ namespace Opc.Ua
                 {
                     if (attributes[ii] is DataMemberAttribute contract)
                     {
-                        if (String.IsNullOrEmpty(contract.Name))
+                        if (string.IsNullOrEmpty(contract.Name))
                         {
                             return property.Name;
                         }
@@ -3104,7 +3119,7 @@ namespace Opc.Ua
             byte[] seed = null;
 
             // convert label to UTF-8 byte sequence.
-            if (!String.IsNullOrEmpty(label))
+            if (!string.IsNullOrEmpty(label))
             {
                 seed = Encoding.UTF8.GetBytes(label);
             }
@@ -3182,7 +3197,7 @@ namespace Opc.Ua
 
             for (int ii = 0; ii < strings.Count; ii++)
             {
-                if (String.Equals(strings[ii], target, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(strings[ii], target, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

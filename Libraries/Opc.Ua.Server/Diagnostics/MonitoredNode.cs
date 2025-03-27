@@ -324,12 +324,12 @@ namespace Opc.Ua.Server
             NodeState node,
             MonitoredItem monitoredItem)
         {
-            DataValue value = new DataValue();
-
-            value.Value = null;
-            value.ServerTimestamp = DateTime.UtcNow;
-            value.SourceTimestamp = DateTime.MinValue;
-            value.StatusCode = StatusCodes.Good;
+            DataValue value = new DataValue {
+                WrappedValue = Variant.Null,
+                ServerTimestamp = DateTime.UtcNow,
+                SourceTimestamp = DateTime.MinValue,
+                StatusCode = StatusCodes.Good
+            };
 
             ServiceResult error = node.ReadAttribute(
                 context,

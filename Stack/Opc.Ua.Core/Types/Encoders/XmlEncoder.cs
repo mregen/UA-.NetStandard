@@ -717,7 +717,7 @@ namespace Opc.Ua
                     PushNamespace(Namespaces.OpcUaXsd);
 
                     m_writer.WriteStartElement("Value", Namespaces.OpcUaXsd);
-                    WriteVariantContents(value.Value, value.TypeInfo);
+                    WriteVariantContents(value);
                     m_writer.WriteEndElement();
 
                     PopNamespace();
@@ -758,7 +758,7 @@ namespace Opc.Ua
         /// <inheritdoc/>
         public void WriteDataValueStruct(string fieldName, ref DataValueStruct value, DataSetFieldContentMask dataSetFieldContentMask)
         {
-            bool isNull = value.WrappedValue == Variant.Null;
+            bool isNull = value.WrappedValue.IsNull;
             if (BeginField(fieldName, isNull, true))
             {
                 PushNamespace(Namespaces.OpcUaXsd);
@@ -1805,6 +1805,42 @@ namespace Opc.Ua
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Writes the contents of an Variant to the stream.
+        /// </summary>
+        public void WriteVariantContents(Variant variant)
+        {
+            if (variant.IsValueType())
+            {
+                try
+                {
+                    PushNamespace(Namespaces.OpcUaXsd);
+
+                    TypeInfo typeInfo = variant.TypeInfo;
+                    switch (typeInfo.BuiltInType)
+                    {
+                        case BuiltInType.Boolean: { WriteBoolean("Boolean", variant.ValueBoolean); return; }
+                        case BuiltInType.SByte: { WriteSByte("SByte", variant.ValueSByte); return; }
+                        case BuiltInType.Byte: { WriteByte("Byte", variant.ValueByte); return; }
+                        case BuiltInType.Int16: { WriteInt16("Int16", variant.ValueInt16); return; }
+                        case BuiltInType.UInt16: { WriteUInt16("UInt16", variant.ValueUInt16); return; }
+                        case BuiltInType.Int32: { WriteInt32("Int32", variant.ValueInt32); return; }
+                        case BuiltInType.UInt32: { WriteUInt32("UInt32", variant.ValueUInt32); return; }
+                        case BuiltInType.Int64: { WriteInt64("Int64", variant.ValueInt64); return; }
+                        case BuiltInType.UInt64: { WriteUInt64("UInt64", variant.ValueUInt64); return; }
+                        case BuiltInType.Float: { WriteFloat("Float", variant.ValueFloat); return; }
+                        case BuiltInType.Double: { WriteDouble("Double", variant.ValueDouble); return; }
+                    }
+                }
+                finally
+                {
+                    PopNamespace();
+                }
+            }
+
+            WriteVariantContents(variant.Value, variant.TypeInfo);
+        }
+
         /// <summary>
         /// Writes the contents of an Variant to the stream.
         /// </summary>

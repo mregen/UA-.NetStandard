@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 namespace Opc.Ua
 {
     /// <summary>
-    /// A struct that stores the valueStruct of variable with an optional status code and timestamps.
+    /// A struct that stores the value of a variable with an optional status code and timestamps.
     /// Can be used instead of <see cref="DataValue"/> for efficient storage in Arrays.
     /// </summary>
     [DataContract(Namespace = Namespaces.OpcUaXsd)]
@@ -205,7 +205,6 @@ namespace Opc.Ua
         public object Value
         {
             get { return m_value.Value; }
-            set { m_value.Value = value; }
         }
 
         /// <summary>

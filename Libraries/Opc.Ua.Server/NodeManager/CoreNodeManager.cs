@@ -559,7 +559,7 @@ namespace Opc.Ua.Server
 
                         if (metadata.Executable)
                         {
-                            DataValue value = new DataValue(method.UserExecutable);
+                            DataValue value = new DataValue(new Variant(method.UserExecutable));
                             ServiceResult result = method.Read(context, Attributes.UserExecutable, value);
 
                             if (ServiceResult.IsBad(result))
@@ -669,7 +669,7 @@ namespace Opc.Ua.Server
 
                     DataValue value = values[ii] = new DataValue();
                     
-                    value.Value           = null;
+                    value.WrappedValue    = Variant.Null;
                     value.ServerTimestamp = DateTime.UtcNow;
                     value.SourceTimestamp = DateTime.MinValue;
                     value.StatusCode      = StatusCodes.BadAttributeIdInvalid;
@@ -715,7 +715,7 @@ namespace Opc.Ua.Server
                     
                         if (ServiceResult.IsBad(error))
                         {
-                            value.Value = null;
+                            value.WrappedValue = Variant.Null;
                             errors[ii] = error;
                             continue;
                         }
@@ -727,13 +727,13 @@ namespace Opc.Ua.Server
                                 
                             if (ServiceResult.IsBad(error))
                             {
-                                value.Value = null;
+                                value.WrappedValue = Variant.Null;
                                 errors[ii] = error;
                                 continue;
                             }
                         }
-                            
-                        value.Value = defaultValue;                     
+
+                        value.WrappedValue = new Variant(defaultValue);                  
                         
                         // don't replace timestamp if it was set in the NodeSource 
                         if (value.SourceTimestamp == DateTime.MinValue) 
@@ -1294,7 +1294,7 @@ namespace Opc.Ua.Server
             IDataChangeMonitoredItem2 monitoredItem)
         {
             DataValue initialValue = new DataValue {
-                Value = null,
+                WrappedValue = Variant.Null,
                 ServerTimestamp = DateTime.UtcNow,
                 SourceTimestamp = DateTime.MinValue,
                 StatusCode = StatusCodes.BadWaitingForInitialData
@@ -1304,7 +1304,7 @@ namespace Opc.Ua.Server
 
             if (ServiceResult.IsBad(error))
             {
-                initialValue.Value = null;
+                initialValue.WrappedValue = Variant.Null;
                 initialValue.StatusCode = error.StatusCode;
             }
 
@@ -1618,7 +1618,7 @@ namespace Opc.Ua.Server
 
                             if (ServiceResult.IsBad(error))
                             {
-                                initialValue.Value = null;
+                                initialValue.WrappedValue = Variant.Null;
                                 initialValue.StatusCode = error.StatusCode;
                             }
                         }

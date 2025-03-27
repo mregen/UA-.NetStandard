@@ -1047,17 +1047,23 @@ namespace Opc.Ua
 
             string originalText = text;
             int serverIndex = 0;
+            int textOffset = 0;
 
             if (text.StartsWith("svu=", StringComparison.Ordinal))
             {
-                int index = text.IndexOf(';', 4);
+                textOffset = 4;
+                int index = text.IndexOf(';', textOffset);
 
                 if (index < 0)
                 {
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid ExpandedNodeId ({originalText}).");
                 }
 
-                string serverUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+#if NET9_0_OR_GREATER
+                string serverUri = Utils.UnescapeUri(text.AsSpan(textOffset, index - textOffset));
+#else
+                string serverUri = Utils.UnescapeUri(text.Substring(textOffset, index - textOffset));
+#endif
                 serverIndex = (options?.UpdateTables == true) ? context.ServerUris.GetIndexOrAppend(serverUri) : context.ServerUris.GetIndex(serverUri);
 
                 if (serverIndex < 0)
@@ -1065,19 +1071,20 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"No mapping to ServerIndex for ServerUri ({serverUri}).");
                 }
 
-                text = text.Substring(index + 1);
+                textOffset = index + 1;
             }
 
-            if (text.StartsWith("svr=", StringComparison.Ordinal))
+            if (text.AsSpan(textOffset).StartsWith("svr=", StringComparison.Ordinal))
             {
-                int index = text.IndexOf(';', 4);
+                textOffset += 4;
+                int index = text.IndexOf(';', textOffset);
 
                 if (index < 0)
                 {
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid ExpandedNodeId ({originalText}).");
                 }
 
-                if (ushort.TryParse(text.AsSpan(4, index - 4), out ushort ns))
+                if (ushort.TryParse(text.AsSpan(textOffset, index - 4), out ushort ns))
                 {
                     serverIndex = ns;
 
@@ -1087,28 +1094,33 @@ namespace Opc.Ua
                     }
                 }
 
-                text = text.Substring(index + 1);
+                textOffset = index + 1;
             }
 
             int namespaceIndex = 0;
             string namespaceUri = null;
 
-            if (text.StartsWith("nsu=", StringComparison.Ordinal))
+            if (text.AsSpan(textOffset).StartsWith("nsu=", StringComparison.Ordinal))
             {
-                int index = text.IndexOf(';', 4);
+                textOffset += 4;
+                int index = text.IndexOf(';', textOffset);
 
                 if (index < 0)
                 {
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid ExpandedNodeId ({originalText}).");
                 }
-
-                namespaceUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+#if NET9_0_OR_GREATER
+                namespaceUri = Utils.UnescapeUri(text.AsSpan(textOffset, index - textOffset));
+#else
+                namespaceUri = Utils.UnescapeUri(text.Substring(textOffset, index - textOffset));
+#endif
                 namespaceIndex = (options?.UpdateTables == true) ? context.NamespaceUris.GetIndexOrAppend(namespaceUri) : context.NamespaceUris.GetIndex(namespaceUri);
 
-                text = text.Substring(index + 1);
+                textOffset = index + 1;
             }
 
-            var nodeId = NodeId.Parse(context, text, options);
+            // TODO: use span
+            var nodeId = NodeId.Parse(context, text.Substring(textOffset), options);
 
             if (namespaceIndex > 0)
             {
@@ -1268,7 +1280,7 @@ namespace Opc.Ua
         public static ExpandedNodeId Null => s_Null;
 
         private static readonly ExpandedNodeId s_Null = new ExpandedNodeId();
-        #endregion
+#endregion
 
         #region Private Methods
         /// <summary>

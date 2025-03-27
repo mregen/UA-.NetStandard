@@ -224,19 +224,19 @@ namespace TestData
 
                     if (StatusCode.IsBad(error))
                     {
-                        value.Value = null;
+                        value.WrappedValue = Variant.Null;
                         value.StatusCode = error;
                     }
                     else
                     {
-                        value.Value = valueToReturn;
+                        value.WrappedValue = new Variant(valueToReturn);
                     }
                 }
 
                 // apply the data encoding.
                 if (!QualifiedName.IsNull(dataEncoding))
                 {
-                    value.Value = null;
+                    value.WrappedValue = Variant.Null;
                     value.StatusCode = StatusCodes.BadDataEncodingUnsupported;
                 }
             }

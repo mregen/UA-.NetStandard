@@ -324,7 +324,7 @@ namespace MemoryBuffer
             // read initial value.
             DataValue initialValue = new DataValue();
 
-            initialValue.Value = null;
+            initialValue.WrappedValue = Variant.Null;
             initialValue.ServerTimestamp = DateTime.UtcNow;
             initialValue.SourceTimestamp = DateTime.MinValue;
             initialValue.StatusCode = StatusCodes.Good;
@@ -519,12 +519,12 @@ namespace MemoryBuffer
             // need to provide an immediate update after enabling.
             if (previousMode == MonitoringMode.Disabled && monitoringMode != MonitoringMode.Disabled)
             {
-                DataValue initialValue = new DataValue();
-
-                initialValue.Value = null;
-                initialValue.ServerTimestamp = DateTime.UtcNow;
-                initialValue.SourceTimestamp = DateTime.MinValue;
-                initialValue.StatusCode = StatusCodes.Good;
+                DataValue initialValue = new DataValue {
+                    WrappedValue = Variant.Null,
+                    ServerTimestamp = DateTime.UtcNow,
+                    SourceTimestamp = DateTime.MinValue,
+                    StatusCode = StatusCodes.Good
+                };
 
                 MemoryTagState tag = new MemoryTagState(buffer, datachangeItem.Offset);
 

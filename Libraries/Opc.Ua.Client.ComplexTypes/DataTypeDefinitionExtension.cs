@@ -130,9 +130,10 @@ namespace Opc.Ua.Client.ComplexTypes
                 structureDefinition.StructureType = StructureType.StructureWithOptionalFields;
             }
 
+            const int defaultFieldBits = 8;
             byte switchFieldBitPosition = 0;
             Int32 dataTypeFieldPosition = 0;
-            var switchFieldBits = new Dictionary<string, byte>();
+            var switchFieldBits = new Dictionary<string, byte>(defaultFieldBits);
             // convert fields
             foreach (var field in structuredType.Field)
             {
@@ -162,6 +163,7 @@ namespace Opc.Ua.Client.ComplexTypes
                     throw new DataTypeNotSupportedException(
                         "Bitwise option selectors must have 32 bits.");
                 }
+
                 NodeId fieldDataTypeNodeId;
                 if(field.TypeName == structuredType.QName)
                 {
@@ -172,6 +174,7 @@ namespace Opc.Ua.Client.ComplexTypes
                 {
                     fieldDataTypeNodeId = field.TypeName.ToNodeId(typeDictionary);
                 }
+
                 var dataTypeField = new StructureField() {
                     Name = field.Name,
                     Description = null,

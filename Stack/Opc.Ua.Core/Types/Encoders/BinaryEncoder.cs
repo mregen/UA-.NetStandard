@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
 using Opc.Ua.Bindings;
@@ -753,7 +754,7 @@ namespace Opc.Ua
             // calculate the encoding.
             byte encoding = 0;
 
-            if (value.Value != null)
+            if (!value.WrappedValue.IsNull)
             {
                 encoding |= (byte)DataValueEncodingBits.Value;
             }
@@ -824,7 +825,7 @@ namespace Opc.Ua
             // calculate the encoding.
             byte encoding = 0;
 
-            if (value.Value != null)
+            if (!value.WrappedValue.IsNull)
             {
                 encoding |= (byte)DataValueEncodingBits.Value;
             }
@@ -2369,7 +2370,7 @@ namespace Opc.Ua
         private void WriteVariantValue(string fieldName, Variant value)
         {
             // check for null.
-            if (value.Value == null || value.TypeInfo == null || value.TypeInfo.BuiltInType == BuiltInType.Null)
+            if (value.IsNull || value.TypeInfo == null || value.TypeInfo.BuiltInType == BuiltInType.Null)
             {
                 WriteByte(null, 0);
                 return;
@@ -2382,25 +2383,30 @@ namespace Opc.Ua
                 encodingByte = (byte)BuiltInType.Int32;
             }
 
-            object valueToEncode = value.Value;
-
+            object valueToEncode;
             if (value.TypeInfo.ValueRank < 0)
             {
                 WriteByte(null, encodingByte);
 
                 switch (value.TypeInfo.BuiltInType)
                 {
-                    case BuiltInType.Boolean: { WriteBoolean(null, (bool)valueToEncode); return; }
-                    case BuiltInType.SByte: { WriteSByte(null, (sbyte)valueToEncode); return; }
-                    case BuiltInType.Byte: { WriteByte(null, (byte)valueToEncode); return; }
-                    case BuiltInType.Int16: { WriteInt16(null, (short)valueToEncode); return; }
-                    case BuiltInType.UInt16: { WriteUInt16(null, (ushort)valueToEncode); return; }
-                    case BuiltInType.Int32: { WriteInt32(null, (int)valueToEncode); return; }
-                    case BuiltInType.UInt32: { WriteUInt32(null, (uint)valueToEncode); return; }
-                    case BuiltInType.Int64: { WriteInt64(null, (long)valueToEncode); return; }
-                    case BuiltInType.UInt64: { WriteUInt64(null, (ulong)valueToEncode); return; }
-                    case BuiltInType.Float: { WriteFloat(null, (float)valueToEncode); return; }
-                    case BuiltInType.Double: { WriteDouble(null, (double)valueToEncode); return; }
+                    case BuiltInType.Boolean: { WriteBoolean(null, value.ValueBoolean); return; }
+                    case BuiltInType.SByte: { WriteSByte(null, value.ValueSByte); return; }
+                    case BuiltInType.Byte: { WriteByte(null, value.ValueByte); return; }
+                    case BuiltInType.Int16: { WriteInt16(null, value.ValueInt16); return; }
+                    case BuiltInType.UInt16: { WriteUInt16(null, value.ValueUInt16); return; }
+                    case BuiltInType.Int32: { WriteInt32(null, value.ValueInt32); return; }
+                    case BuiltInType.UInt32: { WriteUInt32(null, value.ValueUInt32); return; }
+                    case BuiltInType.Int64: { WriteInt64(null, value.ValueInt64); return; }
+                    case BuiltInType.UInt64: { WriteUInt64(null, value.ValueUInt64); return; }
+                    case BuiltInType.Float: { WriteFloat(null, value.ValueFloat); return; }
+                    case BuiltInType.Double: { WriteDouble(null, value.ValueDouble); return; }
+                }
+
+                valueToEncode = value.Value;
+
+                switch (value.TypeInfo.BuiltInType)
+                {
                     case BuiltInType.String: { WriteString(null, (string)valueToEncode); return; }
                     case BuiltInType.DateTime: { WriteDateTime(null, (DateTime)valueToEncode); return; }
                     case BuiltInType.Guid: { WriteGuid(null, (Uuid)valueToEncode); return; }
@@ -2429,7 +2435,9 @@ namespace Opc.Ua
 
                 encodingByte |= (byte)VariantArrayEncodingBits.Array;
 
-                if (value.TypeInfo.ValueRank > 1)
+                valueToEncode = value.Value;
+
+                if (value.TypeInfo.ValueRank > ValueRanks.OneDimension)
                 {
                     encodingByte |= (byte)VariantArrayEncodingBits.ArrayDimensions;
                     matrix = (Matrix)valueToEncode;
@@ -2518,7 +2526,7 @@ namespace Opc.Ua
                 }
 
                 // write the dimensions.
-                if (value.TypeInfo.ValueRank > 1)
+                if (value.TypeInfo.ValueRank > ValueRanks.OneDimension)
                 {
                     WriteInt32Array(null, (int[])matrix.Dimensions);
                 }
@@ -2528,6 +2536,7 @@ namespace Opc.Ua
         /// <summary>
         /// Test and increment the nesting level.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckAndIncrementNestingLevel()
         {
             if (m_nestingLevel > m_context.MaxEncodingNestingLevels)

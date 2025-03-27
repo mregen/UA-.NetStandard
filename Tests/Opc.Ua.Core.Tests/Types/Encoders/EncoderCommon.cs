@@ -272,7 +272,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                 }
 
                 Assert.IsNotNull(result, "Resulting DataValue is Null, " + encodeInfo);
-                expected.Value = AdjustExpectedBoundaryValues(encoderType, builtInType, expected.Value);
+                expected.WrappedValue = new Variant(AdjustExpectedBoundaryValues(encoderType, builtInType, expected.Value));
                 Assert.AreEqual(expected, result, encodeInfo);
                 Assert.IsTrue(Utils.IsEqual(expected, result), "Opc.Ua.Utils.IsEqual failed to compare expected and result. " + encodeInfo);
             }
@@ -796,7 +796,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                     DataValue dataValue = (DataValue)value;
                     if (dataValue.Value?.GetType() == typeof(DateTime) || dataValue.Value?.GetType() == typeof(DateTime[]))
                     {
-                        dataValue.Value = AdjustExpectedBoundaryValues(encoderType, BuiltInType.DateTime, dataValue.Value);
+                        dataValue.WrappedValue = new Variant(AdjustExpectedBoundaryValues(encoderType, BuiltInType.DateTime, dataValue.Value));
                         return dataValue;
                     }
                 }

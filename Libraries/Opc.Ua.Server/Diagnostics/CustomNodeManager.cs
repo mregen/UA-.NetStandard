@@ -1562,7 +1562,7 @@ namespace Opc.Ua.Server
                     // create an initial value.
                     DataValue value = values[ii] = new DataValue();
 
-                    value.Value = null;
+                    value.WrappedValue = Variant.Null;
                     value.ServerTimestamp = DateTime.UtcNow;
                     value.SourceTimestamp = DateTime.MinValue;
                     value.StatusCode = StatusCodes.Good;
@@ -3652,7 +3652,7 @@ namespace Opc.Ua.Server
             IDataChangeMonitoredItem2 monitoredItem)
         {
             DataValue initialValue = new DataValue {
-                Value = null,
+                WrappedValue = Variant.Null,
                 ServerTimestamp = DateTime.UtcNow,
                 SourceTimestamp = DateTime.MinValue,
                 StatusCode = StatusCodes.BadWaitingForInitialData

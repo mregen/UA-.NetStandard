@@ -11,7 +11,6 @@
 */
 
 using System;
-using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -360,17 +359,23 @@ namespace Opc.Ua
 
             var originalText = text;
             int namespaceIndex = 0;
+            int textOffset = 0;
 
             if (text.StartsWith("nsu=", StringComparison.Ordinal))
             {
-                int index = text.IndexOf(';', 4);
+                textOffset = 4;
+                int index = text.IndexOf(';', textOffset);
 
                 if (index < 0)
                 {
                     throw ServiceResultException.Create(StatusCodes.BadNodeIdInvalid, "Invalid NodeId ({0}).", originalText);
                 }
 
-                var namespaceUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+#if NET9_0_OR_GREATER
+                var namespaceUri = Utils.UnescapeUri(text.AsSpan(textOffset, index - textOffset));
+#else
+                var namespaceUri = Utils.UnescapeUri(text.Substring(textOffset, index - textOffset));
+#endif
                 namespaceIndex = (options?.UpdateTables == true) ? context.NamespaceUris.GetIndexOrAppend(namespaceUri) : context.NamespaceUris.GetIndex(namespaceUri);
 
                 if (namespaceIndex < 0)
@@ -378,19 +383,20 @@ namespace Opc.Ua
                     throw ServiceResultException.Create(StatusCodes.BadNodeIdInvalid, "No mapping to NamespaceIndex for NamespaceUri ({0}).", namespaceUri);
                 }
 
-                text = text.Substring(index + 1);
+                textOffset = index + 1;
             }
 
-            if (text.StartsWith("ns=", StringComparison.Ordinal))
+            if (text.AsSpan(textOffset).StartsWith("ns=", StringComparison.Ordinal))
             {
-                int index = text.IndexOf(';', 3);
+                textOffset += 3;
+                int index = text.IndexOf(';', textOffset);
 
                 if (index < 0)
                 {
                     throw ServiceResultException.Create(StatusCodes.BadNodeIdInvalid, "Invalid ExpandedNodeId ({0}).", originalText);
                 }
 
-                if (UInt16.TryParse(text.Substring(3, index - 3), out ushort ns))
+                if (UInt16.TryParse(text.AsSpan(textOffset, index - textOffset), out ushort ns))
                 {
                     namespaceIndex = ns;
 
@@ -400,19 +406,19 @@ namespace Opc.Ua
                     }
                 }
 
-                text = text.Substring(index + 1);
+                textOffset = index + 1;
             }
 
-            if (text.Length >= 2)
+            if (text.Length >= textOffset + 2)
             {
-                char idType = text[0];
-                text = text.Substring(2);
+                char idType = text[textOffset];
+                textOffset += 2;
 
                 switch (idType)
                 {
                     case 'i':
                     {
-                        if (UInt32.TryParse(text, out uint number))
+                        if (UInt32.TryParse(text.AsSpan(textOffset), out uint number))
                         {
                             if (namespaceIndex == 0)
                             {
@@ -421,17 +427,17 @@ namespace Opc.Ua
 
                             return new NodeId(number, (ushort)namespaceIndex);
                         }
-
                         break;
                     }
 
                     case 's':
                     {
+                        // TODO: use span
+                        text = text.Substring(textOffset);
                         if (!String.IsNullOrWhiteSpace(text))
                         {
                             return new NodeId(text, (ushort)namespaceIndex);
                         }
-
                         break;
                     }
 
@@ -439,20 +445,20 @@ namespace Opc.Ua
                     {
                         try
                         {
-                            var bytes = Convert.FromBase64String(text);
+                            // TODO: use span
+                            var bytes = Convert.FromBase64String(text.Substring(textOffset));
                             return new NodeId(bytes, (ushort)namespaceIndex);
                         }
                         catch (Exception)
                         {
                             // error handled after the switch statement.
                         }
-
                         break;
                     }
 
                     case 'g':
                     {
-                        if (Guid.TryParse(text, out var guid))
+                        if (Guid.TryParse(text.AsSpan(textOffset), out var guid))
                         {
                             return new NodeId(guid, (ushort)namespaceIndex);
                         }
@@ -1556,11 +1562,8 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Whether the object represents a Null NodeId.
-        /// </summary>
-        /// <remarks>
         /// Whether the NodeId represents a Null NodeId.
-        /// </remarks>
+        /// </summary>
         public bool IsNullNodeId
         {
             get
@@ -1578,7 +1581,7 @@ namespace Opc.Ua
                     {
                         case IdType.Numeric:
                         {
-                            if (!m_identifier.Equals((uint)0))
+                            if ((uint)m_identifier != (uint)0)
                             {
                                 return false;
                             }
@@ -1588,7 +1591,7 @@ namespace Opc.Ua
 
                         case IdType.String:
                         {
-                            if (!String.IsNullOrEmpty((string)m_identifier))
+                            if (!string.IsNullOrEmpty((string)m_identifier))
                             {
                                 return false;
                             }
@@ -1598,7 +1601,7 @@ namespace Opc.Ua
 
                         case IdType.Guid:
                         {
-                            if (!m_identifier.Equals(Guid.Empty))
+                            if ((Guid)m_identifier != Guid.Empty)
                             {
                                 return false;
                             }

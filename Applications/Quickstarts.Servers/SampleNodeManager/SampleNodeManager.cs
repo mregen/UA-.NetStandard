@@ -1287,7 +1287,7 @@ namespace Opc.Ua.Sample
                     // create an initial value.
                     DataValue value = values[ii] = new DataValue();
 
-                    value.Value = null;
+                    value.WrappedValue = Variant.Null;
                     value.ServerTimestamp = DateTime.UtcNow;
                     value.SourceTimestamp = DateTime.MinValue;
                     value.StatusCode = StatusCodes.Good;
@@ -2343,7 +2343,7 @@ namespace Opc.Ua.Sample
             bool ignoreFilters)
         {
             DataValue initialValue = new DataValue {
-                Value = null,
+                WrappedValue = Variant.Null,
                 ServerTimestamp = DateTime.UtcNow,
                 SourceTimestamp = DateTime.MinValue,
                 StatusCode = StatusCodes.BadWaitingForInitialData
@@ -2468,7 +2468,7 @@ namespace Opc.Ua.Sample
 
             // read initial value.
             DataValue initialValue = new DataValue {
-                Value = null,
+                WrappedValue = Variant.Null,
                 ServerTimestamp = DateTime.UtcNow,
                 SourceTimestamp = DateTime.MinValue,
                 StatusCode = StatusCodes.BadWaitingForInitialData

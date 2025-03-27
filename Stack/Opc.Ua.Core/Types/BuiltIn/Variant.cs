@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
@@ -35,6 +37,7 @@ namespace Opc.Ua
     /// <br/></para>
     /// </remarks>
     [DataContract(Namespace = Namespaces.OpcUaXsd)]
+    [StructLayout(LayoutKind.Explicit)]
     public struct Variant : ICloneable, IFormattable, IEquatable<Variant>
     {
         #region Constructors
@@ -47,8 +50,7 @@ namespace Opc.Ua
         /// <param name="value">The Variant value to copy.</param>
         public Variant(Variant value)
         {
-            m_value = Utils.Clone(value.m_value);
-            m_typeInfo = value.m_typeInfo;
+            Set(Utils.Clone(value.Value), value.m_typeInfo);
         }
 
         /// <summary>
@@ -56,20 +58,37 @@ namespace Opc.Ua
         /// </summary>
         /// <param name="value">The value to store.</param>
         /// <param name="typeInfo">The type information for the value.</param>
-        public Variant(object value, TypeInfo typeInfo)
+        public Variant(object value, TypeInfo typeInfo) : this(value, typeInfo, false)
         {
-            m_value = null;
+        }
+
+        /// <summary>
+        /// Constructs a Variant
+        /// </summary>
+        /// <param name="value">The value to store.</param>
+        /// <param name="typeInfo">The type information for the value.</param>
+        /// <param name="assignDirect">If the new value should be directly assigned without checks.</param>
+        private Variant(object value, TypeInfo typeInfo, bool assignDirect)
+        {
             m_typeInfo = typeInfo;
+            if (assignDirect)
+            {
+                m_value = value;
+                return;
+            }
+
+            m_value = null;
             Set(value, typeInfo);
 
 #if DEBUG
             // no sanity check possible for null values
-            if (m_value == null)
+            value = Value;
+            if (value == null)
             {
                 return;
             }
 
-            TypeInfo sanityCheck = TypeInfo.Construct(m_value);
+            var sanityCheck = TypeInfo.Construct(value);
 
             // except special case byte array vs. bytestring
             if (sanityCheck.BuiltInType == BuiltInType.ByteString &&
@@ -157,7 +176,8 @@ namespace Opc.Ua
         /// <param name="value">The value of the variant</param>
         public Variant(bool value)
         {
-            m_value = value;
+            m_value = null;
+            m_boolean = value;
             m_typeInfo = TypeInfo.Scalars.Boolean;
         }
 
@@ -170,7 +190,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="sbyte"/> value of the Variant</param>
         public Variant(sbyte value)
         {
-            m_value = value;
+            m_value = null;
+            m_sbyte = value;
             m_typeInfo = TypeInfo.Scalars.SByte;
         }
 
@@ -183,7 +204,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="byte"/> value of the Variant</param>
         public Variant(byte value)
         {
-            m_value = value;
+            m_value = null;
+            m_byte = value;
             m_typeInfo = TypeInfo.Scalars.Byte;
         }
 
@@ -196,7 +218,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="short"/> value of the Variant</param>
         public Variant(short value)
         {
-            m_value = value;
+            m_value = null;
+            m_int16 = value;
             m_typeInfo = TypeInfo.Scalars.Int16;
         }
 
@@ -209,7 +232,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="ushort"/> value of the Variant</param>
         public Variant(ushort value)
         {
-            m_value = value;
+            m_value = null;
+            m_uint16 = value;
             m_typeInfo = TypeInfo.Scalars.UInt16;
         }
 
@@ -222,7 +246,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="int"/> value of the Variant</param>
         public Variant(int value)
         {
-            m_value = value;
+            m_value = null;
+            m_int32 = value;
             m_typeInfo = TypeInfo.Scalars.Int32;
         }
 
@@ -235,7 +260,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="uint"/> value of the Variant</param>
         public Variant(uint value)
         {
-            m_value = value;
+            m_value = null;
+            m_uint32 = value;
             m_typeInfo = TypeInfo.Scalars.UInt32;
         }
 
@@ -248,7 +274,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="long"/> value of the Variant</param>
         public Variant(long value)
         {
-            m_value = value;
+            m_value = null;
+            m_int64 = value;
             m_typeInfo = TypeInfo.Scalars.Int64;
         }
 
@@ -261,7 +288,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="ulong"/> value of the Variant</param>
         public Variant(ulong value)
         {
-            m_value = value;
+            m_value = null;
+            m_uint64 = value;
             m_typeInfo = TypeInfo.Scalars.UInt64;
         }
 
@@ -274,7 +302,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="float"/> value of the Variant</param>
         public Variant(float value)
         {
-            m_value = value;
+            m_value = null;
+            m_float = value;
             m_typeInfo = TypeInfo.Scalars.Float;
         }
 
@@ -287,7 +316,8 @@ namespace Opc.Ua
         /// <param name="value">The <see cref="double"/> value of the Variant</param>
         public Variant(double value)
         {
-            m_value = value;
+            m_value = null;
+            m_double = value;
             m_typeInfo = TypeInfo.Scalars.Double;
         }
 
@@ -786,6 +816,125 @@ namespace Opc.Ua
             m_typeInfo = TypeInfo.Arrays.Variant;
             Set(value);
         }
+
+        /// <summary>
+        /// Private set struct to default values and type.
+        /// </summary>
+        private Variant(TypeInfo typeInfo)
+        {
+            m_value = null;
+            m_typeInfo = typeInfo;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a bool value.
+        /// </summary>
+        private Variant(object value, bool boolValue)
+        {
+            m_value = value;
+            m_boolean = boolValue;
+            m_typeInfo = TypeInfo.Scalars.Boolean;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a sbyte value.
+        /// </summary>
+        private Variant(object value, sbyte sbyteValue)
+        {
+            m_value = value;
+            m_sbyte = sbyteValue;
+            m_typeInfo = TypeInfo.Scalars.SByte;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a byte value.
+        /// </summary>
+        private Variant(object value, byte byteValue)
+        {
+            m_value = value;
+            m_byte = byteValue;
+            m_typeInfo = TypeInfo.Scalars.Byte;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a short value.
+        /// </summary>
+        private Variant(object value, short shortValue)
+        {
+            m_value = value;
+            m_int16 = shortValue;
+            m_typeInfo = TypeInfo.Scalars.Int16;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with an ushort value.
+        /// </summary>
+        private Variant(object value, ushort ushortValue)
+        {
+            m_value = value;
+            m_uint16 = ushortValue;
+            m_typeInfo = TypeInfo.Scalars.UInt16;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with an int value.
+        /// </summary>
+        private Variant(object value, int intValue)
+        {
+            m_value = value;
+            m_int32 = intValue;
+            m_typeInfo = TypeInfo.Scalars.Int32;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with an uint value.
+        /// </summary>
+        private Variant(object value, uint uintValue)
+        {
+            m_value = value;
+            m_uint32 = uintValue;
+            m_typeInfo = TypeInfo.Scalars.UInt32;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a long value.
+        /// </summary>
+        private Variant(object value, long longValue)
+        {
+            m_value = value;
+            m_int64 = longValue;
+            m_typeInfo = TypeInfo.Scalars.Int64;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with an ulong value.
+        /// </summary>
+        private Variant(object value, ulong ulongValue)
+        {
+            m_value = value;
+            m_uint64 = ulongValue;
+            m_typeInfo = TypeInfo.Scalars.UInt64;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a float value.
+        /// </summary>
+        private Variant(object value, float floatValue)
+        {
+            m_value = value;
+            m_float = floatValue;
+            m_typeInfo = TypeInfo.Scalars.Float;
+        }
+
+        /// <summary>
+        /// Initializes the object and value type with a double value.
+        /// </summary>
+        private Variant(object value, double doubleValue)
+        {
+            m_value = value;
+            m_double = doubleValue;
+            m_typeInfo = TypeInfo.Scalars.Double;
+        }
         #endregion
 
         #region Public Properties
@@ -804,7 +953,7 @@ namespace Opc.Ua
                 using (XmlEncoder encoder = new XmlEncoder(MessageContextExtension.CurrentContext))
                 {
                     // write value.
-                    encoder.WriteVariantContents(m_value, m_typeInfo);
+                    encoder.WriteVariantContents(this);
 
                     // create document from encoder.
                     XmlDocument document = new XmlDocument();
@@ -820,11 +969,9 @@ namespace Opc.Ua
                 // check for null values.
                 if (value == null)
                 {
-                    m_value = null;
+                    this = Variant.Null;
                     return;
                 }
-
-                TypeInfo typeInfo = null;
 
                 // create decoder.
                 using (XmlDecoder decoder = new XmlDecoder(value, MessageContextExtension.CurrentContext))
@@ -832,7 +979,7 @@ namespace Opc.Ua
                     try
                     {
                         // read value.
-                        object body = decoder.ReadVariantContents(out typeInfo);
+                        object body = decoder.ReadVariantContents(out TypeInfo typeInfo);
                         Set(body, typeInfo);
                     }
                     catch (Exception e)
@@ -852,6 +999,19 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Whether the BuiltInType is stored as a value type.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsValueType()
+        {
+            return
+                m_typeInfo != null &&
+                m_typeInfo.ValueRank == ValueRanks.Scalar &&
+                m_typeInfo.BuiltInType >= BuiltInType.Boolean &&
+                m_typeInfo.BuiltInType <= BuiltInType.Double;
+        }
+
+        /// <summary>
         /// The value stored in the object.
         /// </summary>
         /// <remarks>
@@ -859,14 +1019,271 @@ namespace Opc.Ua
         /// </remarks>
         public object Value
         {
-            get { return m_value; }
-            set { Set(value, TypeInfo.Construct(value)); }
+            get
+            {
+                if (m_value == null &&
+                    m_typeInfo != null && m_typeInfo.ValueRank == ValueRanks.Scalar)
+                {
+                    // If this codepath is hit, the advantage of storing the value directly
+                    // in the struct is lost. We implicitly allocate a new System.Object
+                    // to store and return the value as object.
+                    // To avoid multiple allocations set the m_value object once.
+                    // This assignment is also the reason why m_value is not readonly.
+                    switch (m_typeInfo.BuiltInType)
+                    {
+                        case BuiltInType.Null: break;
+                        case BuiltInType.Boolean: m_value = m_boolean; break;
+                        case BuiltInType.SByte: m_value = m_sbyte; break;
+                        case BuiltInType.Byte: m_value = m_byte; break;
+                        case BuiltInType.Int16: m_value = m_int16; break;
+                        case BuiltInType.UInt16: m_value = m_uint16; break;
+                        case BuiltInType.Int32: m_value = m_int32; break;
+                        case BuiltInType.UInt32: m_value = m_uint32; break;
+                        case BuiltInType.Int64: m_value = m_int64; break;
+                        case BuiltInType.UInt64: m_value = m_uint64; break;
+                        case BuiltInType.Float: m_value = m_float; break;
+                        case BuiltInType.Double: m_value = m_double; break;
+                    }
+                }
+                return m_value;
+            }
         }
 
         /// <summary>
-        /// The type information for the matrix.
+        /// The Boolean value stored as ValueType.
         /// </summary>
-        public TypeInfo TypeInfo => m_typeInfo;
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Boolean"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public bool ValueBoolean
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Boolean) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_boolean;
+            }
+        }
+
+        /// <summary>
+        /// The SByte value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.SByte"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public sbyte ValueSByte
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.SByte) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_sbyte;
+            }
+        }
+
+        /// <summary>
+        /// The Byte value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Byte"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public byte ValueByte
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Byte) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_byte;
+            }
+        }
+
+        /// <summary>
+        /// The Int16 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Int16"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public short ValueInt16
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Int16) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_int16;
+            }
+        }
+
+        /// <summary>
+        /// The UInt16 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.UInt16"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public ushort ValueUInt16
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.UInt16) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_uint16;
+            }
+        }
+
+        /// <summary>
+        /// The Int32 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Int32"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public int ValueInt32
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Int32) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_int32;
+            }
+        }
+
+        /// <summary>
+        /// The UInt32 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.UInt32"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public uint ValueUInt32
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.UInt32) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_uint32;
+            }
+        }
+
+        /// <summary>
+        /// The Int64 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Int64"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public long ValueInt64
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Int64) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_int64;
+            }
+        }
+
+        /// <summary>
+        /// The UInt64 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.UInt64"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public ulong ValueUInt64
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.UInt64) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_uint64;
+            }
+        }
+
+        /// <summary>
+        /// The Int64 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Float"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public float ValueFloat
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Float) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_float;
+            }
+        }
+
+        /// <summary>
+        /// The UInt64 value stored in the object.
+        /// </summary>
+        /// <remarks>
+        /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
+        /// is not a <see cref="BuiltInType.Double"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
+        /// </remarks>
+        public double ValueDouble
+        {
+            get
+            {
+#if DEBUG
+                if (!(m_typeInfo?.BuiltInType == BuiltInType.Double) || m_typeInfo.ValueRank != ValueRanks.Scalar)
+                {
+                    throw ThrowOnFailedDirectAccess();
+                }
+#endif
+                return m_double;
+            }
+        }
+
+        /// <summary>
+        /// The type information for the Variant.
+        /// </summary>
+        public readonly TypeInfo TypeInfo => m_typeInfo;
         #endregion
 
         #region IFormattable Members
@@ -884,7 +1301,7 @@ namespace Opc.Ua
             if (format == null)
             {
                 StringBuilder buffer = new StringBuilder();
-                AppendFormat(buffer, m_value, formatProvider);
+                AppendFormat(buffer, Value, formatProvider);
                 return buffer.ToString();
             }
 
@@ -894,7 +1311,7 @@ namespace Opc.Ua
         /// <summary>
         /// Append a ByteString as a hex string.
         /// </summary>
-        private void AppendByteString(StringBuilder buffer, byte[] bytes, IFormatProvider formatProvider)
+        private static void AppendByteString(StringBuilder buffer, byte[] bytes, IFormatProvider formatProvider)
         {
             if (bytes != null)
             {
@@ -925,7 +1342,7 @@ namespace Opc.Ua
             if (m_typeInfo.BuiltInType == BuiltInType.ByteString && m_typeInfo.ValueRank < 0)
             {
                 byte[] bytes = (byte[])value;
-                AppendByteString(buffer, bytes, formatProvider);
+                Variant.AppendByteString(buffer, bytes, formatProvider);
                 return;
             }
 
@@ -938,7 +1355,6 @@ namespace Opc.Ua
             }
 
             // recusrively write individual elements of an array.
-
             if (value is Array array && m_typeInfo.ValueRank <= 1)
             {
                 buffer.Append('{');
@@ -948,14 +1364,14 @@ namespace Opc.Ua
                     if (array.Length > 0)
                     {
                         byte[] bytes = (byte[])array.GetValue(0);
-                        AppendByteString(buffer, bytes, formatProvider);
+                        Variant.AppendByteString(buffer, bytes, formatProvider);
                     }
 
                     for (int ii = 1; ii < array.Length; ii++)
                     {
                         buffer.Append('|');
                         byte[] bytes = (byte[])array.GetValue(ii);
-                        AppendByteString(buffer, bytes, formatProvider);
+                        Variant.AppendByteString(buffer, bytes, formatProvider);
                     }
                 }
                 else
@@ -990,9 +1406,6 @@ namespace Opc.Ua
         /// <summary>
         /// Makes a deep copy of the object.
         /// </summary>
-        /// <remarks>
-        /// Makes a deep copy of the object.
-        /// </remarks>
         public new object MemberwiseClone()
         {
             return new Variant(Utils.Clone(this.Value));
@@ -1003,9 +1416,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the objects are not equal.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the objects are not equal.
-        /// </remarks>
         public static bool operator ==(Variant a, Variant b)
         {
             return a.Equals(b);
@@ -1014,9 +1424,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the objects are not equal.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the objects are not equal.
-        /// </remarks>
         public static bool operator !=(Variant a, Variant b)
         {
             return !a.Equals(b);
@@ -1025,9 +1432,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a bool value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a bool value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(bool value)
         {
             return new Variant(value);
@@ -1036,9 +1440,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a sbyte value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a sbyte value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(sbyte value)
         {
             return new Variant(value);
@@ -1047,9 +1448,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a byte value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a byte value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(byte value)
         {
             return new Variant(value);
@@ -1058,9 +1456,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a short value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a short value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(short value)
         {
             return new Variant(value);
@@ -1069,9 +1464,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ushort value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ushort value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ushort value)
         {
             return new Variant(value);
@@ -1080,9 +1472,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a int value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a int value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(int value)
         {
             return new Variant(value);
@@ -1091,9 +1480,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a uint value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a uint value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(uint value)
         {
             return new Variant(value);
@@ -1102,9 +1488,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a long value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a long value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(long value)
         {
             return new Variant(value);
@@ -1113,9 +1496,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ulong value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ulong value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ulong value)
         {
             return new Variant(value);
@@ -1124,9 +1504,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a float value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a float value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(float value)
         {
             return new Variant(value);
@@ -1135,9 +1512,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a double value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a double value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(double value)
         {
             return new Variant(value);
@@ -1146,9 +1520,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a string value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a string value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(string value)
         {
             return new Variant(value);
@@ -1157,9 +1528,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a DateTime value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a DateTime value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(DateTime value)
         {
             return new Variant(value);
@@ -1168,9 +1536,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a Guid value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a Guid value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(Guid value)
         {
             return new Variant(value);
@@ -1179,9 +1544,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a Uuid value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a Uuid value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(Uuid value)
         {
             return new Variant(value);
@@ -1190,9 +1552,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a byte[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a byte[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(byte[] value)
         {
             return new Variant(value);
@@ -1201,9 +1560,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a XmlElement value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a XmlElement value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(XmlElement value)
         {
             return new Variant(value);
@@ -1212,9 +1568,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a NodeId value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a NodeId value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(NodeId value)
         {
             return new Variant(value);
@@ -1223,9 +1576,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ExpandedNodeId value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ExpandedNodeId value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ExpandedNodeId value)
         {
             return new Variant(value);
@@ -1234,9 +1584,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a StatusCode value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a StatusCode value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(StatusCode value)
         {
             return new Variant(value);
@@ -1245,9 +1592,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a QualifiedName value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a QualifiedName value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(QualifiedName value)
         {
             return new Variant(value);
@@ -1256,9 +1600,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a LocalizedText value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a LocalizedText value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(LocalizedText value)
         {
             return new Variant(value);
@@ -1267,9 +1608,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ExtensionObject value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ExtensionObject value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ExtensionObject value)
         {
             return new Variant(value);
@@ -1278,9 +1616,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a DataValue value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a DataValue value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(DataValue value)
         {
             return new Variant(value);
@@ -1289,9 +1624,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a bool[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a bool[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(bool[] value)
         {
             return new Variant(value);
@@ -1300,9 +1632,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a sbyte[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a sbyte[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(sbyte[] value)
         {
             return new Variant(value);
@@ -1311,9 +1640,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a short[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a short[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(short[] value)
         {
             return new Variant(value);
@@ -1322,9 +1648,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ushort[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ushort[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ushort[] value)
         {
             return new Variant(value);
@@ -1333,9 +1656,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a int[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a int[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(int[] value)
         {
             return new Variant(value);
@@ -1344,9 +1664,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a uint[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a uint[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(uint[] value)
         {
             return new Variant(value);
@@ -1355,9 +1672,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a long[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a long[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(long[] value)
         {
             return new Variant(value);
@@ -1366,9 +1680,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ulong[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ulong[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ulong[] value)
         {
             return new Variant(value);
@@ -1377,9 +1688,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a float[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a float[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(float[] value)
         {
             return new Variant(value);
@@ -1388,9 +1696,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a double[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a double[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(double[] value)
         {
             return new Variant(value);
@@ -1399,9 +1704,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a string []value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a string []value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(string[] value)
         {
             return new Variant(value);
@@ -1410,9 +1712,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a DateTime[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a DateTime[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(DateTime[] value)
         {
             return new Variant(value);
@@ -1421,9 +1720,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a Guid[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a Guid[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(Guid[] value)
         {
             return new Variant(value);
@@ -1432,9 +1728,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a Uuid[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a Uuid[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(Uuid[] value)
         {
             return new Variant(value);
@@ -1443,9 +1736,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a byte[][] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a byte[][] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(byte[][] value)
         {
             return new Variant(value);
@@ -1454,9 +1744,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a XmlElement[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a XmlElement[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(XmlElement[] value)
         {
             return new Variant(value);
@@ -1465,9 +1752,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a NodeId[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a NodeId[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(NodeId[] value)
         {
             return new Variant(value);
@@ -1476,9 +1760,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ExpandedNodeId[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ExpandedNodeId[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ExpandedNodeId[] value)
         {
             return new Variant(value);
@@ -1487,9 +1768,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a StatusCode[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a StatusCode[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(StatusCode[] value)
         {
             return new Variant(value);
@@ -1498,9 +1776,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a QualifiedName[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a QualifiedName[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(QualifiedName[] value)
         {
             return new Variant(value);
@@ -1509,9 +1784,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a LocalizedText[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a LocalizedText[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(LocalizedText[] value)
         {
             return new Variant(value);
@@ -1520,9 +1792,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a ExtensionObject[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a ExtensionObject[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(ExtensionObject[] value)
         {
             return new Variant(value);
@@ -1531,9 +1800,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a DataValue[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a DataValue[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(DataValue[] value)
         {
             return new Variant(value);
@@ -1542,9 +1808,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts a Variant[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts a Variant[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(Variant[] value)
         {
             return new Variant(value);
@@ -1553,36 +1816,82 @@ namespace Opc.Ua
         /// <summary>
         /// Converts an object[] value to an Variant object.
         /// </summary>
-        /// <remarks>
-        /// Converts an object[] value to an Variant object.
-        /// </remarks>
         public static implicit operator Variant(object[] value)
         {
             return new Variant(value);
         }
 
         /// <summary>
-        /// Determines if the specified object is equal to the object.
+        /// Determines if the specified Variant is equal to this Variant.
         /// Implements <see cref="IEquatable{Variant}.Equals(Variant)"/>.
         /// </summary>
         public bool Equals(Variant other)
         {
-            Variant? variant = other as Variant?;
-
-            if (variant != null)
+            bool isNull = this.IsNull;
+            bool otherIsNull = other.IsNull;
+            if (isNull && otherIsNull)
             {
-                return Utils.IsEqual(m_value, variant.Value.m_value);
+                return true;
             }
 
-            return false;
+            if (isNull || otherIsNull)
+            {
+                return false;
+            }
+
+            // here both TypeInfo are not null
+            Debug.Assert(this.m_typeInfo != null || other.m_typeInfo != null);
+
+            if (AliasedBuiltInType(this.m_typeInfo.BuiltInType) != AliasedBuiltInType(other.m_typeInfo.BuiltInType) ||
+                this.m_typeInfo.ValueRank != other.m_typeInfo.ValueRank)
+            {
+                return false;
+            }
+
+            if (this.IsValueType())
+            {
+                switch (this.m_typeInfo.BuiltInType)
+                {
+                    case BuiltInType.Boolean: return m_boolean == other.m_boolean;
+                    case BuiltInType.SByte: return m_sbyte == other.m_sbyte;
+                    case BuiltInType.Byte: return m_byte == other.m_byte;
+                    case BuiltInType.Int16: return m_int16 == other.m_int16;
+                    case BuiltInType.UInt16: return m_uint16 == other.m_uint16;
+                    case BuiltInType.Int32: return m_int32 == other.m_int32;
+                    case BuiltInType.UInt32: return m_uint32 == other.m_uint32;
+                    case BuiltInType.Int64: return m_int64 == other.m_int64;
+                    case BuiltInType.UInt64: return m_uint64 == other.m_uint64;
+                    case BuiltInType.Float: return m_float == other.m_float;
+                    case BuiltInType.Double: return m_double == other.m_double;
+                    default: return false;
+                }
+            }
+
+            return Utils.IsEqual(Value, other.Value);
         }
         #endregion
 
-        #region Static Fields
+        #region Static Fields and Methods
         /// <summary>
-        /// An constant containing a null Variant structure.
+        /// A constant containing a null Variant structure.
         /// </summary>
         public static readonly Variant Null = new Variant();
+
+        /// <summary>
+        /// Returns if the Variant is a Null value.
+        /// </summary>
+        public bool IsNull
+        {
+            get
+            {
+                if (!this.IsValueType())
+                {
+                    return this.m_value == null;
+                }
+
+                return false;
+            }
+        }
         #endregion
 
         #region Overridden Methods
@@ -1591,11 +1900,9 @@ namespace Opc.Ua
         /// </summary>
         public override bool Equals(object obj)
         {
-            Variant? variant = obj as Variant?;
-
-            if (variant != null)
+            if (obj is Variant variant)
             {
-                return Utils.IsEqual(m_value, variant.Value.m_value);
+                return Equals((Variant)variant);
             }
 
             return false;
@@ -1606,12 +1913,44 @@ namespace Opc.Ua
         /// </summary>
         public override int GetHashCode()
         {
-            if (this.m_value != null)
+            if (IsNull)
             {
-                return m_value.GetHashCode();
+                return 0;
             }
 
-            return 0;
+            HashCode hash = new HashCode();
+            if (m_typeInfo != null)
+            {
+                hash.Add(AliasedBuiltInType(m_typeInfo.BuiltInType));
+                hash.Add(m_typeInfo.ValueRank);
+            }
+
+            if (IsValueType())
+            {
+                switch (m_typeInfo.BuiltInType)
+                {
+                    case BuiltInType.Boolean: hash.Add(m_boolean); break;
+                    case BuiltInType.SByte: hash.Add(m_sbyte); break;
+                    case BuiltInType.Byte: hash.Add(m_byte); break;
+                    case BuiltInType.Int16: hash.Add(m_int16); break;
+                    case BuiltInType.UInt16: hash.Add(m_uint16); break;
+                    case BuiltInType.Int32: hash.Add(m_int32); break;
+                    case BuiltInType.UInt32: hash.Add(m_uint32); break;
+                    case BuiltInType.Int64: hash.Add(m_int64); break;
+                    case BuiltInType.UInt64: hash.Add(m_uint64); break;
+                    case BuiltInType.Float: hash.Add(m_float); break;
+                    case BuiltInType.Double: hash.Add(m_double); break;
+                }
+                return hash.ToHashCode();
+            }
+
+            object value = Value;
+            if (value != null)
+            {
+                hash.Add(value);
+            }
+
+            return hash.ToHashCode();
         }
 
         /// <summary>
@@ -1623,7 +1962,7 @@ namespace Opc.Ua
         }
         #endregion
 
-        #region Public Methods
+        #region Private Set Methods
         /// <summary>
         /// Initializes the object with a bool value.
         /// </summary>
@@ -1631,10 +1970,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="bool"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="bool"/> value to set this Variant to</param>
-        public void Set(bool value)
+        private void Set(bool value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Boolean;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1644,10 +1982,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="sbyte"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="sbyte"/> value to set this Variant to</param>
-        public void Set(sbyte value)
+        private void Set(sbyte value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.SByte;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1657,10 +1994,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="byte"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="byte"/> value to set this Variant to</param>
-        public void Set(byte value)
+        private void Set(byte value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Byte;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1670,10 +2006,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="short"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="short"/> value to set this Variant to</param>
-        public void Set(short value)
+        private void Set(short value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Int16;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1683,10 +2018,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ushort"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="ushort"/> value to set this Variant to</param>
-        public void Set(ushort value)
+        private void Set(ushort value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.UInt16;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1696,10 +2030,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="int"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="int"/> value to set this Variant to</param>
-        public void Set(int value)
+        private void Set(int value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Int32;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1709,10 +2042,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="uint"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="uint"/> value to set this Variant to</param>
-        public void Set(uint value)
+        private void Set(uint value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.UInt32;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1722,10 +2054,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="long"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="long"/> value to set this Variant to</param>
-        public void Set(long value)
+        private void Set(long value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Int64;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1735,10 +2066,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ulong"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="ulong"/> value to set this Variant to</param>
-        public void Set(ulong value)
+        private void Set(ulong value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.UInt64;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1748,10 +2078,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="float"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="float"/> value to set this Variant to</param>
-        public void Set(float value)
+        private void Set(float value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Float;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1761,10 +2090,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="double"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="double"/> value to set this Variant to</param>
-        public void Set(double value)
+        private void Set(double value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Double;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1774,10 +2102,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="string"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="string"/> value to set this Variant to</param>
-        public void Set(string value)
+        private void Set(string value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.String;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1787,10 +2114,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="DateTime"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="DateTime"/> value to set this Variant to</param>
-        public void Set(DateTime value)
+        private void Set(DateTime value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.DateTime;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1800,10 +2126,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="Guid"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="Guid"/> value to set this Variant to</param>
-        public void Set(Guid value)
+        private void Set(Guid value)
         {
-            m_value = new Uuid(value);
-            m_typeInfo = TypeInfo.Scalars.Guid;
+            this = new Variant(new Uuid(value));
         }
 
         /// <summary>
@@ -1813,10 +2138,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="Uuid"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="Uuid"/> value to set this Variant to</param>
-        public void Set(Uuid value)
+        private void Set(Uuid value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.Guid;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1826,10 +2150,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="byte"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="byte"/>-array value to set this Variant to</param>
-        public void Set(byte[] value)
+        private void Set(byte[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.ByteString;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1839,10 +2162,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="XmlElement"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="XmlElement"/> value to set this Variant to</param>
-        public void Set(XmlElement value)
+        private void Set(XmlElement value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.XmlElement;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1852,10 +2174,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="NodeId"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="NodeId"/> value to set this Variant to</param>
-        public void Set(NodeId value)
+        private void Set(NodeId value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.NodeId;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1865,10 +2186,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ExpandedNodeId"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="ExpandedNodeId"/> value to set this Variant to</param>
-        public void Set(ExpandedNodeId value)
+        private void Set(ExpandedNodeId value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.ExpandedNodeId;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1878,10 +2198,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="StatusCode"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="StatusCode"/> value to set this Variant to</param>
-        public void Set(StatusCode value)
+        private void Set(StatusCode value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.StatusCode;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1891,10 +2210,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="QualifiedName"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="QualifiedName"/> value to set this Variant to</param>
-        public void Set(QualifiedName value)
+        private void Set(QualifiedName value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.QualifiedName;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1904,10 +2222,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="LocalizedText"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="LocalizedText"/> value to set this Variant to</param>
-        public void Set(LocalizedText value)
+        private void Set(LocalizedText value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.LocalizedText;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1917,10 +2234,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ExtensionObject"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="ExtensionObject"/> value to set this Variant to</param>
-        public void Set(ExtensionObject value)
+        private void Set(ExtensionObject value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.ExtensionObject;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1930,10 +2246,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="DataValue"/> value.
         /// </remarks>
         /// <param name="value">The <see cref="DataValue"/> value to set this Variant to</param>
-        public void Set(DataValue value)
+        private void Set(DataValue value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Scalars.DataValue;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1943,10 +2258,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="bool"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="bool"/>-array value to set this Variant to</param>
-        public void Set(bool[] value)
+        private void Set(bool[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Boolean;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1956,10 +2270,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="sbyte"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="sbyte"/>-array value to set this Variant to</param>
-        public void Set(sbyte[] value)
+        private void Set(sbyte[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.SByte;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1969,10 +2282,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="short"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="short"/>-array value to set this Variant to</param>
-        public void Set(short[] value)
+        private void Set(short[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Int16;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1982,10 +2294,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ushort"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="ushort"/>-array value to set this Variant to</param>
-        public void Set(ushort[] value)
+        private void Set(ushort[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.UInt16;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -1995,10 +2306,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="int"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="int"/>-array value to set this Variant to</param>
-        public void Set(int[] value)
+        private void Set(int[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Int32;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2008,10 +2318,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="uint"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="uint"/>-array value to set this Variant to</param>
-        public void Set(uint[] value)
+        private void Set(uint[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.UInt32;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2021,10 +2330,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="long"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="long"/>-array value to set this Variant to</param>
-        public void Set(long[] value)
+        private void Set(long[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Int64;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2034,10 +2342,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ulong"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="ulong"/>-array value to set this Variant to</param>
-        public void Set(ulong[] value)
+        private void Set(ulong[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.UInt64;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2047,10 +2354,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="float"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="float"/>-array value to set this Variant to</param>
-        public void Set(float[] value)
+        private void Set(float[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Float;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2060,10 +2366,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="double"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="double"/>-array value to set this Variant to</param>
-        public void Set(double[] value)
+        private void Set(double[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Double;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2073,10 +2378,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="string"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="string"/>-array value to set this Variant to</param>
-        public void Set(string[] value)
+        private void Set(string[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.String;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2086,10 +2390,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="DateTime"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="DateTime"/>-array value to set this Variant to</param>
-        public void Set(DateTime[] value)
+        private void Set(DateTime[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.DateTime;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2099,10 +2402,8 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="Guid"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="Guid"/>-array value to set this Variant to</param>
-        public void Set(Guid[] value)
+        private void Set(Guid[] value)
         {
-            m_value = null;
-
             if (value != null)
             {
                 Uuid[] uuids = new Uuid[value.Length];
@@ -2112,10 +2413,12 @@ namespace Opc.Ua
                     uuids[ii] = new Uuid(value[ii]);
                 }
 
-                m_value = uuids;
+                this = new Variant(uuids);
             }
-
-            m_typeInfo = TypeInfo.Arrays.Guid;
+            else
+            {
+                this = new Variant((Uuid[])null);
+            }
         }
 
         /// <summary>
@@ -2125,10 +2428,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="Uuid"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="Uuid"/>-array value to set this Variant to</param>
-        public void Set(Uuid[] value)
+        private void Set(Uuid[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Guid;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2138,10 +2440,9 @@ namespace Opc.Ua
         /// Initializes the object with a 2-d <see cref="byte"/>-array value.
         /// </remarks>
         /// <param name="value">The 2-d <see cref="byte"/>-array value to set this Variant to</param>
-        public void Set(byte[][] value)
+        private void Set(byte[][] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.ByteString;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2151,10 +2452,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="XmlElement"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="XmlElement"/>-array value to set this Variant to</param>
-        public void Set(XmlElement[] value)
+        private void Set(XmlElement[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.XmlElement;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2164,10 +2464,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="NodeId"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="NodeId"/>-array value to set this Variant to</param>
-        public void Set(NodeId[] value)
+        private void Set(NodeId[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.NodeId;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2177,10 +2476,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ExpandedNodeId"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="ExpandedNodeId"/>-array value to set this Variant to</param>
-        public void Set(ExpandedNodeId[] value)
+        private void Set(ExpandedNodeId[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.ExpandedNodeId;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2190,10 +2488,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="StatusCode"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="StatusCode"/>-array value to set this Variant to</param>
-        public void Set(StatusCode[] value)
+        private void Set(StatusCode[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.StatusCode;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2203,10 +2500,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="QualifiedName"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="QualifiedName"/>-array value to set this Variant to</param>
-        public void Set(QualifiedName[] value)
+        private void Set(QualifiedName[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.QualifiedName;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2216,10 +2512,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="LocalizedText"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="LocalizedText"/>-array value to set this Variant to</param>
-        public void Set(LocalizedText[] value)
+        private void Set(LocalizedText[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.LocalizedText;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2229,10 +2524,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="ExtensionObject"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="ExtensionObject"/>-array value to set this Variant to</param>
-        public void Set(ExtensionObject[] value)
+        private void Set(ExtensionObject[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.ExtensionObject;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2242,10 +2536,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="DataValue"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="DataValue"/>-array value to set this Variant to</param>
-        public void Set(DataValue[] value)
+        private void Set(DataValue[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.DataValue;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2255,10 +2548,9 @@ namespace Opc.Ua
         /// Initializes the object with a <see cref="Variant"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="Variant"/>-array value to set this Variant to</param>
-        public void Set(Variant[] value)
+        private void Set(Variant[] value)
         {
-            m_value = value;
-            m_typeInfo = TypeInfo.Arrays.Variant;
+            this = new Variant(value);
         }
 
         /// <summary>
@@ -2268,10 +2560,8 @@ namespace Opc.Ua
         /// Initializes the object with an <see cref="object"/>-array value.
         /// </remarks>
         /// <param name="value">The <see cref="object"/>-array value to set this Variant to</param>
-        public void Set(object[] value)
+        private void Set(object[] value)
         {
-            m_value = null;
-
             if (value != null)
             {
                 Variant[] anyValues = new Variant[value.Length];
@@ -2281,21 +2571,32 @@ namespace Opc.Ua
                     anyValues[ii] = new Variant(value[ii]);
                 }
 
-                m_value = anyValues;
+                this = new Variant(anyValues);
             }
-
-            m_typeInfo = TypeInfo.Arrays.Variant;
+            else
+            {
+                this = new Variant((Variant[])null);
+            }
         }
         #endregion
 
         #region Private Methods
         /// <summary>
+        /// Returns the aliased <see cref="BuiltInType"/> for compares and hashcode calculations..
+        /// </summary>
+        /// <remarks>
+        /// <see cref="BuiltInType.Enumeration"/> is treated as <see cref="BuiltInType.Int32"/>.
+        /// </remarks>
+        private static BuiltInType AliasedBuiltInType(BuiltInType builtInType)
+        {
+            return builtInType == BuiltInType.Enumeration ? BuiltInType.Int32 : builtInType;
+        }
+
+        /// <summary>
         /// Stores a scalar value in the variant.
         /// </summary>
         private void SetScalar(object value, TypeInfo typeInfo)
         {
-            m_typeInfo = typeInfo;
-
             switch (typeInfo.BuiltInType)
             {
                 // handle special types that can be converted to something the variant supports.
@@ -2309,10 +2610,9 @@ namespace Opc.Ua
                     }
 
                     // check for matrix
-
                     if (value is Matrix matrix)
                     {
-                        m_value = matrix;
+                        this = new Variant(matrix);
                         return;
                     }
 
@@ -2325,15 +2625,14 @@ namespace Opc.Ua
                 // convert Guids to Uuids.
                 case BuiltInType.Guid:
                 {
-                    Guid? guid = value as Guid?;
-
+                    var guid = value as Guid?;
                     if (guid != null)
                     {
-                        m_value = new Uuid(guid.Value);
+                        this = new Variant(new Uuid(guid.Value));
                         return;
                     }
 
-                    m_value = value;
+                    this = new Variant((Uuid)value);
                     return;
                 }
 
@@ -2342,26 +2641,91 @@ namespace Opc.Ua
                 {
                     if (value is IEncodeable encodeable)
                     {
-                        m_value = new ExtensionObject(encodeable);
+                        this = new Variant(new ExtensionObject(encodeable));
                         return;
                     }
 
-                    m_value = value;
+                    this = new Variant(value, typeInfo, true);
                     return;
                 }
 
                 // convert encodeables to extension objects.
                 case BuiltInType.Variant:
                 {
-                    m_value = ((Variant)value).Value;
-                    m_typeInfo = TypeInfo.Construct(m_value);
+                    this = new Variant(((Variant)value).Value);
+                    return;
+                }
+
+                case BuiltInType.Boolean:
+                {
+                    this = new Variant(value, (bool)value);
+                    return;
+                }
+
+                case BuiltInType.Byte:
+                {
+                    this = new Variant(value, (byte)value);
+                    return;
+                }
+
+                case BuiltInType.SByte:
+                {
+                    this = new Variant(value, (sbyte)value);
+                    return;
+                }
+
+                case BuiltInType.Int16:
+                {
+                    this = new Variant(value, (short)value);
+                    return;
+                }
+
+                case BuiltInType.UInt16:
+                {
+                    this = new Variant(value, (ushort)value);
+                    return;
+                }
+
+                case BuiltInType.Int32:
+                {
+                    this = new Variant(value, (int)value);
+                    return;
+                }
+
+                case BuiltInType.UInt32:
+                {
+                    this = new Variant(value, (uint)value);
+                    return;
+                }
+
+                case BuiltInType.Int64:
+                {
+                    this = new Variant(value, (long)value);
+                    return;
+                }
+
+                case BuiltInType.UInt64:
+                {
+                    this = new Variant(value, (ulong)value);
+                    return;
+                }
+
+                case BuiltInType.Float:
+                {
+                    this = new Variant(value, (float)value);
+                    return;
+                }
+
+                case BuiltInType.Double:
+                {
+                    this = new Variant(value, (double)value);
                     return;
                 }
 
                 // just save the value.
                 default:
                 {
-                    m_value = value;
+                    this = new Variant(value, typeInfo, true);
                     return;
                 }
             }
@@ -2372,8 +2736,6 @@ namespace Opc.Ua
         /// </summary>
         private void SetArray(Array array, TypeInfo typeInfo)
         {
-            m_typeInfo = typeInfo;
-
             switch (typeInfo.BuiltInType)
             {
                 // handle special types that can be converted to something the variant supports.
@@ -2389,7 +2751,7 @@ namespace Opc.Ua
                             values[ii] = Convert.ToInt32(array.GetValue(ii), CultureInfo.InvariantCulture);
                         }
 
-                        m_value = values;
+                        Set(values);
                         return;
                     }
 
@@ -2408,7 +2770,7 @@ namespace Opc.Ua
                         return;
                     }
 
-                    m_value = array;
+                    Set((Uuid[])array);
                     return;
                 }
 
@@ -2424,11 +2786,11 @@ namespace Opc.Ua
                             extensions[ii] = new ExtensionObject(encodeables[ii]);
                         }
 
-                        m_value = extensions;
+                        Set(extensions);
                         return;
                     }
 
-                    m_value = array;
+                    Set((ExtensionObject[])array);
                     return;
                 }
 
@@ -2444,18 +2806,18 @@ namespace Opc.Ua
                             variants[ii] = new Variant(objects[ii]);
                         }
 
-                        m_value = variants;
+                        Set(variants);
                         return;
                     }
 
-                    m_value = array;
+                    Set((Variant[])array);
                     return;
                 }
 
                 // just save the value.
                 default:
                 {
-                    m_value = array;
+                    this = new Variant(array, typeInfo, true);
                     return;
                 }
             }
@@ -2466,8 +2828,6 @@ namespace Opc.Ua
         /// </summary>
         private void SetList(IList value, TypeInfo typeInfo)
         {
-            m_typeInfo = typeInfo;
-
             Array array = TypeInfo.CreateArray(typeInfo.BuiltInType, value.Count);
 
             for (int ii = 0; ii < value.Count; ii++)
@@ -2495,8 +2855,7 @@ namespace Opc.Ua
             // check for null values.
             if (value == null)
             {
-                m_value = null;
-                m_typeInfo = typeInfo;
+                this = new Variant(typeInfo);
                 return;
             }
 
@@ -2520,7 +2879,6 @@ namespace Opc.Ua
                 }
 
                 // handle lists.
-
                 if (value is IList list)
                 {
                     SetList(list, typeInfo);
@@ -2531,30 +2889,59 @@ namespace Opc.Ua
             // handle multidimensional array.
             if (array != null)
             {
-                m_value = new Matrix(array, typeInfo.BuiltInType);
-                m_typeInfo = typeInfo;
+                this = new Variant(new Matrix(array, typeInfo.BuiltInType));
                 return;
             }
 
             // handle matrix.
-
             if (value is Matrix matrix)
             {
-                m_value = matrix;
-                m_typeInfo = matrix.TypeInfo;
+                this = new Variant(matrix);
                 return;
             }
 
             // not supported.
             throw new ServiceResultException(
-                   StatusCodes.BadNotSupported,
-                   Utils.Format("Arrays of the type '{0}' cannot be stored in a Variant object.", value.GetType().FullName));
+                StatusCodes.BadNotSupported,
+                Utils.Format("Arrays of the type '{0}' cannot be stored in a Variant object.", value.GetType().FullName));
+        }
+
+        /// <summary>
+        /// Throws an exception if the Variant type does not match the expected type.
+        /// </summary>
+        private InvalidOperationException ThrowOnFailedDirectAccess([CallerMemberName] string callerMembername = "")
+        {
+            return new InvalidOperationException(Utils.Format("Failed to directly access the Variant value using {0} because the BuiltInType is {1}", callerMembername, Enum.GetName(m_typeInfo.BuiltInType)));
         }
         #endregion
 
         #region Private Members
+        [FieldOffset(0)]
+        private readonly bool m_boolean;
+        [FieldOffset(0)]
+        private readonly sbyte m_sbyte;
+        [FieldOffset(0)]
+        private readonly byte m_byte;
+        [FieldOffset(0)]
+        private readonly short m_int16;
+        [FieldOffset(0)]
+        private readonly ushort m_uint16;
+        [FieldOffset(0)]
+        private readonly int m_int32;
+        [FieldOffset(0)]
+        private readonly uint m_uint32;
+        [FieldOffset(0)]
+        private readonly long m_int64;
+        [FieldOffset(0)]
+        private readonly ulong m_uint64;
+        [FieldOffset(0)]
+        private readonly float m_float;
+        [FieldOffset(0)]
+        private readonly double m_double;
+        [FieldOffset(8)]
+        private readonly TypeInfo m_typeInfo;
+        [FieldOffset(16)]
         private object m_value;
-        private TypeInfo m_typeInfo;
         #endregion
     }
 

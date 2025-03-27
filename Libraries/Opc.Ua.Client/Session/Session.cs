@@ -4503,7 +4503,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Object does not support the EventNotifier attribute.");
                     }
 
-                    objectNode.EventNotifier = value.GetValueOrDefault<byte>();
+                    objectNode.EventNotifier = value.GetValueOrDefault<byte>(v => v.ValueByte);
                     node = objectNode;
                     break;
                 }
@@ -4519,7 +4519,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "ObjectType does not support the IsAbstract attribute.");
                     }
 
-                    objectTypeNode.IsAbstract = value.GetValueOrDefault<bool>();
+                    objectTypeNode.IsAbstract = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
                     node = objectTypeNode;
                     break;
                 }
@@ -4546,14 +4546,14 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Variable does not support the ValueRank attribute.");
                     }
 
-                    variableNode.ValueRank = value.GetValueOrDefault<int>();
+                    variableNode.ValueRank = value.GetValueOrDefault<int>(v => v.ValueInt32);
 
                     // ArrayDimensions Attribute
                     value = attributes[Attributes.ArrayDimensions];
 
                     if (value != null)
                     {
-                        if (value.Value == null)
+                        if (value.WrappedValue.IsNull)
                         {
                             variableNode.ArrayDimensions = Array.Empty<uint>();
                         }
@@ -4571,7 +4571,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Variable does not support the AccessLevel attribute.");
                     }
 
-                    variableNode.AccessLevel = value.GetValueOrDefault<byte>();
+                    variableNode.AccessLevel = value.GetValueOrDefault<byte>(v => v.ValueByte);
 
                     // UserAccessLevel Attribute
                     value = attributes[Attributes.UserAccessLevel];
@@ -4581,7 +4581,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Variable does not support the UserAccessLevel attribute.");
                     }
 
-                    variableNode.UserAccessLevel = value.GetValueOrDefault<byte>();
+                    variableNode.UserAccessLevel = value.GetValueOrDefault<byte>(v => v.ValueByte);
 
                     // Historizing Attribute
                     value = attributes[Attributes.Historizing];
@@ -4591,7 +4591,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Variable does not support the Historizing attribute.");
                     }
 
-                    variableNode.Historizing = value.GetValueOrDefault<bool>();
+                    variableNode.Historizing = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // MinimumSamplingInterval Attribute
                     value = attributes[Attributes.MinimumSamplingInterval];
@@ -4606,7 +4606,7 @@ namespace Opc.Ua.Client
 
                     if (value != null)
                     {
-                        variableNode.AccessLevelEx = value.GetValueOrDefault<uint>();
+                        variableNode.AccessLevelEx = value.GetValueOrDefault<uint>(v => v.ValueUInt32);
                     }
 
                     node = variableNode;
@@ -4625,7 +4625,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "VariableType does not support the IsAbstract attribute.");
                     }
 
-                    variableTypeNode.IsAbstract = value.GetValueOrDefault<bool>();
+                    variableTypeNode.IsAbstract = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // DataType Attribute
                     value = attributes[Attributes.DataType];
@@ -4645,12 +4645,12 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "VariableType does not support the ValueRank attribute.");
                     }
 
-                    variableTypeNode.ValueRank = value.GetValueOrDefault<int>();
+                    variableTypeNode.ValueRank = value.GetValueOrDefault<int>(v => v.ValueInt32);
 
                     // ArrayDimensions Attribute
                     value = attributes[Attributes.ArrayDimensions];
 
-                    if (value != null && value.Value != null)
+                    if (value != null && !value.WrappedValue.IsNull)
                     {
                         variableTypeNode.ArrayDimensions = (uint[])value.GetValue(typeof(uint[]));
                     }
@@ -4671,7 +4671,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Method does not support the Executable attribute.");
                     }
 
-                    methodNode.Executable = value.GetValueOrDefault<bool>();
+                    methodNode.Executable = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // UserExecutable Attribute
                     value = attributes[Attributes.UserExecutable];
@@ -4681,7 +4681,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "Method does not support the UserExecutable attribute.");
                     }
 
-                    methodNode.UserExecutable = value.GetValueOrDefault<bool>();
+                    methodNode.UserExecutable = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     node = methodNode;
                     break;
@@ -4699,7 +4699,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "DataType does not support the IsAbstract attribute.");
                     }
 
-                    dataTypeNode.IsAbstract = value.GetValueOrDefault<bool>();
+                    dataTypeNode.IsAbstract = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // DataTypeDefinition Attribute
                     value = attributes[Attributes.DataTypeDefinition];
@@ -4725,7 +4725,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "ReferenceType does not support the IsAbstract attribute.");
                     }
 
-                    referenceTypeNode.IsAbstract = value.GetValueOrDefault<bool>();
+                    referenceTypeNode.IsAbstract = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // Symmetric Attribute
                     value = attributes[Attributes.Symmetric];
@@ -4735,12 +4735,12 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "ReferenceType does not support the Symmetric attribute.");
                     }
 
-                    referenceTypeNode.Symmetric = value.GetValueOrDefault<bool>();
+                    referenceTypeNode.Symmetric = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     // InverseName Attribute
                     value = attributes[Attributes.InverseName];
 
-                    if (value != null && value.Value != null)
+                    if (value != null && !value.WrappedValue.IsNull)
                     {
                         referenceTypeNode.InverseName = (LocalizedText)value.GetValue(typeof(LocalizedText));
                     }
@@ -4761,7 +4761,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "View does not support the EventNotifier attribute.");
                     }
 
-                    viewNode.EventNotifier = value.GetValueOrDefault<byte>();
+                    viewNode.EventNotifier = value.GetValueOrDefault<byte>(v => v.ValueByte);
 
                     // ContainsNoLoops Attribute
                     value = attributes[Attributes.ContainsNoLoops];
@@ -4771,7 +4771,7 @@ namespace Opc.Ua.Client
                         throw ServiceResultException.Create(StatusCodes.BadUnexpectedError, "View does not support the ContainsNoLoops attribute.");
                     }
 
-                    viewNode.ContainsNoLoops = value.GetValueOrDefault<bool>();
+                    viewNode.ContainsNoLoops = value.GetValueOrDefault<bool>(v => v.ValueBoolean);
 
                     node = viewNode;
                     break;
@@ -4822,14 +4822,14 @@ namespace Opc.Ua.Client
             if (attributes.TryGetValue(Attributes.WriteMask, out value) &&
                 value != null)
             {
-                node.WriteMask = value.GetValueOrDefault<uint>();
+                node.WriteMask = value.GetValueOrDefault<uint>(v => v.ValueUInt32);
             }
 
             // UserWriteMask Attribute
             if (attributes.TryGetValue(Attributes.UserWriteMask, out value) &&
                 value != null)
             {
-                node.UserWriteMask = value.GetValueOrDefault<uint>();
+                node.UserWriteMask = value.GetValueOrDefault<uint>(v => v.ValueUInt32);
             }
 
             // RolePermissions Attribute
@@ -4870,7 +4870,7 @@ namespace Opc.Ua.Client
             if (attributes.TryGetValue(Attributes.AccessRestrictions, out value) &&
                 value != null)
             {
-                node.AccessRestrictions = value.GetValueOrDefault<ushort>();
+                node.AccessRestrictions = value.GetValueOrDefault<ushort>(v => v.ValueUInt16);
             }
 
             return node;
@@ -4881,8 +4881,10 @@ namespace Opc.Ua.Client
         /// </summary>
         private Dictionary<uint, DataValue> CreateAttributes(NodeClass nodeclass = NodeClass.Unspecified, bool optionalAttributes = true)
         {
+            const int maxAttributes = 28;
+
             // Attributes to read for all types of nodes
-            var attributes = new Dictionary<uint, DataValue>() {
+            var attributes = new Dictionary<uint, DataValue>(maxAttributes) {
                 { Attributes.NodeId, null },
                 { Attributes.NodeClass, null },
                 { Attributes.BrowseName, null },
@@ -4940,7 +4942,7 @@ namespace Opc.Ua.Client
 
                 default:
                     // build complete list of attributes.
-                    attributes = new Dictionary<uint, DataValue> {
+                    attributes = new Dictionary<uint, DataValue>(maxAttributes) {
                         { Attributes.NodeId, null },
                         { Attributes.NodeClass, null },
                         { Attributes.BrowseName, null },

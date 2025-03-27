@@ -1179,7 +1179,7 @@ namespace Opc.Ua
         /// <inheritdoc/>
         public void WriteVariant(string fieldName, Variant value)
         {
-            bool isNull = (value.TypeInfo == null || value.TypeInfo.BuiltInType == BuiltInType.Null || value.Value == null);
+            bool isNull = (value.TypeInfo == null || value.TypeInfo.BuiltInType == BuiltInType.Null || value.IsNull);
 
             if (EncodingToUse == JsonEncodingType.Compact || EncodingToUse == JsonEncodingType.Verbose)
             {
@@ -1222,7 +1222,7 @@ namespace Opc.Ua
                 }
 
                 m_writer.WritePropertyName("Body"u8);
-                WriteVariantContents(value.Value, value.TypeInfo);
+                WriteVariantContents(value);
 
                 if (value.Value is Matrix matrix)
                 {
@@ -1236,7 +1236,7 @@ namespace Opc.Ua
                 m_nestingLevel++;
 
                 m_writer.WritePropertyName(fieldName);
-                WriteVariantContents(value.Value, value.TypeInfo);
+                WriteVariantContents(value);
 
                 m_nestingLevel--;
             }
@@ -1244,7 +1244,7 @@ namespace Opc.Ua
 
         private void WriteVariantIntoObject(string fieldName, Variant value)
         {
-            if (Variant.Null == value)
+            if (value.IsNull)
             {
                 return;
             }
@@ -1275,7 +1275,7 @@ namespace Opc.Ua
                     m_writer.WritePropertyName(fieldName);
                 }
 
-                WriteVariantContents(value.Value, value.TypeInfo);
+                WriteVariantContents(value);
 
                 if (value.Value is Matrix matrix)
                 {
@@ -1449,7 +1449,7 @@ namespace Opc.Ua
                         }
 
                         string text = json.ToString(Newtonsoft.Json.Formatting.None);
-                        m_writer.WriteRawValue(text.Substring(1, text.Length - 2));
+                        m_writer.WriteRawValue(text.AsSpan(1, text.Length - 2));
                     }
                     else if (value.Encoding == ExtensionObjectEncoding.Binary)
                     {
@@ -1498,7 +1498,7 @@ namespace Opc.Ua
                 if (body is JObject json)
                 {
                     string text = json.ToString(Newtonsoft.Json.Formatting.None);
-                    m_writer.WriteRawValue(text.Substring(1, text.Length - 2));
+                    m_writer.WriteRawValue(text.AsSpan(1, text.Length - 2));
                 }
                 else
                 {
@@ -2107,7 +2107,7 @@ namespace Opc.Ua
 
             for (int ii = 0; ii < values.Count; ii++)
             {
-                if (values[ii] == Variant.Null)
+                if (values[ii].IsNull)
                 {
                     m_writer.WriteNullValue();
                     continue;
@@ -2425,7 +2425,7 @@ namespace Opc.Ua
 
             if (mask == DataSetFieldContentMask.None && StatusCode.IsBad(dv.StatusCode))
             {
-                dv = new DataValue() { WrappedValue = dv.StatusCode };
+                dv = new DataValue() { WrappedValue = new Variant(dv.StatusCode) };
             }
 
             WriteRawValueContents(field, dv);
@@ -2499,7 +2499,7 @@ namespace Opc.Ua
                     if (ii is Variant vt)
                     {
                         PushStructure();
-                        WriteVariantContents(vt.Value, vt.TypeInfo);
+                        WriteVariantContents(vt);
                         PopStructure();
                     }
                     else
@@ -2521,10 +2521,10 @@ namespace Opc.Ua
             object value = dv.Value;
             TypeInfo typeInfo = dv.WrappedValue.TypeInfo;
 
-            if (dv.WrappedValue == Variant.Null)
+            if (dv.WrappedValue.IsNull)
             {
                 value = TypeInfo.GetDefaultValue(NodeId.Create(field.BuiltInType), field.ValueRank);
-                typeInfo = new TypeInfo((BuiltInType)field.BuiltInType, field.ValueRank);
+                typeInfo = TypeInfo.Create((BuiltInType)field.BuiltInType, field.ValueRank);
 
                 if (value != null)
                 {
@@ -2561,15 +2561,16 @@ namespace Opc.Ua
                 {
                     PushStructure();
                     PushArray("Array");
-
-                    foreach (object ii in matrix.Elements)
+                    if (field.BuiltInType == (byte)BuiltInType.ExtensionObject)
                     {
-                        if (field.BuiltInType == (byte)BuiltInType.ExtensionObject)
+                        foreach (object ii in matrix.Elements)
                         {
                             WriteRawExtensionObject(ii);
-                            continue;
                         }
-                        else if (field.BuiltInType == (byte)BuiltInType.Variant)
+                    }
+                    else if (field.BuiltInType == (byte)BuiltInType.Variant)
+                    {
+                        foreach (object ii in matrix.Elements)
                         {
                             if (ii is Variant vt)
                             {
@@ -2579,10 +2580,15 @@ namespace Opc.Ua
                             {
                                 m_writer.WriteNullValue();
                             }
-                            continue;
                         }
-
-                        WriteVariantContents(ii, new TypeInfo((BuiltInType)field.BuiltInType, ValueRanks.Scalar));
+                    }
+                    else
+                    {
+                        TypeInfo elementInfo = TypeInfo.CreateScalar((BuiltInType)field.BuiltInType);
+                        foreach (object ii in matrix.Elements)
+                        {
+                            WriteVariantContents(ii, elementInfo);
+                        }
                     }
 
                     PopArray();
@@ -2664,19 +2670,48 @@ namespace Opc.Ua
         /// <summary>
         /// Writes the contents of a Variant to the stream.
         /// </summary>
+        private void WriteVariantContents(Variant variant)
+        {
+            // write scalar.
+            TypeInfo typeInfo = variant.TypeInfo;
+            if (typeInfo != null && typeInfo.ValueRank == ValueRanks.Scalar)
+            {
+                // use the value type directly
+                switch (typeInfo.BuiltInType)
+                {
+                    case BuiltInType.Boolean: { WriteBoolean((string)null, variant.ValueBoolean); return; }
+                    case BuiltInType.SByte: { WriteSByte((string)null, variant.ValueSByte); return; }
+                    case BuiltInType.Byte: { WriteByte((string)null, variant.ValueByte); return; }
+                    case BuiltInType.Int16: { WriteInt16((string)null, variant.ValueInt16); return; }
+                    case BuiltInType.UInt16: { WriteUInt16((string)null, variant.ValueUInt16); return; }
+                    case BuiltInType.Int32: { WriteInt32((string)null, variant.ValueInt32); return; }
+                    case BuiltInType.UInt32: { WriteUInt32((string)null, variant.ValueUInt32); return; }
+                    case BuiltInType.Int64: { WriteInt64((string)null, variant.ValueInt64); return; }
+                    case BuiltInType.UInt64: { WriteUInt64((string)null, variant.ValueUInt64); return; }
+                    case BuiltInType.Float: { WriteFloat((string)null, variant.ValueFloat); return; }
+                    case BuiltInType.Double: { WriteDouble((string)null, variant.ValueDouble); return; }
+                }
+            }
+
+            WriteVariantContents(variant.Value, typeInfo);
+        }
+
+        /// <summary>
+        /// Writes the contents of a Variant to the stream.
+        /// </summary>
         private void WriteVariantContents(object value, TypeInfo typeInfo)
         {
+            // check for null.
+            if (value == null)
+            {
+                m_writer.WriteNullValue();
+                return;
+            }
+
             bool inVariantWithEncoding = m_inVariantWithEncoding;
             try
             {
                 m_inVariantWithEncoding = true;
-
-                // check for null.
-                if (value == null)
-                {
-                    m_writer.WriteNullValue();
-                    return;
-                }
 
                 // write scalar.
                 if (typeInfo.ValueRank < 0)
@@ -2898,7 +2933,6 @@ namespace Opc.Ua
         {
             Debug.Assert(fieldName != null);
 
-            // unlike Span<byte>, Span<char> can not become null, handle the case here
             if (value == null)
             {
                 WriteSimpleFieldNullOrOmit(fieldName);
@@ -3046,7 +3080,7 @@ namespace Opc.Ua
         /// <summary>
         /// Writes a Variant array to the stream.
         /// </summary>
-        private void WriteObjectArray(string fieldName, IList<object> values)
+        private void WriteObjectArray(string fieldName, object[] values)
         {
             if (CheckForSimpleFieldNull(fieldName, values))
             {
@@ -3057,7 +3091,7 @@ namespace Opc.Ua
 
             if (values != null)
             {
-                for (int ii = 0; ii < values.Count; ii++)
+                for (int ii = 0; ii < values.Length; ii++)
                 {
                     WriteVariant("Variant", new Variant(values[ii]));
                 }

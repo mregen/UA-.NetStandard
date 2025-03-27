@@ -680,10 +680,10 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
             Assert.True(nodeId.Equals(new NodeId((byte[])null)));
             Assert.True(nodeId.Equals(new NodeId((string)null)));
 
-            DataValue nodeIdBasedDataValue = new DataValue(nodeId);
+            DataValue nodeIdBasedDataValue = new DataValue(new Variant(nodeId));
 
             DataValue dataValue = new DataValue(Attributes.NodeClass);
-            dataValue.Value = (int)Attributes.NodeClass; // without this cast the second and third asserts evaluate correctly.
+            dataValue.WrappedValue = new Variant((int)Attributes.NodeClass); // without this cast the second and third asserts evaluate correctly.
             dataValue.StatusCode = nodeIdBasedDataValue.StatusCode;
 
             bool comparisonResult1b = dataValue.Equals(nodeIdBasedDataValue);
@@ -743,8 +743,8 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
         {
             ExpandedNodeId[] expandedNodeIds1 = new ExpandedNodeId[] { new ExpandedNodeId(0), new ExpandedNodeId(0) };
             ExpandedNodeId[] expandedNodeIds2 = new ExpandedNodeId[] { new ExpandedNodeId((byte[])null), new ExpandedNodeId((byte[])null) };
-            DataValue dv1 = new DataValue(expandedNodeIds1);
-            DataValue dv2 = new DataValue(expandedNodeIds2);
+            DataValue dv1 = new DataValue(new Variant(expandedNodeIds1));
+            DataValue dv2 = new DataValue(new Variant(expandedNodeIds2));
             Assert.DoesNotThrow(() => dv1.Equals(dv2));
 
             ExpandedNodeId byteArrayNodeId = new ExpandedNodeId((byte[])null);

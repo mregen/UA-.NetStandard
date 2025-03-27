@@ -119,7 +119,7 @@ namespace TestData
                     {
                         case BuiltInType.Int32:
                         {
-                            entry.Value.Value = ii;
+                            entry.Value.WrappedValue = new Variant(ii);
                             break;
                         }
                     }
@@ -173,7 +173,7 @@ namespace TestData
                             case BuiltInType.Int32:
                             {
                                 int lastValue = (int)record.RawData[record.RawData.Count - 1].Value.Value;
-                                entry.Value.Value = lastValue + 1;
+                                entry.Value.WrappedValue = new Variant(lastValue + 1);
                                 break;
                             }
                         }

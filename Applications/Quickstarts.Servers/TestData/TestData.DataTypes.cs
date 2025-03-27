@@ -83,9 +83,9 @@ namespace TestData
             m_variantValue = Variant.Null;
             m_enumerationValue = 0;
             m_structureValue = null;
-            m_numberValue = (double)0;
-            m_integerValue = (long)0;
-            m_uIntegerValue = (ulong)0;
+            m_numberValue = new Variant((double)0);
+            m_integerValue = new Variant((long)0);
+            m_uIntegerValue = new Variant((ulong)0);
         }
         #endregion
 

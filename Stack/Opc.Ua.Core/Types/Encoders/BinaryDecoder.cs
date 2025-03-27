@@ -2021,7 +2021,7 @@ namespace Opc.Ua
                 case NodeIdEncodingBits.Numeric:
                 {
                     ushort nameSpaceIndex = SafeReadUInt16();
-                    return new NodeId((uint)SafeReadUInt32(), nameSpaceIndex);
+                    return new NodeId(SafeReadUInt32(), nameSpaceIndex);
                 }
 
                 case NodeIdEncodingBits.String:
@@ -2265,7 +2265,7 @@ namespace Opc.Ua
             // read the encoding byte.
             byte encodingByte = SafeReadByte();
 
-            Variant value = new Variant();
+            Variant value = Variant.Null;
 
             if ((encodingByte & (byte)VariantArrayEncodingBits.Array) != 0)
             {
@@ -2274,7 +2274,7 @@ namespace Opc.Ua
 
                 if (length < 0)
                 {
-                    return value;
+                    return Variant.Null;
                 }
 
                 BuiltInType builtInType = (BuiltInType)(encodingByte & (byte)VariantArrayEncodingBits.TypeMask);
@@ -2329,98 +2329,98 @@ namespace Opc.Ua
                 {
                     case BuiltInType.Null:
                     {
-                        value.Value = null;
+                        value = new Variant((object)null);
                         break;
                     }
 
                     case BuiltInType.Boolean:
                     {
-                        value.Set(SafeReadBoolean());
+                        value = new Variant(SafeReadBoolean());
                         break;
                     }
 
                     case BuiltInType.SByte:
                     {
-                        value.Set(SafeReadSByte());
+                        value = new Variant(SafeReadSByte());
                         break;
                     }
 
                     case BuiltInType.Byte:
                     {
-                        value.Set(SafeReadByte());
+                        value = new Variant(SafeReadByte());
                         break;
                     }
 
                     case BuiltInType.Int16:
                     {
-                        value.Set(SafeReadInt16());
+                        value = new Variant(SafeReadInt16());
                         break;
                     }
 
                     case BuiltInType.UInt16:
                     {
-                        value.Set(SafeReadUInt16());
+                        value = new Variant(SafeReadUInt16());
                         break;
                     }
 
                     case BuiltInType.Int32:
                     case BuiltInType.Enumeration:
                     {
-                        value.Set(SafeReadInt32());
+                        value = new Variant(SafeReadInt32());
                         break;
                     }
 
                     case BuiltInType.UInt32:
                     {
-                        value.Set(SafeReadUInt32());
+                        value = new Variant(SafeReadUInt32());
                         break;
                     }
 
                     case BuiltInType.Int64:
                     {
-                        value.Set(SafeReadInt64());
+                        value = new Variant(SafeReadInt64());
                         break;
                     }
 
                     case BuiltInType.UInt64:
                     {
-                        value.Set(SafeReadUInt64());
+                        value = new Variant(SafeReadUInt64());
                         break;
                     }
 
                     case BuiltInType.Float:
                     {
-                        value.Set(SafeReadFloat());
+                        value = new Variant(SafeReadFloat());
                         break;
                     }
 
                     case BuiltInType.Double:
                     {
-                        value.Set(SafeReadDouble());
+                        value = new Variant(SafeReadDouble());
                         break;
                     }
 
                     case BuiltInType.String:
                     {
-                        value.Set(ReadString(null));
+                        value = new Variant(ReadString(null));
                         break;
                     }
 
                     case BuiltInType.DateTime:
                     {
-                        value.Set(ReadDateTime(null));
+                        value = new Variant(ReadDateTime(null));
                         break;
                     }
 
                     case BuiltInType.Guid:
                     {
-                        value.Set(ReadGuid(null));
+                        value = new Variant(ReadGuid(null));
                         break;
                     }
 
                     case BuiltInType.ByteString:
                     {
-                        value.Set(ReadByteString(null));
+                        value = new Variant(ReadByteString(null));
                         break;
                     }
 
@@ -2428,55 +2428,55 @@ namespace Opc.Ua
                     {
                         try
                         {
-                            value.Set(ReadXmlElement(null));
+                            value = new Variant(ReadXmlElement(null));
                         }
                         catch (Exception ex)
                         {
                             Utils.LogTrace(ex, "Error reading xml element for variant.");
-                            value.Set(StatusCodes.BadDecodingError);
+                            value = new Variant(StatusCodes.BadDecodingError);
                         }
                         break;
                     }
 
                     case BuiltInType.NodeId:
                     {
-                        value.Set(ReadNodeId(null));
+                        value = new Variant(ReadNodeId(null));
                         break;
                     }
 
                     case BuiltInType.ExpandedNodeId:
                     {
-                        value.Set(ReadExpandedNodeId(null));
+                        value = new Variant(ReadExpandedNodeId(null));
                         break;
                     }
 
                     case BuiltInType.StatusCode:
                     {
-                        value.Set(ReadStatusCode(null));
+                        value = new Variant(ReadStatusCode(null));
                         break;
                     }
 
                     case BuiltInType.QualifiedName:
                     {
-                        value.Set(ReadQualifiedName(null));
+                        value = new Variant(ReadQualifiedName(null));
                         break;
                     }
 
                     case BuiltInType.LocalizedText:
                     {
-                        value.Set(ReadLocalizedText(null));
+                        value = new Variant(ReadLocalizedText(null));
                         break;
                     }
 
                     case BuiltInType.ExtensionObject:
                     {
-                        value.Set(ReadExtensionObject());
+                        value = new Variant(ReadExtensionObject());
                         break;
                     }
 
                     case BuiltInType.DataValue:
                     {
-                        value.Set(ReadDataValue(null));
+                        value = new Variant(ReadDataValue(null));
                         break;
                     }
 

@@ -83,7 +83,7 @@ namespace Opc.Ua
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            m_value.Value = Utils.Clone(value.m_value.Value);
+            m_value = new Variant(value.m_value.Value);
             m_statusCode = value.m_statusCode;
             m_sourceTimestamp = value.m_sourceTimestamp;
             m_sourcePicoseconds = value.m_sourcePicoseconds;
@@ -102,7 +102,7 @@ namespace Opc.Ua
         /// <exception cref="ArgumentNullException">Thrown when the value is null</exception>
         public DataValue(DataValueStruct value)
         {
-            m_value.Value = Utils.Clone(value.Value);
+            m_value = new Variant(value.Value);
             m_statusCode = value.StatusCode;
             m_sourceTimestamp = value.SourceTimestamp;
             m_sourcePicoseconds = value.SourcePicoseconds;
@@ -414,22 +414,15 @@ namespace Opc.Ua
         /// <summary>
         /// The value of data value.
         /// </summary>
-        /// <remarks>
-        /// The value of data value.
-        /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
         public object Value
         {
             get { return m_value.Value; }
-            set { m_value.Value = value; }
         }
 
         /// <summary>
-        /// The value of data value.
+        /// The Variant of data value.
         /// </summary>
-        /// <remarks>
-        /// The value of data value.
-        /// </remarks>
         [DataMember(Name = "Value", Order = 1, IsRequired = false)]
         public Variant WrappedValue
         {
@@ -440,9 +433,6 @@ namespace Opc.Ua
         /// <summary>
         /// The status code associated with the value.
         /// </summary>
-        /// <remarks>
-        /// The status code associated with the value.
-        /// </remarks>
         [DataMember(Order = 2, IsRequired = false)]
         public StatusCode StatusCode
         {
@@ -453,9 +443,6 @@ namespace Opc.Ua
         /// <summary>
         /// The source timestamp associated with the value.
         /// </summary>
-        /// <remarks>
-        /// The source timestamp associated with the value.
-        /// </remarks>
         [DataMember(Order = 3, IsRequired = false)]
         public DateTime SourceTimestamp
         {
@@ -466,9 +453,6 @@ namespace Opc.Ua
         /// <summary>
         /// Additional resolution for the source timestamp.
         /// </summary>
-        /// <remarks>
-        /// Additional resolution for the source timestamp.
-        /// </remarks>
         [DataMember(Order = 4, IsRequired = false)]
         public ushort SourcePicoseconds
         {
@@ -479,9 +463,6 @@ namespace Opc.Ua
         /// <summary>
         /// The server timestamp associated with the value.
         /// </summary>
-        /// <remarks>
-        /// The server timestamp associated with the value.
-        /// </remarks>
         [DataMember(Order = 5, IsRequired = false)]
         public DateTime ServerTimestamp
         {
@@ -492,9 +473,6 @@ namespace Opc.Ua
         /// <summary>
         /// Additional resolution for the server timestamp.
         /// </summary>
-        /// <remarks>
-        /// Additional resolution for the server timestamp.
-        /// </remarks>
         [DataMember(Order = 6, IsRequired = false)]
         public ushort ServerPicoseconds
         {
@@ -507,9 +485,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status code is good.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status code is good.
-        /// </remarks>
         /// <param name="value">The value to check the quality of</param>
         public static bool IsGood(DataValue value)
         {
@@ -524,9 +499,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status is bad or uncertain.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status is bad or uncertain.
-        /// </remarks>
         /// <param name="value">The value to check the quality of</param>
         public static bool IsNotGood(DataValue value)
         {
@@ -541,9 +513,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status code is uncertain.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status code is uncertain.
-        /// </remarks>
         /// <param name="value">The value to checck the quality of</param>
         public static bool IsUncertain(DataValue value)
         {
@@ -558,9 +527,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status is good or uncertain.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status is good or uncertain.
-        /// </remarks>
         /// <param name="value">The value to check the quality of</param>
         public static bool IsNotUncertain(DataValue value)
         {
@@ -575,9 +541,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status code is bad.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status code is bad.
-        /// </remarks>
         /// <param name="value">The value to check the quality of</param>
         public static bool IsBad(DataValue value)
         {
@@ -592,9 +555,6 @@ namespace Opc.Ua
         /// <summary>
         /// Returns true if the status is good or uncertain.
         /// </summary>
-        /// <remarks>
-        /// Returns true if the status is good or uncertain.
-        /// </remarks>
         /// <param name="value">The value to check the quality of</param>
         public static bool IsNotBad(DataValue value)
         {
@@ -621,7 +581,6 @@ namespace Opc.Ua
                     return null;
                 }
 
-
                 if (value is ExtensionObject extension)
                 {
                     value = extension.Body;
@@ -637,6 +596,53 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Gets the value from a DataValue.
+        /// Returns default value for bad status.
+        /// </summary>
+        /// <typeparam name="T">The type of object. Only value types allowed.</typeparam>
+        /// <param name="valueFunc">The property in the Variant which returns type T.</param>
+        /// <returns>The value.</returns>
+        /// <remarks>
+        /// Checks the StatusCode and returns default value for bad status.
+        /// Extracts the body from an ExtensionObject value if it has the correct type.
+        /// Throws exception only if there is a type mismatch; 
+        /// </remarks>
+        public T GetValueOrDefault<T>(Func<Variant, T> valueFunc) where T : struct
+        {
+            // return default for a DataValue with bad status code.
+            if (StatusCode.IsBad(this.StatusCode))
+            {
+                return default;
+            }
+
+            if (!WrappedValue.IsNull)
+            {
+                if (WrappedValue.TypeInfo.BuiltInType == BuiltInType.ExtensionObject && 
+                    WrappedValue.Value is ExtensionObject extension)
+                {
+                    object value = extension.Body;
+
+                    if (!typeof(T).IsInstanceOfType(value))
+                    {
+                        throw ServiceResultException.Create(StatusCodes.BadTypeMismatch, "DataValue is not of type {0}.", typeof(T).Name);
+                    }
+
+                    return (T)value;
+                }
+
+                return valueFunc(WrappedValue);
+            }
+
+            // a null value for a value type should throw
+            if (typeof(T).IsValueType)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadTypeMismatch, "DataValue is null and not of value type {0}.", typeof(T).Name);
+            }
+
+            return default;
+        }
+
+        /// <summary>
         /// Gets the value from the data value.
         /// Returns default value for bad status.
         /// </summary>
@@ -647,7 +653,8 @@ namespace Opc.Ua
         /// Extracts the body from an ExtensionObject value if it has the correct type.
         /// Throws exception only if there is a type mismatch; 
         /// </remarks>
-        public T GetValueOrDefault<T>()
+        [Obsolete("May cause boxing allocation in Variant. Use version which can specify value property.")]
+        public T GetValueOrDefault<T>() where T : struct
         {
             // return default for a DataValue with bad status code.
             if (StatusCode.IsBad(this.StatusCode))
@@ -691,7 +698,7 @@ namespace Opc.Ua
         /// Extracts the body from an ExtensionObject value if it has the correct type.
         /// Checks the StatusCode and returns an error if not Good.
         /// </remarks>
-        public T GetValue<T>(T defaultValue)
+        public T GetValue<T>(T defaultValue) where T : class
         {
             if (StatusCode.IsNotGood(this.StatusCode))
             {
@@ -702,7 +709,6 @@ namespace Opc.Ua
             {
                 return (T)this.Value;
             }
-
 
             if (this.Value is ExtensionObject extension)
             {
@@ -739,35 +745,23 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes an empty collection.
         /// </summary>
-        /// <remarks>
-        /// Initializes an empty collection.
-        /// </remarks>
         public DataValueCollection() { }
 
         /// <summary>
         /// Initializes the collection from another collection.
         /// </summary>
-        /// <remarks>
-        /// Initializes the collection from another collection.
-        /// </remarks>
         /// <param name="collection">A collection of <see cref="DataValue"/> objects to pre-populate this new collection with</param>
         public DataValueCollection(IEnumerable<DataValue> collection) : base(collection) { }
 
         /// <summary>
         /// Initializes the collection with the specified capacity.
         /// </summary>
-        /// <remarks>
-        /// Initializes the collection with the specified capacity.
-        /// </remarks>
         /// <param name="capacity">The max capacity of this collection</param>
         public DataValueCollection(int capacity) : base(capacity) { }
 
         /// <summary>
         /// Converts an array to a collection.
         /// </summary>
-        /// <remarks>
-        /// Converts an array to a collection.
-        /// </remarks>
         /// <param name="values">An array of <see cref="DataValue"/> objects to return as a collection</param>
         public static DataValueCollection ToDataValueCollection(DataValue[] values)
         {
@@ -782,9 +776,6 @@ namespace Opc.Ua
         /// <summary>
         /// Converts an array to a collection.
         /// </summary>
-        /// <remarks>
-        /// Converts an array to a collection.
-        /// </remarks>
         /// <param name="values">An array of <see cref="DataValue"/> objects to return as a collection</param>
         public static implicit operator DataValueCollection(DataValue[] values)
         {
@@ -801,9 +792,6 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a deep copy of the collection.
         /// </summary>
-        /// <remarks>
-        /// Creates a deep copy of the collection.
-        /// </remarks>
         public new object MemberwiseClone()
         {
             DataValueCollection clone = new DataValueCollection(this.Count);

@@ -156,7 +156,7 @@ namespace Quickstarts
                 intWriteVal.NodeId = new NodeId("ns=2;s=Scalar_Static_Int32");
                 intWriteVal.AttributeId = Attributes.Value;
                 intWriteVal.Value = new DataValue();
-                intWriteVal.Value.Value = (int)100;
+                intWriteVal.Value.WrappedValue = (int)100;
                 nodesToWrite.Add(intWriteVal);
 
                 // Float Node - Objects\CTT\Scalar\Scalar_Static\Float
@@ -164,7 +164,7 @@ namespace Quickstarts
                 floatWriteVal.NodeId = new NodeId("ns=2;s=Scalar_Static_Float");
                 floatWriteVal.AttributeId = Attributes.Value;
                 floatWriteVal.Value = new DataValue();
-                floatWriteVal.Value.Value = (float)100.5;
+                floatWriteVal.Value.WrappedValue = (float)100.5;
                 nodesToWrite.Add(floatWriteVal);
 
                 // String Node - Objects\CTT\Scalar\Scalar_Static\String
@@ -172,7 +172,7 @@ namespace Quickstarts
                 stringWriteVal.NodeId = new NodeId("ns=2;s=Scalar_Static_String");
                 stringWriteVal.AttributeId = Attributes.Value;
                 stringWriteVal.Value = new DataValue();
-                stringWriteVal.Value.Value = "String Test";
+                stringWriteVal.Value.WrappedValue = "String Test";
                 nodesToWrite.Add(stringWriteVal);
 
                 // Write the node attributes
@@ -181,10 +181,7 @@ namespace Quickstarts
                 m_output.WriteLine("Writing nodes...");
 
                 // Call Write Service
-                session.Write(null,
-                                nodesToWrite,
-                                out results,
-                                out diagnosticInfos);
+                session.Write(null, nodesToWrite, out results, out diagnosticInfos);
 
                 // Validate the response
                 m_validateResponse(results, nodesToWrite);

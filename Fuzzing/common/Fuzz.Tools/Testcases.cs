@@ -48,12 +48,18 @@ public partial class Testcases
         var nodeIdString = new NodeId("ns=3;s=RevisionCounter");
         var nodeIdGuid = new NodeId(Guid.NewGuid());
         var nodeIdOpaque = new NodeId(new byte[] { 66, 22, 55, 44, 11 });
+
+        // Construct the traceparent header
+        var traceData = new AdditionalParametersType();
+        string traceparent = "00-480e22a2781fe54d992d878662248d94-b4b37b64bb3f6141-00";
+        traceData.Parameters.Add(new KeyValuePair() { Key = "traceparent", Value = traceparent });
+
         var readRequest = new ReadRequest {
             RequestHeader = new RequestHeader {
                 Timestamp = DateTime.UtcNow,
                 TimeoutHint = 10000,
                 RequestHandle = 422,
-                AdditionalHeader = new ExtensionObject(),
+                AdditionalHeader = new ExtensionObject(traceData),
                 ReturnDiagnostics = (uint)DiagnosticsMasks.All,
             },
             NodesToRead = new ReadValueIdCollection {
@@ -97,7 +103,7 @@ public partial class Testcases
         var readRequest = new ReadResponse {
             Results = new DataValueCollection {
                     new DataValue {
-                        Value = new Variant("Hello World"),
+                        WrappedValue = new Variant("Hello World"),
                         ServerTimestamp = now,
                         SourceTimestamp = now.AddMinutes(1),
                         ServerPicoseconds = 100,
@@ -105,26 +111,39 @@ public partial class Testcases
                         StatusCode = StatusCodes.Good,
                     },
                     new DataValue {
-                        Value = new Variant((uint)12345678),
-                        ServerTimestamp = now,
+                        WrappedValue = new Variant((uint)12345678),
+                        ServerTimestamp = DateTime.Today,
                         SourceTimestamp = now.AddMinutes(1),
                         StatusCode = StatusCodes.BadDataLost,
                     },
                     new DataValue {
-                        Value = new Variant(new byte[] { 0,1,2,3,4,5,6 }),
-                        ServerTimestamp = now,
+                        WrappedValue = new Variant(new byte[] { 0,1,2,3,4,5,6 }),
+                        ServerTimestamp = DateTime.MaxValue,
                         SourceTimestamp = now.AddMinutes(1),
                         StatusCode = StatusCodes.Good,
                     },
                     new DataValue {
-                        Value = new Variant((byte)42),
+                        WrappedValue = new Variant((byte)42),
                         SourceTimestamp = now,
                     },
                     new DataValue {
-                        Value = new Variant(new Matrix(matrix, BuiltInType.Byte)),
+                        WrappedValue = new Variant((ulong)0xbadbeef),
+                        SourceTimestamp = now,
+                    },
+                    new DataValue {
+                        WrappedValue = new Variant(new Matrix(matrix, BuiltInType.Byte)),
                         ServerTimestamp = now,
                     },
-
+                    new DataValue {
+                        WrappedValue = new Variant((double)2025.111),
+                        SourceTimestamp = now,
+                        StatusCode = StatusCodes.BadTooManyOperations
+                    },
+                    new DataValue {
+                        WrappedValue = new Variant(new ExtensionObject(new ThreeDVector(){ X=1.0, Y=-1.0, Z=0.0})),
+                        SourceTimestamp = now,
+                        StatusCode = StatusCodes.Good
+                    },
                 },
             DiagnosticInfos = new DiagnosticInfoCollection {
                         new DiagnosticInfo {
@@ -138,6 +157,11 @@ public partial class Testcases
                     },
             ResponseHeader = new ResponseHeader {
                 Timestamp = DateTime.UtcNow,
+                AdditionalHeader = new ExtensionObject(new AdditionalParametersType() {
+                    Parameters = new KeyValuePairCollection {
+                        new KeyValuePair() { Key = "traceparent", Value = "00-480e22a2781fe54d992d878662248d94-b4b37b64bb3f6141-00" },
+                    }
+                }),
                 RequestHandle = 42,
                 ServiceResult = StatusCodes.Good,
                 ServiceDiagnostics = new DiagnosticInfo {
@@ -156,7 +180,12 @@ public partial class Testcases
                         },
                     },
                 },
-            },
+                StringTable = new StringCollection {
+                    "Hello",
+                    "World",
+                    "Goodbye",
+                },
+            }
         };
         encoder.EncodeMessage(readRequest);
     }

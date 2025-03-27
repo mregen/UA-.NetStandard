@@ -3433,11 +3433,11 @@ namespace Opc.Ua
             // update value.
             if (StatusCode.IsBad(value.StatusCode))
             {
-                value.Value = null;
+                value.WrappedValue = Variant.Null;
             }
             else
             {
-                value.Value = valueToRead;
+                value.WrappedValue = new Variant(valueToRead);
             }
 
             // return result.
