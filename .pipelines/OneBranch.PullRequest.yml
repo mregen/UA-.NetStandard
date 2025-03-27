@@ -31,6 +31,15 @@ resources:
       name: OneBranch.Pipelines/GovernedTemplates
       ref: refs/heads/main
 
+parameters:
+  - name: buildconfig
+    displayName: Configuration to build
+    type: string
+    default: Release
+    values:
+    - Release  
+    - Debug  
+
 variables:
   - group: aio-connectors
 
@@ -40,7 +49,7 @@ variables:
 
   # Configuration to build
   - name: BuildConfiguration
-    value: Release
+    value: ${{ parameters.buildconfig }}
 
   # Enable pipeline debug output
   - name: system.debug

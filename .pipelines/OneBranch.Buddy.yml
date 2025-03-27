@@ -29,6 +29,14 @@ resources:
       ref: refs/heads/main
 
 parameters:
+  - name: buildconfig
+    displayName: Configuration to build
+    type: string
+    default: Release
+    values:
+    - Release  
+    - Debug  
+
   - name: debug
     displayName: Enable debug output
     type: boolean
@@ -48,7 +56,7 @@ variables:
 
   # Configuration to build
   - name: BuildConfiguration
-    value: Release
+    value: ${{ parameters.buildconfig }}
 
   # Enable pipeline debug output
   - name: system.debug
