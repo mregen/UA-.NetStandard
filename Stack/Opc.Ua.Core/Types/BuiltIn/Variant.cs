@@ -20,6 +20,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Xml;
 
 namespace Opc.Ua
@@ -1051,11 +1052,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The Boolean value stored as ValueType.
+        /// Calling code must ensure that the BuiltInType is Boolean and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Boolean"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public bool ValueBoolean
         {
             get
@@ -1072,11 +1075,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The SByte value stored in the object.
+        /// Calling code must ensure that the BuiltInType is SByte and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.SByte"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public sbyte ValueSByte
         {
             get
@@ -1093,11 +1098,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The Byte value stored in the object.
+        /// Calling code must ensure that the BuiltInType is Byte and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Byte"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public byte ValueByte
         {
             get
@@ -1114,11 +1121,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The Int16 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is int16 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Int16"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public short ValueInt16
         {
             get
@@ -1135,11 +1144,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The UInt16 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is UInt16 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.UInt16"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public ushort ValueUInt16
         {
             get
@@ -1156,11 +1167,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The Int32 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is Int32 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Int32"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public int ValueInt32
         {
             get
@@ -1177,11 +1190,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The UInt32 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is UInt32 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.UInt32"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public uint ValueUInt32
         {
             get
@@ -1198,11 +1213,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The Int64 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is Int64 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Int64"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public long ValueInt64
         {
             get
@@ -1219,11 +1236,13 @@ namespace Opc.Ua
 
         /// <summary>
         /// The UInt64 value stored in the object.
+        /// Calling code must ensure that the BuiltInType is UInt64 and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.UInt64"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public ulong ValueUInt64
         {
             get
@@ -1239,12 +1258,14 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// The Int64 value stored in the object.
+        /// The float value stored in the object.
+        /// Calling code must ensure that the BuiltInType is Float and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Float"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public float ValueFloat
         {
             get
@@ -1260,12 +1281,14 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// The UInt64 value stored in the object.
+        /// The Double value stored in the object.
+        /// Calling code must ensure that the BuiltInType is Double and ValueRank is Scalar.
         /// </summary>
         /// <remarks>
         /// In DEBUG build, this property will throw an exception if the <see cref="BuiltInType"/>
         /// is not a <see cref="BuiltInType.Double"/> or if the value rank is not a <see cref="ValueRanks.Scalar"/>.
         /// </remarks>
+        [JsonIgnore]
         public double ValueDouble
         {
             get
@@ -2911,7 +2934,8 @@ namespace Opc.Ua
         /// </summary>
         private InvalidOperationException ThrowOnFailedDirectAccess([CallerMemberName] string callerMembername = "")
         {
-            return new InvalidOperationException(Utils.Format("Failed to directly access the Variant value using {0} because the BuiltInType is {1}", callerMembername, Enum.GetName(m_typeInfo.BuiltInType)));
+            return new InvalidOperationException(Utils.Format("Failed to directly access the Variant value using {0} because the BuiltInType is {1}",
+                callerMembername, m_typeInfo != null ? Enum.GetName(m_typeInfo.BuiltInType) : "(null)"));
         }
         #endregion
 
