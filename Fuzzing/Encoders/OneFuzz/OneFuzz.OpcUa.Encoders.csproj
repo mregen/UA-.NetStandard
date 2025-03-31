@@ -21,7 +21,7 @@
   <Choose>
     <When Condition="'$(Configuration)'=='Debug'">
       <ItemGroup Condition="$(DefineConstants.Contains(UseNugetOpcUaSdk))">
-        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core" Version="1.5.374.178-preview" />
+        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core.Debug" Version="1.5.375.15-main" />
       </ItemGroup>
       <ItemGroup Condition="!$(DefineConstants.Contains(UseNugetOpcUaSdk))">
         <ProjectReference Include="..\..\..\Libraries\Opc.Ua.Security.Certificates\Opc.Ua.Security.Certificates.csproj" />
@@ -30,7 +30,7 @@
     </When>
     <When Condition="'$(Configuration)'=='Release'">
       <ItemGroup Condition="$(DefineConstants.Contains(UseNugetOpcUaSdk))">
-        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core" Version="1.5.374.178-preview" />
+        <PackageReference Include="Microsoft.Aio.Opc.Ua.Core" Version="1.5.375.15" />
       </ItemGroup>
       <ItemGroup Condition="!$(DefineConstants.Contains(UseNugetOpcUaSdk))">
         <ProjectReference Include="..\..\..\Libraries\Opc.Ua.Security.Certificates\Opc.Ua.Security.Certificates.csproj" />

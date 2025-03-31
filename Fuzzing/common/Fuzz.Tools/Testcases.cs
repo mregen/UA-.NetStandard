@@ -32,13 +32,14 @@ using Opc.Ua;
 
 public partial class Testcases
 {
-    public delegate void MessageEncoder(IEncoder encoder);
+    private static ServiceMessageContext messageContext = FuzzableCode.MessageContext;
 
-    public static ServiceMessageContext MessageContext = ServiceMessageContext.GlobalContext;
+    public delegate void MessageEncoder(IEncoder encoder);
 
     public static MessageEncoder[] MessageEncoders = new MessageEncoder[] {
         ReadRequest,
         ReadResponse,
+        PublishResponse
     };
 
     public static void ReadRequest(IEncoder encoder)
@@ -46,6 +47,7 @@ public partial class Testcases
         var twoByteNodeIdNumeric = new NodeId(123);
         var nodeIdNumeric = new NodeId(4444, 2);
         var nodeIdString = new NodeId("ns=3;s=RevisionCounter");
+        var expandedNodeIdString = new ExpandedNodeId($"nsu={messageContext.NamespaceUris.GetString(3)};s=RevisionCounter");
         var nodeIdGuid = new NodeId(Guid.NewGuid());
         var nodeIdOpaque = new NodeId(new byte[] { 66, 22, 55, 44, 11 });
 
@@ -189,4 +191,127 @@ public partial class Testcases
         };
         encoder.EncodeMessage(readRequest);
     }
+
+    public static void PublishResponse(IEncoder encoder)
+    {
+        var now = DateTime.UtcNow;
+        var nodeId = new NodeId(1000);
+        var expandedNodeId = new ExpandedNodeId(Guid.NewGuid(), messageContext.NamespaceUris.GetString(2));
+        var opaqueNodeId = new ExpandedNodeId(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, messageContext.NamespaceUris.GetString(2));
+        var matrix = new Matrix(new uint[2, 2, 2] { { { 1, 2 }, { 3, 4 } }, { { 11, 22 }, { 33, 44 } } }, BuiltInType.UInt32);
+        var publishResponse = new PublishResponse {
+            AvailableSequenceNumbers = new UInt32Collection { 1, 2, 3, 4 },
+            MoreNotifications = true,
+            SubscriptionId = 1234,
+            NotificationMessage = new NotificationMessage {
+                SequenceNumber = 123456,
+                PublishTime = now,
+                NotificationData = new ExtensionObjectCollection {
+                    new ExtensionObject(new DataChangeNotification() {
+                        MonitoredItems = new MonitoredItemNotificationStruct[] {
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 122,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant("Hello World"),
+                                    ServerTimestamp = now,
+                                    SourceTimestamp = now.AddMinutes(1),
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                    StatusCode = StatusCodes.Good,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 123,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant(matrix),
+                                    ServerTimestamp = now,
+                                    SourceTimestamp = now.AddSeconds(1),
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                    StatusCode = StatusCodes.Good,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 124,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant(nodeId),
+                                    ServerTimestamp = now,
+                                    SourceTimestamp = now.AddDays(1),
+                                    StatusCode = StatusCodes.Good,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 125,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant(nodeId)
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 125,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant(true)
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 126,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant((byte)123)
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 127,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant((float)123.123)
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 128,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant((double)12301232.123),
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 129,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant((Int64)(-123012321234123)),
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 130,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant((UInt64)123012321234123),
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                },
+                            },
+                        },
+                    }),
+                },
+            },
+            DiagnosticInfos = new DiagnosticInfoCollection {
+                        new DiagnosticInfo {
+                            AdditionalInfo = "Hello World",
+                            InnerStatusCode = StatusCodes.BadCertificateHostNameInvalid,
+                            InnerDiagnosticInfo = new DiagnosticInfo {
+                                AdditionalInfo = "Hello World",
+                                InnerStatusCode = StatusCodes.BadNodeIdUnknown,
+                            },
+                        },
+                    },
+            ResponseHeader = new ResponseHeader {
+                Timestamp = DateTime.UtcNow,
+                RequestHandle = 42,
+                ServiceResult = StatusCodes.Good,
+                StringTable = new StringCollection {
+                    "No error occurred"
+                },
+            }
+        };
+        encoder.EncodeMessage(publishResponse);
+    }
+
 }

@@ -825,6 +825,27 @@ namespace Opc.Ua
         {
             m_value = null;
             m_typeInfo = typeInfo;
+            // set defaults for value types
+            switch (typeInfo.BuiltInType)
+            {
+                case BuiltInType.Boolean:
+                case BuiltInType.SByte:
+                case BuiltInType.Byte:
+                case BuiltInType.Int16:
+                case BuiltInType.UInt16:
+                case BuiltInType.Int32:
+                case BuiltInType.UInt32:
+                case BuiltInType.Int64:
+                case BuiltInType.UInt64:
+                    m_uint64 = 0;
+                    break;
+                case BuiltInType.Float:
+                    m_float = 0.0f;
+                    break;
+                case BuiltInType.Double:
+                    m_double = 0.0;
+                    break;
+            }
         }
 
         /// <summary>

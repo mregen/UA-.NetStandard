@@ -387,6 +387,7 @@ namespace Opc.Ua
                         {
                             valid = false;
                             dimension = 0;
+                            dimensions[ii] = 0;
                         }
                     }
                     checked

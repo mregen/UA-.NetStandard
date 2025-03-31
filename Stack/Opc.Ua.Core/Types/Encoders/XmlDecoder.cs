@@ -514,11 +514,19 @@ namespace Opc.Ua
                 return encodeable;
             }
 
+            string xmlString;
+            try
+            {
+                // return undecoded xml body.
+                xmlString = m_reader.ReadOuterXml();
+            }
+            catch (ArgumentException ae) {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                    "Failed to decode xml extension object body: {0}", ae.Message);
+            }
+
             // check for empty body.
             XmlDocument document = new XmlDocument();
-
-            // return undecoded xml body.
-            string xmlString = m_reader.ReadOuterXml();
 
             using (StringReader stream = new StringReader(xmlString))
             using (XmlReader reader = XmlReader.Create(stream, Utils.DefaultXmlReaderSettings()))
@@ -947,7 +955,7 @@ namespace Opc.Ua
 
                     if (!string.IsNullOrEmpty(xml))
                     {
-                        value = Convert.FromBase64String(xml);
+                        value = SafeConvertFromBase64String(xml);
                     }
                     else
                     {
@@ -2656,22 +2664,30 @@ namespace Opc.Ua
 
                 if (elements == null)
                 {
-                    throw new ServiceResultException(StatusCodes.BadDecodingError, "The Matrix contains invalid elements");
+                    throw new ServiceResultException(StatusCodes.BadDecodingError, "The Matrix contains invalid elements.");
                 }
 
                 if (dimensions != null && dimensions.Count > 0)
                 {
-                    int length = elements.Length;
-                    int[] dimensionsArray = dimensions.ToArray();
-                    (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensionsArray, length, Context.MaxArrayLength);
+                    if (dimensions.Count <= 1)
+                    {
+                        throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                            "ArrayDimensions too small for Matrix encoding.");
+                    }
 
+                    int length = elements.Length;
+                    (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensions, length, Context.MaxArrayLength);
+                    if (valid && matrixLength == 0)
+                    {
+                        Matrix.ValidateDimensions(true, dimensions, Context.MaxArrayLength);
+                    }
                     if (!valid || (matrixLength != length))
                     {
                         throw ServiceResultException.Create(StatusCodes.BadDecodingError,
                             "ArrayDimensions length does not match with the ArrayLength in Variant object.");
                     }
 
-                    return new Matrix(elements, typeInfo.BuiltInType, dimensionsArray);
+                    return new Matrix(elements, typeInfo.BuiltInType, dimensions.ToArray());
                 }
 
                 return new Matrix(elements, typeInfo.BuiltInType);
@@ -2905,6 +2921,21 @@ namespace Opc.Ua
             }
             throw ServiceResultException.Create(StatusCodes.BadDecodingError,
                 "Unable to read string of {0}: {1}", functionName, message);
+        }
+
+        /// <summary>
+        /// Safe Convert function which throws a BadDecodingError if unsuccessful.
+        /// </summary>
+        private byte[] SafeConvertFromBase64String(string s)
+        {
+            try
+            {
+                return Convert.FromBase64String(s);
+            }
+            catch (FormatException fe)
+            {
+                throw ServiceResultException.Create(StatusCodes.BadDecodingError, "Error decoding base64 string: {0}", fe.Message);
+            }
         }
 
         /// <summary>

@@ -27,9 +27,7 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-using System;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Opc.Ua;
@@ -37,7 +35,6 @@ using Opc.Ua.Security.Certificates;
 
 public static partial class Testcases
 {
-
     public enum TestCaseEncoders : int
     {
         Binary = 0,
@@ -57,7 +54,7 @@ public static partial class Testcases
         foreach (var messageEncoder in MessageEncoders)
         {
             byte[] message;
-            using (var encoder = new BinaryEncoder(MessageContext))
+            using (var encoder = new BinaryEncoder(messageContext))
             {
                 messageEncoder(encoder);
                 message = encoder.CloseAndReturnBuffer();
@@ -83,7 +80,7 @@ public static partial class Testcases
         {
             byte[] message;
             using (var memoryStream = new MemoryStream(0x1000))
-            using (var encoder = new JsonEncoder(MessageContext, true, false, memoryStream))
+            using (var encoder = new JsonEncoder(messageContext, true, false, memoryStream))
             {
                 messageEncoder(encoder);
                 encoder.Close();
@@ -107,9 +104,9 @@ public static partial class Testcases
         foreach (var messageEncoder in MessageEncoders)
         {
             string xml;
-            using (var encoder = new XmlEncoder(MessageContext))
+            using (var encoder = new XmlEncoder(messageContext))
             {
-                encoder.SetMappingTables(MessageContext.NamespaceUris, MessageContext.ServerUris);
+                encoder.SetMappingTables(messageContext.NamespaceUris, messageContext.ServerUris);
                 messageEncoder(encoder);
                 xml = encoder.CloseAndReturnText();
             }
@@ -161,7 +158,7 @@ public static partial class Testcases
 
             // should not throw an exception
             _ = X509CertificateLoader.LoadCertificate(rawData);
-            FuzzableCode.FuzzCertificateChainDecoderCore(rawData,false);
+            FuzzableCode.FuzzCertificateChainDecoderCore(rawData, false);
             FuzzableCode.FuzzCertificateChainDecoderCore(rawData, true);
 
             string fileName = Path.Combine(pathTarget, "certificate.bin");

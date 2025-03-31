@@ -77,7 +77,7 @@ public static class Playback
                     catch (Exception ex)
                     {
                         stopWatch.Stop();
-                        Console.WriteLine("Target: {0:30} Elapsed: {1}ms", libFuzzMethod.Method.Name, stopWatch.ElapsedMilliseconds);
+                        Console.WriteLine("Failed: {0:30} Elapsed: {1}ms", libFuzzMethod.Method.Name, stopWatch.ElapsedMilliseconds);
                         Console.WriteLine("{0}:{1}", ex.GetType().Name, ex.Message);
                         if (stackTrace)
                         {

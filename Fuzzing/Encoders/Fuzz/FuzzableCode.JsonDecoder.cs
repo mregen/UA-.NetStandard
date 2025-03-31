@@ -99,7 +99,7 @@ public static partial class FuzzableCode
     {
         try
         {
-            using (var decoder = new JsonDecoder(json, messageContext))
+            using (var decoder = new JsonDecoder(json, MessageContext))
             {
                 return decoder.DecodeMessage(null);
             }
@@ -155,7 +155,7 @@ public static partial class FuzzableCode
             foreach (JsonEncodingType jsonEncodingType in Enum.GetValues<JsonEncodingType>())
             {
                 // see if this throws
-                using (var encoder = new JsonEncoder(messageContext, jsonEncodingType))
+                using (var encoder = new JsonEncoder(MessageContext, jsonEncodingType))
                 {
                     switch (jsonEncodingType)
                     {
@@ -208,7 +208,7 @@ public static partial class FuzzableCode
             foreach (JsonEncodingType jsonEncodingType in Enum.GetValues<JsonEncodingType>())
             {
                 string json;
-                using (var encoder = new JsonEncoder(messageContext, jsonEncodingType))
+                using (var encoder = new JsonEncoder(MessageContext, jsonEncodingType))
                 {
                     switch (jsonEncodingType)
                     {

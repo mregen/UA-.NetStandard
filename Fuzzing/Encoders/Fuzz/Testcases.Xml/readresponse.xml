@@ -1,6 +1,6 @@
 <ReadResponse xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
   <ResponseHeader>
-    <Timestamp>2025-02-06T05:50:43.7080229Z</Timestamp>
+    <Timestamp>2025-03-28T15:16:51.2312829Z</Timestamp>
     <RequestHandle>42</RequestHandle>
     <ServiceResult>
       <Code>0</Code>
@@ -45,7 +45,33 @@
         </InnerDiagnosticInfo>
       </InnerDiagnosticInfo>
     </ServiceDiagnostics>
-    <StringTable />
+    <StringTable>
+      <String>Hello</String>
+      <String>World</String>
+      <String>Goodbye</String>
+    </StringTable>
+    <AdditionalHeader>
+      <TypeId>
+        <Identifier>i=17541</Identifier>
+      </TypeId>
+      <Body>
+        <AdditionalParametersType>
+          <Parameters>
+            <KeyValuePair>
+              <Key>
+                <NamespaceIndex>0</NamespaceIndex>
+                <Name>traceparent</Name>
+              </Key>
+              <Value>
+                <Value>
+                  <String>00-480e22a2781fe54d992d878662248d94-b4b37b64bb3f6141-00</String>
+                </Value>
+              </Value>
+            </KeyValuePair>
+          </Parameters>
+        </AdditionalParametersType>
+      </Body>
+    </AdditionalHeader>
   </ResponseHeader>
   <Results>
     <DataValue>
@@ -57,9 +83,9 @@
       <StatusCode>
         <Code>0</Code>
       </StatusCode>
-      <SourceTimestamp>2025-02-06T05:51:43.7079679Z</SourceTimestamp>
+      <SourceTimestamp>2025-03-28T15:17:51.2312058Z</SourceTimestamp>
       <SourcePicoseconds>10</SourcePicoseconds>
-      <ServerTimestamp>2025-02-06T05:50:43.7079679Z</ServerTimestamp>
+      <ServerTimestamp>2025-03-28T15:16:51.2312058Z</ServerTimestamp>
       <ServerPicoseconds>100</ServerPicoseconds>
     </DataValue>
     <DataValue>
@@ -71,9 +97,9 @@
       <StatusCode>
         <Code>2157772800</Code>
       </StatusCode>
-      <SourceTimestamp>2025-02-06T05:51:43.7079679Z</SourceTimestamp>
+      <SourceTimestamp>2025-03-28T15:17:51.2312058Z</SourceTimestamp>
       <SourcePicoseconds>0</SourcePicoseconds>
-      <ServerTimestamp>2025-02-06T05:50:43.7079679Z</ServerTimestamp>
+      <ServerTimestamp>2025-03-27T23:00:00Z</ServerTimestamp>
       <ServerPicoseconds>0</ServerPicoseconds>
     </DataValue>
     <DataValue>
@@ -85,9 +111,9 @@
       <StatusCode>
         <Code>0</Code>
       </StatusCode>
-      <SourceTimestamp>2025-02-06T05:51:43.7079679Z</SourceTimestamp>
+      <SourceTimestamp>2025-03-28T15:17:51.2312058Z</SourceTimestamp>
       <SourcePicoseconds>0</SourcePicoseconds>
-      <ServerTimestamp>2025-02-06T05:50:43.7079679Z</ServerTimestamp>
+      <ServerTimestamp>9999-12-31T23:59:59.9999999</ServerTimestamp>
       <ServerPicoseconds>0</ServerPicoseconds>
     </DataValue>
     <DataValue>
@@ -99,7 +125,21 @@
       <StatusCode>
         <Code>0</Code>
       </StatusCode>
-      <SourceTimestamp>2025-02-06T05:50:43.7079679Z</SourceTimestamp>
+      <SourceTimestamp>2025-03-28T15:16:51.2312058Z</SourceTimestamp>
+      <SourcePicoseconds>0</SourcePicoseconds>
+      <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
+      <ServerPicoseconds>0</ServerPicoseconds>
+    </DataValue>
+    <DataValue>
+      <Value>
+        <Value>
+          <UInt64>195935983</UInt64>
+        </Value>
+      </Value>
+      <StatusCode>
+        <Code>0</Code>
+      </StatusCode>
+      <SourceTimestamp>2025-03-28T15:16:51.2312058Z</SourceTimestamp>
       <SourcePicoseconds>0</SourcePicoseconds>
       <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
       <ServerPicoseconds>0</ServerPicoseconds>
@@ -133,7 +173,46 @@
       </StatusCode>
       <SourceTimestamp>0001-01-01T00:00:00</SourceTimestamp>
       <SourcePicoseconds>0</SourcePicoseconds>
-      <ServerTimestamp>2025-02-06T05:50:43.7079679Z</ServerTimestamp>
+      <ServerTimestamp>2025-03-28T15:16:51.2312058Z</ServerTimestamp>
+      <ServerPicoseconds>0</ServerPicoseconds>
+    </DataValue>
+    <DataValue>
+      <Value>
+        <Value>
+          <Double>2025.111</Double>
+        </Value>
+      </Value>
+      <StatusCode>
+        <Code>2148532224</Code>
+      </StatusCode>
+      <SourceTimestamp>2025-03-28T15:16:51.2312058Z</SourceTimestamp>
+      <SourcePicoseconds>0</SourcePicoseconds>
+      <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
+      <ServerPicoseconds>0</ServerPicoseconds>
+    </DataValue>
+    <DataValue>
+      <Value>
+        <Value>
+          <ExtensionObject>
+            <TypeId>
+              <Identifier>i=18853</Identifier>
+            </TypeId>
+            <Body>
+              <ThreeDVector>
+                <X>1</X>
+                <Y>-1</Y>
+                <Z>0</Z>
+              </ThreeDVector>
+            </Body>
+          </ExtensionObject>
+        </Value>
+      </Value>
+      <StatusCode>
+        <Code>0</Code>
+      </StatusCode>
+      <SourceTimestamp>2025-03-28T15:16:51.2312058Z</SourceTimestamp>
+      <SourcePicoseconds>0</SourcePicoseconds>
+      <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
       <ServerPicoseconds>0</ServerPicoseconds>
     </DataValue>
   </Results>

@@ -1249,15 +1249,37 @@ namespace Opc.Ua
             {
                 if (innerValue is List<object>)
                 {
-                    var array = ReadVariantArrayBody(valueName, builtInType);
+                    Variant variantArray = ReadVariantArrayBody(valueName, builtInType);
 
                     if (value.ContainsKey("Dimensions"))
                     {
                         var dimensions = ReadInt32Array("Dimensions");
+                        Array array = variantArray.Value as Array;
+
+                        // check if ArrayDimensions are consistent with the ArrayLength.
+                        if (dimensions == null || dimensions.Count <= 1 || array == null)
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                                "ArrayDimensions or Array invalid for encoded Matrix.");
+                        }
+
+                        // check encoded dimensions
+                        int length = array.Length;
+                        (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensions, length, Context.MaxArrayLength);
+                        if (valid && matrixLength == 0)
+                        {
+                            Matrix.ValidateDimensions(true, dimensions, Context.MaxArrayLength);
+                        }
+
+                        if (!valid || (matrixLength != length))
+                        {
+                            throw ServiceResultException.Create(StatusCodes.BadDecodingError,
+                                "ArrayDimensions length does not match with the ArrayLength in Variant object.");
+                        }
 
                         try
                         {
-                            return new Variant(new Matrix(array.Value as Array, builtInType, dimensions.ToArray()));
+                            return new Variant(new Matrix(array, builtInType, dimensions.ToArray()));
                         }
                         catch (ArgumentException e)
                         {
@@ -1269,7 +1291,7 @@ namespace Opc.Ua
                         }
                     }
 
-                    return array;
+                    return variantArray;
                 }
 
                 return ReadVariantBody(valueName, builtInType);
