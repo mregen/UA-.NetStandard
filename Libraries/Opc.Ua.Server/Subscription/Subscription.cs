@@ -2144,10 +2144,8 @@ namespace Opc.Ua.Server
             lock (m_lock)
             {
                 // build list of items to refresh.
-                if (m_monitoredItems.ContainsKey(monitoredItemId))
+                if (m_monitoredItems.TryGetValue(monitoredItemId, out LinkedListNode<IMonitoredItem> monitoredItem))
                 {
-                    LinkedListNode<IMonitoredItem> monitoredItem = m_monitoredItems[monitoredItemId];
-
                     MonitoredItem eventMonitoredItem = monitoredItem.Value as MonitoredItem;
 
                     if (eventMonitoredItem != null && eventMonitoredItem.EventFilter != null)

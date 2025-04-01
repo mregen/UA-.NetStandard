@@ -492,12 +492,12 @@ namespace Opc.Ua.Schema.Binary
 
             if (!String.IsNullOrEmpty(field.LengthField))
             {
-                if (!fields.ContainsKey(field.LengthField))
+                if (!fields.TryGetValue(field.LengthField, out FieldType value))
                 {
                     throw Exception("Field '{0}' in structured type '{1}' references an unknownn length field '{2}'.", field.Name, description.Name, field.LengthField);
                 }
 
-                if (!IsIntegerType(fields[field.LengthField]))
+                if (!IsIntegerType(value))
                 {
                     throw Exception("Field '{0}' in structured type '{1}' references a length field '{2}' which is not an integer value.", field.Name, description.Name, field.SwitchField);
                 }
@@ -505,12 +505,12 @@ namespace Opc.Ua.Schema.Binary
 
             if (!String.IsNullOrEmpty(field.SwitchField))
             {
-                if (!fields.ContainsKey(field.SwitchField))
+                if (!fields.TryGetValue(field.SwitchField, out FieldType value))
                 {
                     throw Exception("Field '{0}' in structured type '{1}' references an unknownn switch field '{2}'.", field.Name, description.Name, field.SwitchField);
                 }
 
-                if (!IsIntegerType(fields[field.SwitchField]))
+                if (!IsIntegerType(value))
                 {
                     throw Exception("Field '{0}' in structured type '{1}' references a switch field '{2}' which is not an integer value.", field.Name, description.Name, field.SwitchField);
                 }

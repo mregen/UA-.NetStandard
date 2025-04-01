@@ -1541,9 +1541,8 @@ namespace Opc.Ua.Client
             {
                 foreach (MonitoredItem monitoredItem in monitoredItems)
                 {
-                    if (!m_monitoredItems.ContainsKey(monitoredItem.ClientHandle))
+                    if (m_monitoredItems.TryAdd(monitoredItem.ClientHandle, monitoredItem))
                     {
-                        m_monitoredItems.Add(monitoredItem.ClientHandle, monitoredItem);
                         monitoredItem.Subscription = this;
                         added = true;
                     }

@@ -586,7 +586,7 @@ namespace Opc.Ua
                 {
                     if (fields.Length > 0)
                     {
-                        securityMode = (MessageSecurityMode)Enum.Parse(typeof(MessageSecurityMode), fields[0], false);
+                        securityMode = Enum.Parse<MessageSecurityMode>(fields[0], false);
                     }
                     else
                     {
@@ -694,10 +694,7 @@ namespace Opc.Ua
 
                 if (!String.IsNullOrEmpty(server.ApplicationUri))
                 {
-                    if (!servers.ContainsKey(server.ApplicationUri))
-                    {
-                        servers.Add(server.ApplicationUri, server);
-                    }
+                    servers.TryAdd(server.ApplicationUri, server);
                 }
             }
 

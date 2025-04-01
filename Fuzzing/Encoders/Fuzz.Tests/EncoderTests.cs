@@ -125,7 +125,7 @@ namespace Opc.Ua.Fuzzing
             else if (parameters[0].ParameterType == typeof(ReadOnlySpan<byte>))
             {
                 var span = new ReadOnlySpan<byte>(blob);
-                LibFuzzTemplate fuzzFunction = (LibFuzzTemplate)fuzzableCode.MethodInfo.CreateDelegate(typeof(LibFuzzTemplate));
+                LibFuzzTemplate fuzzFunction = fuzzableCode.MethodInfo.CreateDelegate<LibFuzzTemplate>();
                 fuzzFunction(span);
             }
         }

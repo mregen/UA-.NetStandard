@@ -138,7 +138,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
 
         #region DataPointSources
         [DatapointSource]
-        public static readonly BuiltInType[] BuiltInTypes = ((BuiltInType[])Enum.GetValues(typeof(BuiltInType)))
+        public static readonly BuiltInType[] BuiltInTypes = Enum.GetValues<BuiltInType>()
             .ToList().Where(b =>
                 (b != BuiltInType.Variant) &&
                 (b != BuiltInType.DiagnosticInfo) &&
@@ -147,7 +147,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
              ).ToArray();
 
         [DatapointSource]
-        public static readonly EncodingType[] EncoderTypes = (EncodingType[])Enum.GetValues(typeof(EncodingType));
+        public static readonly EncodingType[] EncoderTypes = Enum.GetValues<EncodingType>();
 
         public static readonly EncodingTypeGroup[] EncodingTypesJson = new EncodingTypeGroup[] {
             new EncodingTypeGroup(EncodingType.Json, JsonEncodingType.Reversible),

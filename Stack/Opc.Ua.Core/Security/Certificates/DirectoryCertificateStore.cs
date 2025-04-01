@@ -943,7 +943,7 @@ namespace Opc.Ua
             {
                 char ch = commonName[ii];
 
-                if ("<>:\"/\\|?*".IndexOf(ch) != -1)
+                if ("<>:\"/\\|?*".Contains(ch))
                 {
                     ch = '+';
                 }

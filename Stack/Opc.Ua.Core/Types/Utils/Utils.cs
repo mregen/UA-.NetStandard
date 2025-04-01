@@ -150,7 +150,7 @@ namespace Opc.Ua
         private static string OpcUaHttpsAssemblyName()
         {
             var assemblyName = typeof(Utils).Assembly.GetName().Name;
-            return assemblyName.Substring(0, assemblyName.IndexOf("Core")) + "Bindings.Https";
+            return string.Concat(assemblyName.AsSpan(0, assemblyName.IndexOf("Core")), "Bindings.Https");
         }
 
         /// <summary>

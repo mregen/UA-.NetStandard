@@ -275,10 +275,8 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                Assert.Throws(
-                    typeof(ServiceResultException),
-                    () => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible)
-                );
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible)
+);
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.NonReversible);
@@ -298,10 +296,8 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                Assert.Throws(
-                    typeof(ServiceResultException),
-                    () => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose)
-                );
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose)
+);
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.Verbose);
@@ -942,9 +938,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                         {
                             // check such matrix cannot be initialized when encoded into Json format
                             // the exception is thrown while trying to WriteStructureMatrix into the arrray 
-                            Assert.Throws(
-                                typeof(ServiceResultException),
-                                () => {
+                            NUnit.Framework.Assert.Throws<ServiceResultException>(() => {
                                     encoder.WriteArray(builtInType.ToString(), matrix, matrix.TypeInfo.ValueRank, builtInType);
                                 });
                             return;

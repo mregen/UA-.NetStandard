@@ -560,7 +560,7 @@ namespace Quickstarts
             List<ReferenceDescriptionCollection> newReferenceDescriptions = new List<ReferenceDescriptionCollection>();
             List<ServiceResult> allServiceResults = new List<ServiceResult>();
 
-            while (nodesToBrowse.Any() && searchDepth < kMaxSearchDepth)
+            while (nodesToBrowse.Count != 0 && searchDepth < kMaxSearchDepth)
             {
                 searchDepth++;
                 Utils.LogInfo("{0}: Browse {1} nodes after {2}ms",
@@ -1004,7 +1004,7 @@ namespace Quickstarts
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadEncodingLimitsExceeded)
                 {
-                    m_output.WriteLine("Retry to read the values due to error:", sre.Message);
+                    m_output.WriteLine("Retry to read the values due to error: {0}", sre.Message);
                     retrySingleRead = !retrySingleRead;
                 }
             } while (retrySingleRead);

@@ -216,9 +216,8 @@ namespace Opc.Ua.Server
                 {
                     ISampledDataChangeMonitoredItem monitoredItem = m_itemsToAdd[ii];
 
-                    if (!m_items.ContainsKey(monitoredItem.Id))
+                    if (m_items.TryAdd(monitoredItem.Id, monitoredItem))
                     {
-                        m_items.Add(monitoredItem.Id, monitoredItem);
 
                         if (monitoredItem.MonitoringMode != MonitoringMode.Disabled)
                         {

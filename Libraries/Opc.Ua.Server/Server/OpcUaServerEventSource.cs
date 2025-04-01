@@ -142,12 +142,12 @@ namespace Opc.Ua.Server
         {
             if (IsEnabled())
             {
-                ServerCall(Enum.GetName(typeof(RequestType), requestType), requestId);
+                ServerCall(Enum.GetName(requestType), requestId);
             }
             else if ((TraceMask & TraceMasks.ServiceDetail) != 0 &&
                 Logger.IsEnabled(LogLevel.Trace))
             {
-                LogTrace(m_serverCallEventId, kServerCallMessage, Enum.GetName(typeof(RequestType), requestType), requestId);
+                LogTrace(m_serverCallEventId, kServerCallMessage, Enum.GetName(requestType), requestId);
             }
         }
 

@@ -333,9 +333,7 @@ namespace Opc.Ua
                     // prepend the namespace index if the name contains a colon.
                     if (m_name != null)
                     {
-                        int index = m_name.IndexOf(':');
-
-                        if (index != -1)
+                        if (m_name.Contains(':'))
                         {
                             builder.Append("0:");
                         }
@@ -509,7 +507,11 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadInvalidArgument, $"Invalid QualifiedName ({originalText}).");
                 }
 
-                var namespaceUri = Utils.UnescapeUri(text.Substring(4, index-4));
+#if NET9_0_OR_GREATER
+                string namespaceUri = Utils.UnescapeUri(text.AsSpan(4, index - 4));
+#else
+                string namespaceUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+#endif
                 namespaceIndex = (updateTables) ? context.NamespaceUris.GetIndexOrAppend(namespaceUri) : context.NamespaceUris.GetIndex(namespaceUri);
 
                 if (namespaceIndex < 0)
@@ -525,7 +527,7 @@ namespace Opc.Ua
 
                 if (index > 0)
                 {
-                    if (UInt16.TryParse(text.Substring(0, index), out ushort nsIndex))
+                    if (UInt16.TryParse(text.AsSpan(0, index), out ushort nsIndex))
                     {
                         namespaceIndex = nsIndex;
                     }
@@ -633,7 +635,7 @@ namespace Opc.Ua
         public static QualifiedName Null => s_Null;
 
         private static readonly QualifiedName s_Null = new QualifiedName();
-        #endregion
+#endregion
 
         #region Private Fields
         private ushort m_namespaceIndex;

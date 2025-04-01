@@ -89,7 +89,7 @@ namespace Opc.Ua
             // extract store location.
             string storeLocation = location.Substring(0, index);
             bool found = false;
-            foreach (StoreLocation availableLocation in (StoreLocation[])Enum.GetValues(typeof(StoreLocation)))
+            foreach (StoreLocation availableLocation in Enum.GetValues<StoreLocation>())
             {
                 if (availableLocation.ToString().Equals(storeLocation, StringComparison.OrdinalIgnoreCase))
                 {

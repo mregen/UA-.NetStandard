@@ -96,7 +96,7 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
 
         #region DataPointSources
         [DatapointSource]
-        public static readonly BuiltInType[] BuiltInTypes = ((BuiltInType[])Enum.GetValues(typeof(BuiltInType)))
+        public static readonly BuiltInType[] BuiltInTypes = Enum.GetValues<BuiltInType>()
             .ToList().Where(b => (b > BuiltInType.Null) && (b < BuiltInType.DataValue)).ToArray();
         #endregion
 

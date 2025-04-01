@@ -1665,7 +1665,7 @@ namespace Opc.Ua
             {
                 int index = text.LastIndexOf('_');
 
-                if (index > 0 && long.TryParse(text.Substring(index + 1), out code))
+                if (index > 0 && long.TryParse(text.AsSpan(index + 1), out code))
                 {
                     return (Enum)Enum.ToObject(enumType, code);
                 }

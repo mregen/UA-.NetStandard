@@ -90,16 +90,16 @@ public static class FuzzMethods
                 // afl-fuzz targets
                 if (parameters[0].ParameterType == typeof(Stream))
                 {
-                    return (AflFuzzStream)method.CreateDelegate(typeof(AflFuzzStream));
+                    return method.CreateDelegate<AflFuzzStream>();
                 }
                 else if (parameters[0].ParameterType == typeof(string))
                 {
-                    return (AflFuzzString)method.CreateDelegate(typeof(AflFuzzString));
+                    return method.CreateDelegate<AflFuzzString>();
                 }
                 // libfuzzer span target
                 else if (parameters[0].ParameterType == typeof(ReadOnlySpan<byte>))
                 {
-                    return (LibFuzzSpan)method.CreateDelegate(typeof(LibFuzzSpan));
+                    return method.CreateDelegate<LibFuzzSpan>();
                 }
             }
 

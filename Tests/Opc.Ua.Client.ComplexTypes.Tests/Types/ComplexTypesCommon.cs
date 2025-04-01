@@ -125,7 +125,7 @@ namespace Opc.Ua.Client.ComplexTypes.Tests.Types
         }
 
         [DatapointSource]
-        public StructureType[] StructureTypes = (StructureType[])Enum.GetValues(typeof(StructureType));
+        public StructureType[] StructureTypes = Enum.GetValues<StructureType>();
 
         [DatapointSource]
         public StructureFieldParameter[] StructureField = GetAllBuiltInTypesFields().Select(s => new StructureFieldParameter(s)).ToArray();

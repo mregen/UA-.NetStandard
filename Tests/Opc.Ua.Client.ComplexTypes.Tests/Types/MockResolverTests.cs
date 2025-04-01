@@ -67,7 +67,7 @@ namespace Opc.Ua.Client.ComplexTypes.Tests.Types
         {
             public TestType(BuiltInType builtInType)
             {
-                Name = Enum.GetName(typeof(BuiltInType), builtInType);
+                Name = Enum.GetName(builtInType);
                 TypeId = new NodeId((uint)builtInType);
             }
 
@@ -109,7 +109,7 @@ namespace Opc.Ua.Client.ComplexTypes.Tests.Types
 
         [DatapointSource]
         public static TestType[] TypeSource = new TestTypeCollection(
-            ((BuiltInType[])Enum.GetValues(typeof(BuiltInType)))
+            Enum.GetValues<BuiltInType>()
             .Where(b => b > BuiltInType.Null && b <= BuiltInType.DiagnosticInfo)
             .Select(b => new TestType(b))) {
             { nameof(DataTypeIds.BuildInfo), DataTypeIds.BuildInfo },

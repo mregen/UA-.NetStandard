@@ -296,7 +296,7 @@ namespace Opc.Ua.Security
 
                     if (url != null)
                     {
-                        if (map.ContainsKey(url.Scheme))
+                        if (!map.TryAdd(url.Scheme, string.Empty))
                         {
                             if (configuration.AlternateBaseAddresses == null)
                             {
@@ -308,7 +308,6 @@ namespace Opc.Ua.Security
                         else
                         {
                             configuration.BaseAddresses.Add(url.ToString());
-                            map.Add(url.Scheme, string.Empty);
                         }
                     }
                 }
