@@ -1452,7 +1452,37 @@ namespace Opc.Ua
         /// </summary>
         public new object MemberwiseClone()
         {
-            return new Variant(Utils.Clone(this.Value));
+            if (IsValueType())
+            {
+                switch(m_typeInfo.BuiltInType)
+                {
+                    case BuiltInType.Boolean: return new Variant(m_boolean);
+                    case BuiltInType.SByte: return new Variant(m_sbyte);
+                    case BuiltInType.Byte: return new Variant(m_byte);
+                    case BuiltInType.Int16: return new Variant(m_int16);
+                    case BuiltInType.UInt16: return new Variant(m_uint16);
+                    case BuiltInType.Int32: return new Variant(m_int32);
+                    case BuiltInType.UInt32: return new Variant(m_uint32);
+                    case BuiltInType.Int64: return new Variant(m_int64);
+                    case BuiltInType.UInt64: return new Variant(m_uint64);
+                    case BuiltInType.Float: return new Variant(m_float);
+                    case BuiltInType.Double: return new Variant(m_double);
+                }
+            }
+
+            if (IsNull)
+            {
+                if (TypeInfo != null)
+                {
+                    return new Variant(TypeInfo);
+                }
+                else
+                {
+                    return Variant.Null;
+                }
+            }
+
+            return new Variant(Utils.Clone(this.Value), this.TypeInfo);
         }
         #endregion
 

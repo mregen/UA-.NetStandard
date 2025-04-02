@@ -1,6 +1,6 @@
 <PublishResponse xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
   <ResponseHeader>
-    <Timestamp>2025-03-28T15:16:51.8224299Z</Timestamp>
+    <Timestamp>2025-04-01T16:03:31.884721Z</Timestamp>
     <RequestHandle>42</RequestHandle>
     <ServiceResult>
       <Code>0</Code>
@@ -19,7 +19,7 @@
   <MoreNotifications>true</MoreNotifications>
   <NotificationMessage>
     <SequenceNumber>123456</SequenceNumber>
-    <PublishTime>2025-03-28T15:16:51.8223758Z</PublishTime>
+    <PublishTime>2025-04-01T16:03:31.8846442Z</PublishTime>
     <NotificationData>
       <ExtensionObject>
         <TypeId>
@@ -39,9 +39,9 @@
                   <StatusCode>
                     <Code>0</Code>
                   </StatusCode>
-                  <SourceTimestamp>2025-03-28T15:17:51.8223758Z</SourceTimestamp>
+                  <SourceTimestamp>2025-04-01T16:04:31.8846442Z</SourceTimestamp>
                   <SourcePicoseconds>10</SourcePicoseconds>
-                  <ServerTimestamp>2025-03-28T15:16:51.8223758Z</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>100</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>
@@ -74,9 +74,9 @@
                   <StatusCode>
                     <Code>0</Code>
                   </StatusCode>
-                  <SourceTimestamp>2025-03-28T15:16:52.8223758Z</SourceTimestamp>
+                  <SourceTimestamp>2025-04-01T16:03:32.8846442Z</SourceTimestamp>
                   <SourcePicoseconds>10</SourcePicoseconds>
-                  <ServerTimestamp>2025-03-28T15:16:51.8223758Z</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>100</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>
@@ -93,9 +93,9 @@
                   <StatusCode>
                     <Code>0</Code>
                   </StatusCode>
-                  <SourceTimestamp>2025-03-29T15:16:51.8223758Z</SourceTimestamp>
+                  <SourceTimestamp>2025-04-02T16:03:31.8846442Z</SourceTimestamp>
                   <SourcePicoseconds>0</SourcePicoseconds>
-                  <ServerTimestamp>2025-03-28T15:16:51.8223758Z</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>0</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>
@@ -182,7 +182,7 @@
                   </StatusCode>
                   <SourceTimestamp>0001-01-01T00:00:00</SourceTimestamp>
                   <SourcePicoseconds>10</SourcePicoseconds>
-                  <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>100</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>
@@ -199,7 +199,7 @@
                   </StatusCode>
                   <SourceTimestamp>0001-01-01T00:00:00</SourceTimestamp>
                   <SourcePicoseconds>10</SourcePicoseconds>
-                  <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>100</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>
@@ -216,7 +216,35 @@
                   </StatusCode>
                   <SourceTimestamp>0001-01-01T00:00:00</SourceTimestamp>
                   <SourcePicoseconds>10</SourcePicoseconds>
-                  <ServerTimestamp>0001-01-01T00:00:00</ServerTimestamp>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
+                  <ServerPicoseconds>100</ServerPicoseconds>
+                </Value>
+              </Opc.Ua.MonitoredItemNotificationStruct>
+              <Opc.Ua.MonitoredItemNotificationStruct xmlns="">
+                <ClientHandle xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">131</ClientHandle>
+                <Value xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
+                  <Value>
+                    <Value>
+                      <ListOfUInt32>
+                        <UInt32>1</UInt32>
+                        <UInt32>2</UInt32>
+                        <UInt32>3</UInt32>
+                        <UInt32>4</UInt32>
+                        <UInt32>5</UInt32>
+                        <UInt32>6</UInt32>
+                        <UInt32>7</UInt32>
+                        <UInt32>8</UInt32>
+                        <UInt32>9</UInt32>
+                        <UInt32>0</UInt32>
+                      </ListOfUInt32>
+                    </Value>
+                  </Value>
+                  <StatusCode>
+                    <Code>0</Code>
+                  </StatusCode>
+                  <SourceTimestamp>0001-01-01T00:00:00</SourceTimestamp>
+                  <SourcePicoseconds>10</SourcePicoseconds>
+                  <ServerTimestamp>2025-04-01T16:03:31.8846442Z</ServerTimestamp>
                   <ServerPicoseconds>100</ServerPicoseconds>
                 </Value>
               </Opc.Ua.MonitoredItemNotificationStruct>

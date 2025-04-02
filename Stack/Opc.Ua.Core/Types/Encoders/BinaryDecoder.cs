@@ -1828,22 +1828,27 @@ namespace Opc.Ua
 
                 case BuiltInType.XmlElement:
                 {
-                    try
-                    {
-                        XmlElement[] values = new XmlElement[length];
+                    XmlElement[] values = new XmlElement[length];
 
-                        for (int ii = 0; ii < values.Length; ii++)
+                    for (int ii = 0; ii < values.Length; ii++)
+                    {
+                        try
                         {
                             values[ii] = ReadXmlElement(null);
                         }
-
-                        array = values;
+                        catch (ServiceResultException)
+                        {
+                            // fatal decoding error
+                            throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.LogError(ex, "Error reading array of XmlElement.");
+                            values[ii] = null;
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        Utils.LogError(ex, "Error reading array of XmlElement.");
-                    }
 
+                    array = values;
                     break;
                 }
 
@@ -2425,9 +2430,14 @@ namespace Opc.Ua
                         {
                             value = new Variant(ReadXmlElement(null));
                         }
+                        catch (ServiceResultException)
+                        {
+                            // fatal decoder error, invalid data
+                            throw;
+                        }
                         catch (Exception ex)
                         {
-                            Utils.LogTrace(ex, "Error reading xml element for variant.");
+                            Utils.LogTrace(ex, "Error reading xml element for Variant.");
                             value = new Variant(StatusCodes.BadDecodingError);
                         }
                         break;

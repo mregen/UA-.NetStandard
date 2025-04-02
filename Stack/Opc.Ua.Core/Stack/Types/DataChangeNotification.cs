@@ -184,8 +184,15 @@ namespace Opc.Ua
         {
             DataChangeNotification clone = (DataChangeNotification)base.MemberwiseClone();
 
-            clone.m_monitoredItems = ArrayPoolArraySegment<MonitoredItemNotificationStruct>.Rent(m_monitoredItems.Segment.Count);
-            m_monitoredItems.Segment.CopyTo(clone.m_monitoredItems.Segment);
+            if (m_monitoredItems != null)
+            {
+                clone.m_monitoredItems = ArrayPoolArraySegment<MonitoredItemNotificationStruct>.Rent(m_monitoredItems.Segment.Count);
+                m_monitoredItems.Segment.CopyTo(clone.m_monitoredItems.Segment);
+            }
+            else
+            {
+                clone.m_monitoredItems = null;
+            }
             clone.m_diagnosticInfos = (DiagnosticInfoCollection)Utils.Clone(this.m_diagnosticInfos);
 
             return clone;

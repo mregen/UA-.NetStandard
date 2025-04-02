@@ -39,7 +39,8 @@ public partial class Testcases
     public static MessageEncoder[] MessageEncoders = new MessageEncoder[] {
         ReadRequest,
         ReadResponse,
-        PublishResponse
+        PublishResponse,
+        WriteRequest,
     };
 
     public static void ReadRequest(IEncoder encoder)
@@ -142,8 +143,32 @@ public partial class Testcases
                         StatusCode = StatusCodes.BadTooManyOperations
                     },
                     new DataValue {
+                        WrappedValue = new Variant(new LocalizedText("en-us", "The text")),
+                        SourceTimestamp = now,
+                        StatusCode = StatusCodes.BadTooManyOperations
+                    },
+                    new DataValue {
+                        WrappedValue = new Variant(new QualifiedName("The text", 2)),
+                        SourceTimestamp = now,
+                        ServerPicoseconds = 100,
+                        SourcePicoseconds = 10,
+                        StatusCode = StatusCodes.BadTooManyOperations
+                    },
+                    new DataValue {
                         WrappedValue = new Variant(new ExtensionObject(new ThreeDVector(){ X=1.0, Y=-1.0, Z=0.0})),
                         SourceTimestamp = now,
+                        ServerPicoseconds = 100,
+                        SourcePicoseconds = 10,
+                        StatusCode = StatusCodes.Good
+                    },
+                    new DataValue {
+                        WrappedValue = new Variant(new ExtensionObject[] {
+                            new ExtensionObject(new ThreeDVector(){ X=1.0, Y=-1.0, Z=0.0}),
+                            new ExtensionObject(new ThreeDVector(){ X=1.0, Y=-1.0, Z=0.0})
+                            }),
+                        SourceTimestamp = now,
+                        ServerPicoseconds = 100,
+                        SourcePicoseconds = 10,
                         StatusCode = StatusCodes.Good
                     },
                 },
@@ -199,6 +224,7 @@ public partial class Testcases
         var expandedNodeId = new ExpandedNodeId(Guid.NewGuid(), messageContext.NamespaceUris.GetString(2));
         var opaqueNodeId = new ExpandedNodeId(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, messageContext.NamespaceUris.GetString(2));
         var matrix = new Matrix(new uint[2, 2, 2] { { { 1, 2 }, { 3, 4 } }, { { 11, 22 }, { 33, 44 } } }, BuiltInType.UInt32);
+        var array = new uint[10] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
         var publishResponse = new PublishResponse {
             AvailableSequenceNumbers = new UInt32Collection { 1, 2, 3, 4 },
             MoreNotifications = true,
@@ -268,6 +294,7 @@ public partial class Testcases
                                 ClientHandle = 128,
                                 Value = new DataValueStruct {
                                     WrappedValue = new Variant((double)12301232.123),
+                                    ServerTimestamp = now,
                                     ServerPicoseconds = 100,
                                     SourcePicoseconds = 10,
                                 },
@@ -276,6 +303,7 @@ public partial class Testcases
                                 ClientHandle = 129,
                                 Value = new DataValueStruct {
                                     WrappedValue = new Variant((Int64)(-123012321234123)),
+                                    ServerTimestamp = now,
                                     ServerPicoseconds = 100,
                                     SourcePicoseconds = 10,
                                 },
@@ -284,6 +312,16 @@ public partial class Testcases
                                 ClientHandle = 130,
                                 Value = new DataValueStruct {
                                     WrappedValue = new Variant((UInt64)123012321234123),
+                                    ServerTimestamp = now,
+                                    ServerPicoseconds = 100,
+                                    SourcePicoseconds = 10,
+                                },
+                            },
+                            new MonitoredItemNotificationStruct {
+                                ClientHandle = 131,
+                                Value = new DataValueStruct {
+                                    WrappedValue = new Variant(array),
+                                    ServerTimestamp = now,
                                     ServerPicoseconds = 100,
                                     SourcePicoseconds = 10,
                                 },
@@ -314,4 +352,111 @@ public partial class Testcases
         encoder.EncodeMessage(publishResponse);
     }
 
+    public static void WriteRequest(IEncoder encoder)
+    {
+        var writeRequest = new WriteRequest {
+            RequestHeader = new RequestHeader {
+                Timestamp = DateTime.UtcNow,
+                TimeoutHint = 10000,
+                RequestHandle = 422,
+                ReturnDiagnostics = (uint)DiagnosticsMasks.All,
+            },
+            NodesToWrite = new WriteValueCollection {
+                new WriteValue {
+                    NodeId = new NodeId(123),
+                    AttributeId = Attributes.Value,
+                    IndexRange = "1:2",
+                    Value = new DataValue(new Variant("Hello World")) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        ServerPicoseconds = 100,
+                        SourcePicoseconds = 10,
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(124),
+                    AttributeId = Attributes.ValueRank,
+                    Value = new DataValue(new Variant(12345)) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(125),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(123.45f)) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(126),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(123.45)) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(127),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(true)) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(128),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(new byte[] { 1, 2, 3, 4, 5 })) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId("s=\"FastCounter\"", 2),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(new int[] { 1, 2, 3, 4, 5 })) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(new byte [] { 0xaa, 0xbb, 0xcc, 0xdd, 0xee}, 3),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(new float[] { 1.1f, 2.2f, 3.3f })) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(Guid.NewGuid()),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(new double[] { 1.1, 2.2, 3.3 })) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+                new WriteValue {
+                    NodeId = new NodeId(132, 3),
+                    AttributeId = Attributes.Value,
+                    Value = new DataValue(new Variant(new string[] { "one", "two", "three" })) {
+                        ServerTimestamp = DateTime.UtcNow,
+                        SourceTimestamp = DateTime.UtcNow.AddMinutes(1),
+                        StatusCode = StatusCodes.Good,
+                    },
+                },
+            },
+        };
+        encoder.EncodeMessage(writeRequest);
+    }
 }

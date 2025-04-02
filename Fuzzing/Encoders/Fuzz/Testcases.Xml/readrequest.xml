@@ -1,6 +1,6 @@
 <ReadRequest xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
   <RequestHeader>
-    <Timestamp>2025-03-28T15:16:50.5858287Z</Timestamp>
+    <Timestamp>2025-04-01T16:03:30.2701254Z</Timestamp>
     <RequestHandle>422</RequestHandle>
     <ReturnDiagnostics>1023</ReturnDiagnostics>
     <TimeoutHint>10000</TimeoutHint>
@@ -51,7 +51,7 @@
     </ReadValueId>
     <ReadValueId>
       <NodeId>
-        <Identifier>g=2c18e37a-7b61-4b75-a3b7-06e6c83fa2af</Identifier>
+        <Identifier>g=ecad8d48-3bf7-46b9-9d12-bb52deb71f93</Identifier>
       </NodeId>
       <AttributeId>4</AttributeId>
     </ReadValueId>

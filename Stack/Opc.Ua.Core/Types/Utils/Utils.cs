@@ -1825,6 +1825,14 @@ namespace Opc.Ua
         /// <summary>
         /// Returns a deep copy of the value.
         /// </summary>
+        public static object Clone(ICloneable value)
+        {
+            return value?.Clone();
+        }
+
+        /// <summary>
+        /// Returns a deep copy of the value.
+        /// </summary>
         public static object Clone(object value)
         {
             if (value == null)
@@ -1834,8 +1842,8 @@ namespace Opc.Ua
 
             Type type = value.GetType();
 
-            // nothing to do for value types.
-            if (type.GetTypeInfo().IsValueType)
+            // nothing to do for primitive types.
+            if (type.GetTypeInfo().IsPrimitive)
             {
                 return value;
             }
@@ -1893,16 +1901,24 @@ namespace Opc.Ua
                 }
             }
 
+            // use ICloneable if supported
+            // must be checked before value type due to some
+            // structs implementing ICloneable
+            if (value is ICloneable cloneable)
+            {
+                return cloneable.Clone();
+            }
+
+            // nothing to do for other value types.
+            if (type.GetTypeInfo().IsValueType)
+            {
+                return value;
+            }
+
             // copy XmlNode.
             if (value is XmlNode node)
             {
                 return node.CloneNode(true);
-            }
-
-            // use ICloneable if supported
-            if (value is ICloneable cloneable)
-            {
-                return cloneable.Clone();
             }
 
             //try to find the MemberwiseClone method by reflection.
