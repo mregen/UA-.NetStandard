@@ -18,17 +18,10 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="TestData\TestData.PredefinedNodes.uanodes;MemoryBuffer\MemoryBuffer.PredefinedNodes.uanodes;Boiler\Boiler.PredefinedNodes.uanodes" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Properties\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <None Remove="Properties\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Alarms\Alarms.cs" />
+    <EmbeddedResource Include="StructuresWithArrays\StructuresWithArrays.PredefinedNodes.uanodes" />
+    <EmbeddedResource Include="TestData\TestData.PredefinedNodes.uanodes" />
+    <EmbeddedResource Include="MemoryBuffer\MemoryBuffer.PredefinedNodes.uanodes" />
+    <EmbeddedResource Include="Boiler\Boiler.PredefinedNodes.uanodes" />
   </ItemGroup>
 
   <ItemGroup>

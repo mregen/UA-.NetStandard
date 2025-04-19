@@ -1,0 +1,327 @@
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ua="http://opcfoundation.org/UA/2008/02/Types.xsd"
+  xmlns:tns="http://test.org/UA/StructuresWithArrays/"
+  targetNamespace="http://test.org/UA/StructuresWithArrays/"
+  elementFormDefault="qualified"
+>
+  <xs:annotation>
+    <xs:appinfo>
+      <tns:Model ModelUri="http://test.org/UA/StructuresWithArrays/" Version="1.0.0" PublicationDate="2022-10-28T00:00:00Z" />
+    </xs:appinfo>
+  </xs:annotation>
+  
+  <xs:import namespace="http://opcfoundation.org/UA/" />
+
+  <xs:complexType name="Structure_A">
+    <xs:sequence>
+      <xs:element name="Duration_Field" type="xs:double" minOccurs="0" />
+      <xs:element name="Double_Field" type="xs:double" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_A" type="tns:Structure_A" />
+
+  <xs:complexType name="ListOfStructure_A">
+    <xs:sequence>
+      <xs:element name="Structure_A" type="tns:Structure_A" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_A" type="tns:ListOfStructure_A" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_B">
+    <xs:sequence>
+      <xs:element name="Duration_Field" type="xs:double" minOccurs="0" />
+      <xs:element name="Int32_Field" type="xs:int" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_B" type="tns:Structure_B" />
+
+  <xs:complexType name="ListOfStructure_B">
+    <xs:sequence>
+      <xs:element name="Structure_B" type="tns:Structure_B" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_B" type="tns:ListOfStructure_B" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_C">
+    <xs:sequence>
+      <xs:element name="Int32_Field" type="xs:int" minOccurs="0" />
+      <xs:element name="NodeId_Field" type="ua:NodeId" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_C" type="tns:Structure_C" />
+
+  <xs:complexType name="ListOfStructure_C">
+    <xs:sequence>
+      <xs:element name="Structure_C" type="tns:Structure_C" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_C" type="tns:ListOfStructure_C" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_D">
+    <xs:sequence>
+      <xs:element name="Scalar_BaseDataType" type="ua:Variant" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_D" type="tns:Structure_D" />
+
+  <xs:complexType name="ListOfStructure_D">
+    <xs:sequence>
+      <xs:element name="Structure_D" type="tns:Structure_D" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_D" type="tns:ListOfStructure_D" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_E">
+    <xs:sequence>
+      <xs:element name="Scalar_Structure" type="ua:ExtensionObject" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_E" type="tns:Structure_E" />
+
+  <xs:complexType name="ListOfStructure_E">
+    <xs:sequence>
+      <xs:element name="Structure_E" type="tns:Structure_E" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_E" type="tns:ListOfStructure_E" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_F">
+    <xs:sequence>
+      <xs:element name="Scalar_ApplicationDescription" type="ua:ApplicationDescription" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_F" type="tns:Structure_F" />
+
+  <xs:complexType name="ListOfStructure_F">
+    <xs:sequence>
+      <xs:element name="Structure_F" type="tns:Structure_F" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_F" type="tns:ListOfStructure_F" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_G">
+    <xs:sequence>
+      <xs:element name="Scalar_Structure_A" type="tns:Structure_A" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_G" type="tns:Structure_G" />
+
+  <xs:complexType name="ListOfStructure_G">
+    <xs:sequence>
+      <xs:element name="Structure_G" type="tns:Structure_G" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_G" type="tns:ListOfStructure_G" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_H">
+    <xs:sequence>
+      <xs:element name="Scalar_Duration" type="xs:double" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_H" type="tns:Structure_H" />
+
+  <xs:complexType name="ListOfStructure_H">
+    <xs:sequence>
+      <xs:element name="Structure_H" type="tns:Structure_H" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_H" type="tns:ListOfStructure_H" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_J">
+    <xs:sequence>
+      <xs:element name="Scalar_MessageSecurityMode" type="ua:MessageSecurityMode" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_J" type="tns:Structure_J" />
+
+  <xs:complexType name="ListOfStructure_J">
+    <xs:sequence>
+      <xs:element name="Structure_J" type="tns:Structure_J" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_J" type="tns:ListOfStructure_J" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_K">
+    <xs:sequence>
+      <xs:element name="S1D_Array_String_within_max_length" type="ua:ListOfString" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_K" type="tns:Structure_K" />
+
+  <xs:complexType name="ListOfStructure_K">
+    <xs:sequence>
+      <xs:element name="Structure_K" type="tns:Structure_K" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_K" type="tns:ListOfStructure_K" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_L">
+    <xs:sequence>
+      <xs:element name="S1D_Array_of_BaseDataType" type="ua:ListOfVariant" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_L" type="tns:Structure_L" />
+
+  <xs:complexType name="ListOfStructure_L">
+    <xs:sequence>
+      <xs:element name="Structure_L" type="tns:Structure_L" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_L" type="tns:ListOfStructure_L" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_M">
+    <xs:sequence>
+      <xs:element name="S1D_Array_of_Structure__unknown_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_M" type="tns:Structure_M" />
+
+  <xs:complexType name="ListOfStructure_M">
+    <xs:sequence>
+      <xs:element name="Structure_M" type="tns:Structure_M" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_M" type="tns:ListOfStructure_M" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_N">
+    <xs:sequence>
+      <xs:element name="S1D_Array_of_Structure__known_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_N" type="tns:Structure_N" />
+
+  <xs:complexType name="ListOfStructure_N">
+    <xs:sequence>
+      <xs:element name="Structure_N" type="tns:Structure_N" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_N" type="tns:ListOfStructure_N" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_O">
+    <xs:sequence>
+      <xs:element name="S1D_Array_of_ApplicationDescription" type="ua:ListOfApplicationDescription" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_O" type="tns:Structure_O" />
+
+  <xs:complexType name="ListOfStructure_O">
+    <xs:sequence>
+      <xs:element name="Structure_O" type="tns:Structure_O" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_O" type="tns:ListOfStructure_O" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_P">
+    <xs:sequence>
+      <xs:element name="S2D_Array_String_within_max_length" type="ua:ListOfString" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_P" type="tns:Structure_P" />
+
+  <xs:complexType name="ListOfStructure_P">
+    <xs:sequence>
+      <xs:element name="Structure_P" type="tns:Structure_P" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_P" type="tns:ListOfStructure_P" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_Q">
+    <xs:sequence>
+      <xs:element name="S2D_Array_of_BaseDataType" type="ua:ListOfVariant" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_Q" type="tns:Structure_Q" />
+
+  <xs:complexType name="ListOfStructure_Q">
+    <xs:sequence>
+      <xs:element name="Structure_Q" type="tns:Structure_Q" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_Q" type="tns:ListOfStructure_Q" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_R">
+    <xs:sequence>
+      <xs:element name="S2D_Array_of_Structure__unknown_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_R" type="tns:Structure_R" />
+
+  <xs:complexType name="ListOfStructure_R">
+    <xs:sequence>
+      <xs:element name="Structure_R" type="tns:Structure_R" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_R" type="tns:ListOfStructure_R" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_S">
+    <xs:sequence>
+      <xs:element name="S2D_Array_of_Structure__known_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_S" type="tns:Structure_S" />
+
+  <xs:complexType name="ListOfStructure_S">
+    <xs:sequence>
+      <xs:element name="Structure_S" type="tns:Structure_S" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_S" type="tns:ListOfStructure_S" nillable="true"></xs:element>
+
+  <xs:complexType name="Structure_T">
+    <xs:sequence>
+      <xs:element name="S2D_Array_of_ApplicationDescription" type="ua:ListOfApplicationDescription" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Structure_T" type="tns:Structure_T" />
+
+  <xs:complexType name="ListOfStructure_T">
+    <xs:sequence>
+      <xs:element name="Structure_T" type="tns:Structure_T" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfStructure_T" type="tns:ListOfStructure_T" nillable="true"></xs:element>
+
+  <xs:complexType name="LargeComplexStructure">
+    <xs:sequence>
+      <xs:element name="Scalar_BaseDataType" type="ua:Variant" minOccurs="0" />
+      <xs:element name="Scalar_Structure" type="ua:ExtensionObject" minOccurs="0" nillable="true" />
+      <xs:element name="Scalar_ApplicationDescription" type="ua:ApplicationDescription" minOccurs="0" nillable="true" />
+      <xs:element name="Scalar_Structure_A" type="tns:Structure_A" minOccurs="0" nillable="true" />
+      <xs:element name="Scalar_Structure_B" type="tns:Structure_B" minOccurs="0" nillable="true" />
+      <xs:element name="Scalar_Boolean" type="xs:boolean" minOccurs="0" />
+      <xs:element name="Scalar_Duration" type="xs:double" minOccurs="0" />
+      <xs:element name="Scalar_RolePermissionType" type="ua:RolePermissionType" minOccurs="0" nillable="true" />
+      <xs:element name="Scalar_String_no_max_length" type="ua:Variant" minOccurs="0" />
+      <xs:element name="Scalar_String_within_max_length" type="ua:Variant" minOccurs="0" />
+      <xs:element name="S1D_Array_String_no_max_length" type="ua:ListOfString" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_String_within_max_length" type="ua:ListOfString" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_BaseDataType" type="ua:ListOfVariant" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Structure__unknown_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Structure__known_" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_ApplicationDescription" type="ua:ListOfApplicationDescription" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Structure_A" type="tns:ListOfStructure_A" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Structure_B" type="tns:ListOfStructure_B" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Boolean" type="ua:ListOfBoolean" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_Duration" type="ua:ListOfDouble" minOccurs="0" nillable="true" />
+      <xs:element name="S1D_Array_of_RolePermissionType" type="ua:ListOfRolePermissionType" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_BaseDataType" type="ua:ListOfVariant" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_Structure" type="ua:ListOfExtensionObject" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_ApplicationDescription" type="ua:ListOfApplicationDescription" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_Structure_A" type="tns:ListOfStructure_A" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_Structure_B" type="tns:ListOfStructure_B" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_Boolean" type="ua:ListOfBoolean" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_Duration" type="ua:ListOfDouble" minOccurs="0" nillable="true" />
+      <xs:element name="S2D_Array_of_RolePermissionType" type="ua:ListOfRolePermissionType" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="LargeComplexStructure" type="tns:LargeComplexStructure" />
+
+  <xs:complexType name="ListOfLargeComplexStructure">
+    <xs:sequence>
+      <xs:element name="LargeComplexStructure" type="tns:LargeComplexStructure" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ListOfLargeComplexStructure" type="tns:ListOfLargeComplexStructure" nillable="true"></xs:element>
+
+</xs:schema>
