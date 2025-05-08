@@ -329,6 +329,7 @@ namespace Opc.Ua.Client.Tests
                 .AsClient()
                 .AddSecurityConfiguration(ClientFixture.Config.SecurityConfiguration.ApplicationCertificate.SubjectName)
                 .Create().ConfigureAwait(false);
+            Assert.NotNull(config);
         }
 
         [Theory, Order(200)]

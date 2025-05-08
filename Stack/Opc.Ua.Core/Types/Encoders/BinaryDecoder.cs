@@ -294,7 +294,7 @@ namespace Opc.Ua
             // not used in the binary encoding.
         }
 
-        /// <summary>
+        /// <inheritdoc/>
         /// Pops a namespace from the namespace stack.
         /// </summary>
         public void PopNamespace()
@@ -423,7 +423,6 @@ namespace Opc.Ua
             }
 
             // length is always >= 1 here
-
 #if NET6_0_OR_GREATER
             const int maxStackAlloc = 1024;
             if (length <= maxStackAlloc)

@@ -28,6 +28,7 @@
  * ======================================================================*/
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Opc.Ua.X509StoreExtensions
 {
@@ -38,21 +39,15 @@ namespace Opc.Ua.X509StoreExtensions
     {
         private static bool? _isWindowsWithCrlSupport = null;
         /// <summary>
-        /// True if OS Windows and Version >= Windows XP
+        /// True if OS Windows.
         /// </summary>
         /// <returns>True if Crl Support is given in the system X509 Store</returns>
         public static bool IsWindowsWithCrlSupport()
         {
-            if (_isWindowsWithCrlSupport != null)
+            if (_isWindowsWithCrlSupport == null)
             {
-                return _isWindowsWithCrlSupport.Value;
+                _isWindowsWithCrlSupport = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             }
-            OperatingSystem version = Environment.OSVersion;
-            _isWindowsWithCrlSupport = version.Platform == PlatformID.Win32NT
-                && (
-                       (version.Version.Major > 5)
-                        || (version.Version.Major == 5 && version.Version.Minor >= 1)
-                    );
             return _isWindowsWithCrlSupport.Value;
         }
     }

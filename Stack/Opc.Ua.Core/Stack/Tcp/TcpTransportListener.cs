@@ -802,7 +802,7 @@ namespace Opc.Ua.Bindings
                             // Identify channels without established sessions
                             var nonSessionChannels = snapshot.Where(ch => !ch.Value.UsedBySession).ToArray();
 
-                            if (nonSessionChannels.Any())
+                            if (nonSessionChannels.Length != 0)
                             {
                                 var oldestIdChannel = nonSessionChannels.Aggregate((max, current) =>
                                     current.Value.ElapsedSinceLastActiveTime > max.Value.ElapsedSinceLastActiveTime ? current : max);
@@ -1078,7 +1078,7 @@ namespace Opc.Ua.Bindings
             // append the relative path to the base address.
             if (!String.IsNullOrEmpty(relativeAddress))
             {
-                if (!baseAddress.AbsolutePath.EndsWith("/", StringComparison.Ordinal))
+                if (!baseAddress.AbsolutePath.EndsWith('/'))
                 {
                     UriBuilder uriBuilder = new UriBuilder(baseAddress);
                     uriBuilder.Path = uriBuilder.Path + "/";
