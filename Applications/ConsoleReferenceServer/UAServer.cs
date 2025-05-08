@@ -79,7 +79,7 @@ namespace Quickstarts
                 };
 
                 // load the application configuration.
-                await m_application.LoadApplicationConfiguration(false).ConfigureAwait(false);
+                await m_application.LoadApplicationConfigurationAsync(false).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -98,7 +98,7 @@ namespace Quickstarts
                 var config = m_application.ApplicationConfiguration;
                 if (renewCertificate)
                 {
-                    await m_application.DeleteApplicationInstanceCertificate().ConfigureAwait(false);
+                    await m_application.DeleteApplicationInstanceCertificateAsync().ConfigureAwait(false);
                 }
 
                 // check the application certificate.
@@ -153,7 +153,7 @@ namespace Quickstarts
                 m_server = m_server ?? new T();
 
                 // start the server
-                await m_application.Start(m_server).ConfigureAwait(false);
+                await m_application.StartAsync(m_server).ConfigureAwait(false);
 
                 // save state
                 ExitCode = ExitCode.ErrorRunning;

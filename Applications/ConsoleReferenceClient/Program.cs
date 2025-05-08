@@ -148,7 +148,7 @@ namespace Quickstarts.ConsoleReferenceClient
                 };
 
                 // load the application configuration.
-                var config = await application.LoadApplicationConfiguration(silent: false).ConfigureAwait(false);
+                var config = await application.LoadApplicationConfigurationAsync(silent: false).ConfigureAwait(false);
 
                 // override logfile
                 if (logFile != null)
@@ -166,7 +166,7 @@ namespace Quickstarts.ConsoleReferenceClient
                 // delete old certificate
                 if (renewCertificate)
                 {
-                    await application.DeleteApplicationInstanceCertificate().ConfigureAwait(false);
+                    await application.DeleteApplicationInstanceCertificateAsync().ConfigureAwait(false);
                 }
 
                 // check the application certificate.
