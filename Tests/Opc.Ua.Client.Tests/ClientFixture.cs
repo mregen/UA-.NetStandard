@@ -57,9 +57,9 @@ namespace Opc.Ua.Client.Tests
         public ISessionFactory SessionFactory { get; set; } = DefaultSessionFactory.Instance;
         public ActivityListener ActivityListener { get; private set; }
 
-        public ClientFixture(bool UseTracing, bool disableActivityLogging)
+        public ClientFixture(bool useTracing, bool disableActivityLogging)
         {
-            if (UseTracing)
+            if (useTracing)
             {
                 SessionFactory = TraceableRequestHeaderClientSessionFactory.Instance;
                 StartActivityListenerInternal(disableActivityLogging);
@@ -117,7 +117,7 @@ namespace Opc.Ua.Client.Tests
                 .Create().ConfigureAwait(false);
 
             // check the application certificate.
-            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");

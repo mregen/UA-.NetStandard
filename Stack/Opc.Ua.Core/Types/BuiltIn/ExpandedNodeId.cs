@@ -21,9 +21,6 @@ namespace Opc.Ua
     /// <summary>
     /// Extends a node id by adding a complete namespace URI.
     /// </summary>
-    /// <remarks>
-    /// Extends a node id by adding a complete namespace URI.
-    /// </remarks>
     [DataContract(Namespace = Namespaces.OpcUaXsd)]
     public class ExpandedNodeId : ICloneable, IComparable, IEquatable<ExpandedNodeId>, IFormattable
     {

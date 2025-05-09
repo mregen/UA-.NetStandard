@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2024 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2025 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -27,52 +27,31 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-
 using System;
-using System.Buffers;
-using System.Threading;
 
-namespace Opc.Ua.Buffers
+namespace Opc.Ua
 {
     /// <summary>
-    /// Helper to build a ReadOnlySequence from a set of <see cref="ArrayPool{T}"/> allocated buffers.
+    /// Defines various static extension utility functions.
     /// </summary>
-    public sealed class ArrayPoolBufferSegment<T> : ReadOnlySequenceSegment<T>
+    public static class Extensions
     {
-        private T[] _array;
-
+#if !NET7_0_OR_GREATER
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayPoolBufferSegment{T}"/> class.
+        /// Implement EndsWith helper for legacy .NET versions.
         /// </summary>
-        public ArrayPoolBufferSegment(T[] array, int offset, int length)
+        public static bool EndsWith(this string s, char ch)
         {
-            Memory = new ReadOnlyMemory<T>(array, offset, length);
-            _array = array;
+            return s.EndsWith(ch.ToString(), StringComparison.Ordinal);
         }
 
         /// <summary>
-        /// Returns a rented buffer to the shared pool and invalidates memory.
+        /// Implement StartsWith helper for legacy .NET versions.
         /// </summary>
-        public void Return(bool clearArray = false)
+        public static bool StartsWith(this string s, char ch)
         {
-            var array = Interlocked.Exchange(ref _array, null);
-            if (array != null)
-            {
-                ArrayPool<T>.Shared.Return(array, clearArray);
-                Memory = ReadOnlyMemory<T>.Empty;
-            }
+            return s.StartsWith(ch.ToString(), StringComparison.Ordinal);
         }
-
-        /// <summary>
-        /// Appends a buffer to the sequence.
-        /// </summary>
-        public ArrayPoolBufferSegment<T> Append(T[] array, int offset, int length)
-        {
-            var segment = new ArrayPoolBufferSegment<T>(array, offset, length) {
-                RunningIndex = RunningIndex + Memory.Length,
-            };
-            Next = segment;
-            return segment;
-        }
+#endif
     }
 }

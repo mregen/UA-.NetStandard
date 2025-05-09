@@ -509,7 +509,11 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid QualifiedName ({originalText}).");
                 }
 
-                var namespaceUri = Utils.UnescapeUri(text.Substring(4, index-4));
+#if NET9_0_OR_GREATER
+                string namespaceUri = Utils.UnescapeUri(text.AsSpan(4, index - 4));
+#else
+                string namespaceUri = Utils.UnescapeUri(text.Substring(4, index - 4));
+#endif
                 namespaceIndex = (updateTables) ? context.NamespaceUris.GetIndexOrAppend(namespaceUri) : context.NamespaceUris.GetIndex(namespaceUri);
 
                 if (namespaceIndex < 0)
@@ -525,7 +529,11 @@ namespace Opc.Ua
 
                 if (index > 0)
                 {
+#if NETSTANDARD2_1_OR_GREATER
+                    if (UInt16.TryParse(text.AsSpan(0, index), out ushort nsIndex))
+#else
                     if (UInt16.TryParse(text.Substring(0, index), out ushort nsIndex))
+#endif
                     {
                         namespaceIndex = nsIndex;
                     }
