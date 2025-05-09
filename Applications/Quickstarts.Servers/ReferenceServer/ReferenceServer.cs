@@ -67,7 +67,7 @@ namespace Quickstarts.ReferenceServer
         {
             Utils.LogInfo(Utils.TraceMasks.StartStop, "Creating the Reference Server Node Manager.");
 
-            IList<INodeManager> nodeManagers = new List<INodeManager>();
+            var nodeManagers = new List<INodeManager>();
 
             // create the custom node manager.
             nodeManagers.Add(new ReferenceNodeManager(server, configuration));

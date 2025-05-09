@@ -612,15 +612,13 @@ namespace Opc.Ua.Client.ComplexTypes
         /// </summary>
         protected virtual void InitializePropertyAttributes()
         {
-            var definitionAttribute = (StructureDefinitionAttribute)
-                GetType().GetCustomAttribute(typeof(StructureDefinitionAttribute));
+            var definitionAttribute = GetType().GetCustomAttribute<StructureDefinitionAttribute>();
             if (definitionAttribute != null)
             {
                 m_structureBaseType = definitionAttribute.BaseDataType;
             }
 
-            var typeAttribute = (StructureTypeIdAttribute)
-                GetType().GetCustomAttribute(typeof(StructureTypeIdAttribute));
+            var typeAttribute = GetType().GetCustomAttribute<StructureTypeIdAttribute>();
             if (typeAttribute != null)
             {
                 TypeId = ExpandedNodeId.Parse(typeAttribute.ComplexTypeId);
@@ -632,16 +630,14 @@ namespace Opc.Ua.Client.ComplexTypes
             var properties = GetType().GetProperties();
             foreach (var property in properties)
             {
-                StructureFieldAttribute fieldAttribute = (StructureFieldAttribute)
-                    property.GetCustomAttribute(typeof(StructureFieldAttribute));
+                StructureFieldAttribute fieldAttribute = property.GetCustomAttribute<StructureFieldAttribute>();
 
                 if (fieldAttribute == null)
                 {
                     continue;
                 }
 
-                DataMemberAttribute dataAttribute = (DataMemberAttribute)
-                    property.GetCustomAttribute(typeof(DataMemberAttribute));
+                DataMemberAttribute dataAttribute = property.GetCustomAttribute<DataMemberAttribute>();
 
                 var newProperty = new ComplexTypePropertyInfo(property, fieldAttribute, dataAttribute);
 
