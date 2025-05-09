@@ -131,7 +131,7 @@ namespace Opc.Ua.Client.ComplexTypes
                 // cache the server type system
                 _ = await m_complexTypeResolver.LoadDataTypesAsync(DataTypeIds.BaseDataType, true, ct: ct).ConfigureAwait(false);
                 IList<INode> subTypeNodes = await m_complexTypeResolver.LoadDataTypesAsync(nodeId, subTypes, true, ct: ct).ConfigureAwait(false);
-                IList<INode> subTypeNodesWithoutKnownTypes = RemoveKnownTypes(subTypeNodes);
+                List<INode> subTypeNodesWithoutKnownTypes = RemoveKnownTypes(subTypeNodes);
 
                 if (subTypeNodesWithoutKnownTypes.Count > 0)
                 {
@@ -307,8 +307,7 @@ namespace Opc.Ua.Client.ComplexTypes
                     {
                         foreach (StructureField field in structureDefinition.Fields)
                         {
-                            if (!IsRecursiveDataType(nodeId, field.DataType) &&
-                                !collect.ContainsKey(nodeId))
+                            if (!IsRecursiveDataType(nodeId, field.DataType) && !collect.ContainsKey(field.DataType))
                             {
                                 CollectAllDataTypeDefinitions(field.DataType, collect);
                             }
@@ -853,7 +852,7 @@ namespace Opc.Ua.Client.ComplexTypes
         /// <summary>
         /// Remove all known types in the type factory from a list of DataType nodes.
         /// </summary>
-        private IList<INode> RemoveKnownTypes(IList<INode> nodeList)
+        private List<INode> RemoveKnownTypes(IList<INode> nodeList)
         {
             return nodeList.Where(
                 node => GetSystemType(node.NodeId) == null).Distinct().ToList();

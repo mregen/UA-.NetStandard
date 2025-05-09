@@ -54,8 +54,8 @@ namespace Opc.Ua.Server
             this.AliasRoot = "Core";
 
             string[] namespaceUris = new string[2];
-            namespaceUris[0] = Namespaces.OpcUa;
-            namespaceUris[1] = Namespaces.OpcUa + "Diagnostics";
+            namespaceUris[0] = Opc.Ua.Namespaces.OpcUa;
+            namespaceUris[1] = Opc.Ua.Namespaces.OpcUa + "Diagnostics";
             SetNamespaces(namespaceUris);
 
             m_namespaceIndex = Server.NamespaceUris.GetIndexOrAppend(namespaceUris[1]);

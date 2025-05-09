@@ -526,6 +526,15 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Looks up the Utf8 encoded symbolic name for a status code.
+        /// </summary>
+        /// <param name="code">The numeric error-code to convert to a textual description</param>
+        public static byte[] LookupUtf8SymbolicId(uint code)
+        {
+            return StatusCodes.GetUtf8BrowseName(code & 0xFFFF0000);
+        }
+
+        /// <summary>
         /// Returns true if the objects are not equal.
         /// </summary>
         /// <param name="a">The first object being compared</param>
