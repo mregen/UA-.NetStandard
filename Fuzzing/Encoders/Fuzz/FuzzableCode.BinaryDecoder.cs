@@ -71,7 +71,7 @@ public static partial class FuzzableCode
         // encode the fuzzed object and see if it crashes
         if (encodeable != null)
         {
-            _ = BinaryEncoder.EncodeMessage(encodeable, messageContext);
+            _ = BinaryEncoder.EncodeMessage(encodeable, MessageContext);
         }
     }
 
@@ -88,7 +88,7 @@ public static partial class FuzzableCode
             try
             {
                 encodeable = FuzzBinaryDecoderCore(memoryStream, true);
-                serialized = BinaryEncoder.EncodeMessage(encodeable, messageContext);
+                serialized = BinaryEncoder.EncodeMessage(encodeable, MessageContext);
             }
             catch
             {
@@ -132,7 +132,7 @@ public static partial class FuzzableCode
         // encode the fuzzed object and see if it crashes
         if (encodeable != null)
         {
-            _ = BinaryEncoder.EncodeMessage(encodeable, messageContext);
+            _ = BinaryEncoder.EncodeMessage(encodeable, MessageContext);
         }
     }
 
@@ -148,7 +148,7 @@ public static partial class FuzzableCode
             try
             {
                 encodeable = FuzzBinaryDecoderCore(memoryStream, true);
-                serialized = BinaryEncoder.EncodeMessage(encodeable, messageContext);
+                serialized = BinaryEncoder.EncodeMessage(encodeable, MessageContext);
             }
             catch
             {
@@ -164,11 +164,11 @@ public static partial class FuzzableCode
     /// The fuzz target for the BinaryDecoder.
     /// </summary>
     /// <param name="stream">A memory stream with fuzz content.</param>
-    internal static IEncodeable FuzzBinaryDecoderCore(MemoryStream stream, bool throwAll = false)
+    internal static IEncodeable FuzzBinaryDecoderCore(Stream stream, bool throwAll = false)
     {
         try
         {
-            using (var decoder = new BinaryDecoder(stream, messageContext))
+            using (var decoder = new BinaryDecoder(stream, MessageContext))
             {
                 return decoder.DecodeMessage(null);
             }
@@ -191,7 +191,6 @@ public static partial class FuzzableCode
             }
 
             throw;
-
         }
     }
 
@@ -218,15 +217,26 @@ public static partial class FuzzableCode
             return;
         }
 
+        // catch float and double NaN values which are not equal
+        // and will cause the indempotent encoder to fail.
+        if (encodeable is ICloneable cloneable)
+        {
+            IEncodeable cloned = cloneable.Clone() as IEncodeable;
+            if (!Utils.IsEqual(encodeable, cloned))
+            {
+                return;
+            }
+        }
+
         using (var memoryStream = new MemoryStream(serialized))
         {
             IEncodeable encodeable2 = FuzzBinaryDecoderCore(memoryStream, true);
-            byte[] serialized2 = BinaryEncoder.EncodeMessage(encodeable2, messageContext);
+            byte[] serialized2 = BinaryEncoder.EncodeMessage(encodeable2, MessageContext);
 
             using (var memoryStream2 = new MemoryStream(serialized2))
             {
                 IEncodeable encodeable3 = FuzzBinaryDecoderCore(memoryStream2, true);
-                byte[] serialized3 = BinaryEncoder.EncodeMessage(encodeable3, messageContext);
+                byte[] serialized3 = BinaryEncoder.EncodeMessage(encodeable3, MessageContext);
 
                 string encodeableTypeName = encodeable2?.GetType().Name ?? "unknown type";
                 if (serialized2 == null || serialized3 == null || !serialized2.SequenceEqual(serialized3))
@@ -248,13 +258,13 @@ public static partial class FuzzableCode
     private static bool ValidateTypeId(ExpandedNodeId encodableTypeId, Type expectedType)
     {
         // only encode if it is a known type
-        NodeId typeId = ExpandedNodeId.ToNodeId(encodableTypeId, messageContext.NamespaceUris);
+        NodeId typeId = ExpandedNodeId.ToNodeId(encodableTypeId, MessageContext.NamespaceUris);
 
         // convert to absolute node id.
-        ExpandedNodeId absoluteId = NodeId.ToExpandedNodeId(typeId, messageContext.NamespaceUris);
+        ExpandedNodeId absoluteId = NodeId.ToExpandedNodeId(typeId, MessageContext.NamespaceUris);
 
         // lookup message type.
-        Type actualType = messageContext.Factory.GetSystemType(absoluteId);
+        Type actualType = MessageContext.Factory.GetSystemType(absoluteId);
 
         return (actualType == expectedType);
     }

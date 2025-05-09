@@ -34,9 +34,14 @@ using Opc.Ua.Bindings;
 
 public static partial class FuzzableCode
 {
-    private static ServiceMessageContext messageContext = ServiceMessageContext.GlobalContext;
-    private static BufferManager bufferManager = new BufferManager(nameof(FuzzableCode), 65535);
-    private static ChannelQuotas channelQuotas = new ChannelQuotas();
+    private const string ReferenceServer = "urn:hostname:UA:Quickstarts:ReferenceServer";
+    private const string Boiler = "http://opcfoundation.org/UA/Boiler/";
+    private const string MemoryBuffer = "http://samples.org/UA/MemoryBuffer";
+    private const string MemoryBufferInstance = "http://samples.org/UA/MemoryBuffer/Instance";
+
+    public static ServiceMessageContext MessageContext = new ServiceMessageContext() {
+        NamespaceUris = new NamespaceTable(new string[] { Namespaces.OpcUa, ReferenceServer, Boiler, MemoryBuffer, MemoryBufferInstance })
+    };
 
     /// <summary>
     /// Print information about the fuzzer target.

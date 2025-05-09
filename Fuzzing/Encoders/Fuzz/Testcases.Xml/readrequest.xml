@@ -1,10 +1,31 @@
 <ReadRequest xmlns="http://opcfoundation.org/UA/2008/02/Types.xsd">
   <RequestHeader>
-    <Timestamp>2025-02-06T05:50:42.9259436Z</Timestamp>
+    <Timestamp>2025-05-09T08:43:15.9227469Z</Timestamp>
     <RequestHandle>422</RequestHandle>
     <ReturnDiagnostics>1023</ReturnDiagnostics>
     <TimeoutHint>10000</TimeoutHint>
-    <AdditionalHeader />
+    <AdditionalHeader>
+      <TypeId>
+        <Identifier>i=17541</Identifier>
+      </TypeId>
+      <Body>
+        <AdditionalParametersType>
+          <Parameters>
+            <KeyValuePair>
+              <Key>
+                <NamespaceIndex>0</NamespaceIndex>
+                <Name>traceparent</Name>
+              </Key>
+              <Value>
+                <Value>
+                  <String>00-480e22a2781fe54d992d878662248d94-b4b37b64bb3f6141-00</String>
+                </Value>
+              </Value>
+            </KeyValuePair>
+          </Parameters>
+        </AdditionalParametersType>
+      </Body>
+    </AdditionalHeader>
   </RequestHeader>
   <MaxAge>1000</MaxAge>
   <TimestampsToReturn>Source_0</TimestampsToReturn>
@@ -30,7 +51,7 @@
     </ReadValueId>
     <ReadValueId>
       <NodeId>
-        <Identifier>g=ef982ce2-00b2-4306-8338-beb422db6f3c</Identifier>
+        <Identifier>g=b7ba4019-91ba-42c5-b48b-c6243800e57c</Identifier>
       </NodeId>
       <AttributeId>4</AttributeId>
     </ReadValueId>
