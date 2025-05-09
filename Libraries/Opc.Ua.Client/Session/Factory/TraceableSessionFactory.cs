@@ -44,7 +44,7 @@ namespace Opc.Ua.Client
         /// <summary>
         /// The default instance of the factory.
         /// </summary>
-        public new static readonly TraceableSessionFactory Instance = new TraceableSessionFactory();
+        public static new readonly TraceableSessionFactory Instance = new TraceableSessionFactory();
 
         /// <summary>
         /// Force use of the default instance.

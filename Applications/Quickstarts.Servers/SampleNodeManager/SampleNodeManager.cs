@@ -604,7 +604,7 @@ namespace Opc.Ua.Sample
                 }
                 */
 
-                IList<IReference> references = new List<IReference>();
+                var references = new List<IReference>();
                 source.GetReferences(SystemContext, references);
 
                 for (int ii = 0; ii < references.Count; ii++)

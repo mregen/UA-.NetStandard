@@ -96,7 +96,7 @@ namespace Opc.Ua.Configuration.Tests
             // patch custom stores before creating the config
             ApplicationConfiguration appConfig = await appConfigBuilder.Create().ConfigureAwait(false);
 
-            bool certOK = await application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool certOK = await application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             Assert.True(certOK);
 
             int instancesCreatedWhileLoadingConfig = TestCertStore.InstancesCreated;
