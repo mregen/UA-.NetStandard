@@ -324,9 +324,8 @@ namespace Alarms
                             foreach (IReference reference in references)
                             {
                                 string identifier = (string)reference.TargetId.ToString();
-                                if (m_alarms.ContainsKey(identifier))
+                                if (m_alarms.TryGetValue(identifier, out AlarmHolder holder))
                                 {
-                                    AlarmHolder holder = m_alarms[identifier];
                                     holder.Update(updated);
                                 }
                             }
@@ -394,9 +393,8 @@ namespace Alarms
                         foreach (IReference reference in references)
                         {
                             string identifier = (string)reference.TargetId.ToString();
-                            if (m_alarms.ContainsKey(identifier))
+                            if (m_alarms.TryGetValue(identifier, out AlarmHolder holder))
                             {
-                                AlarmHolder holder = m_alarms[identifier];
                                 holder.SetBranching(false);
                                 holder.Start(seconds);
                                 bool updated = holder.Controller.Update(SystemContext);
@@ -453,9 +451,8 @@ namespace Alarms
                         foreach (IReference reference in references)
                         {
                             string identifier = (string)reference.TargetId.ToString();
-                            if (m_alarms.ContainsKey(identifier))
+                            if (m_alarms.TryGetValue(identifier, out AlarmHolder holder))
                             {
-                                AlarmHolder holder = m_alarms[identifier];
                                 holder.SetBranching(true);
                                 holder.Start(seconds);
                                 bool updated = holder.Controller.Update(SystemContext);
@@ -496,9 +493,8 @@ namespace Alarms
                         foreach (IReference reference in references)
                         {
                             string identifier = (string)reference.TargetId.ToString();
-                            if (m_alarms.ContainsKey(identifier))
+                            if (m_alarms.TryGetValue(identifier, out AlarmHolder holder))
                             {
-                                AlarmHolder holder = m_alarms[identifier];
                                 holder.ClearBranches();
                             }
                         }
@@ -547,9 +543,8 @@ namespace Alarms
                     foreach (IReference reference in references)
                     {
                         string identifier = (string)reference.TargetId.ToString();
-                        if (m_alarms.ContainsKey(identifier))
+                        if (m_alarms.TryGetValue(identifier, out AlarmHolder holder))
                         {
-                            AlarmHolder holder = m_alarms[identifier];
                             holder.Update(true);
                         }
                     }
@@ -587,13 +582,13 @@ namespace Alarms
                 string mapName = name;
                 if (name.EndsWith(AlarmDefines.TRIGGER_EXTENSION) || name.EndsWith(AlarmDefines.ALARM_EXTENSION))
                 {
-                    int lastDot = name.LastIndexOf(".");
+                    int lastDot = name.LastIndexOf('.');
                     mapName = name.Substring(0, lastDot);
                 }
 
-                if (m_alarms.ContainsKey(mapName))
+                if (m_alarms.TryGetValue(mapName, out AlarmHolder value))
                 {
-                    alarmHolder = m_alarms[mapName];
+                    alarmHolder = value;
                 }
             }
 
@@ -644,9 +639,9 @@ namespace Alarms
             SourceController sourceController = null;
 
             string name = GetSourceNameFromNodeState(nodeState);
-            if (map.ContainsKey(name))
+            if (map.TryGetValue(name, out SourceController value))
             {
-                sourceController = map[name];
+                sourceController = value;
             }
 
             return sourceController;

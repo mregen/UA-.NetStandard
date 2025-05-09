@@ -1154,7 +1154,8 @@ namespace Opc.Ua.Client
                                 browseDirection,
                                 referenceTypeId,
                                 includeSubtypes,
-                                nodeClassMask
+                                nodeClassMask,
+                                ct
                             ).ConfigureAwait(false);
 
                         int resultOffset = batchOffset;

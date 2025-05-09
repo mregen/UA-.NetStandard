@@ -1897,7 +1897,7 @@ namespace Opc.Ua.Client
             }
 
             // find the dictionary for the description.
-            IList<INode> references = await this.NodeCache.FindReferencesAsync(dataTypeSystem, ReferenceTypeIds.HasComponent, false, false).ConfigureAwait(false);
+            IList<INode> references = await this.NodeCache.FindReferencesAsync(dataTypeSystem, ReferenceTypeIds.HasComponent, false, false, ct).ConfigureAwait(false);
 
             if (references.Count == 0)
             {
@@ -1908,7 +1908,7 @@ namespace Opc.Ua.Client
             var referenceNodeIds = references.Select(r => r.NodeId).ToList();
 
             // find namespace properties
-            var namespaceReferences = await this.NodeCache.FindReferencesAsync(referenceNodeIds, new NodeIdCollection { ReferenceTypeIds.HasProperty }, false, false).ConfigureAwait(false);
+            var namespaceReferences = await this.NodeCache.FindReferencesAsync(referenceNodeIds, new NodeIdCollection { ReferenceTypeIds.HasProperty }, false, false, ct).ConfigureAwait(false);
             var namespaceNodes = namespaceReferences.Where(n => n.BrowseName == BrowseNames.NamespaceUri).ToList();
             var namespaceNodeIds = namespaceNodes.Select(n => ExpandedNodeId.ToNodeId(n.NodeId, this.NamespaceUris)).ToList();
 
@@ -2631,14 +2631,11 @@ namespace Opc.Ua.Client
             string securityPolicyUri = m_endpoint.Description.SecurityPolicyUri;
 
             // create the client signature.
-            byte[] dataToSign = Utils.Append(m_serverCertificate != null ? m_serverCertificate.RawData : null, serverNonce);
+            byte[] dataToSign = Utils.Append(m_serverCertificate?.RawData, serverNonce);
             SignatureData clientSignature = SecurityPolicies.Sign(m_instanceCertificate, securityPolicyUri, dataToSign);
 
             // choose a default token.
-            if (identity == null)
-            {
-                identity = new UserIdentity();
-            }
+            identity ??= new UserIdentity();
 
             // check that the user identity is supported by the endpoint.
             UserTokenPolicy identityPolicy = m_endpoint.Description.FindUserTokenPolicy(identity.TokenType, identity.IssuedTokenType);
@@ -2684,9 +2681,8 @@ namespace Opc.Ua.Client
 
             // send the software certificates assigned to the client.
             SignedSoftwareCertificateCollection clientSoftwareCertificates = GetSoftwareCertificates();
-
-            StatusCodeCollection certificateResults = null;
-            DiagnosticInfoCollection certificateDiagnosticInfos = null;
+            StatusCodeCollection certificateResults;
+            DiagnosticInfoCollection certificateDiagnosticInfos;
 
             // activate session.
             ActivateSession(
@@ -3720,8 +3716,6 @@ namespace Opc.Ua.Client
         #endregion
 
         #region Combined Browse/BrowseNext
-
-
         /// <inheritdoc/>
         public void ManagedBrowse(
             RequestHeader requestHeader,
@@ -3747,9 +3741,7 @@ namespace Opc.Ua.Client
                 nodeClassMask
                 ).GetAwaiter().GetResult();
         }
-
         #endregion
-
 
         #region Call Methods
         /// <inheritdoc/>
@@ -4887,8 +4879,10 @@ namespace Opc.Ua.Client
         /// </summary>
         private Dictionary<uint, DataValue> CreateAttributes(NodeClass nodeclass = NodeClass.Unspecified, bool optionalAttributes = true)
         {
+            const int maxAttributes = 28;
+
             // Attributes to read for all types of nodes
-            var attributes = new Dictionary<uint, DataValue>() {
+            var attributes = new Dictionary<uint, DataValue>(maxAttributes) {
                 { Attributes.NodeId, null },
                 { Attributes.NodeClass, null },
                 { Attributes.BrowseName, null },
@@ -4946,7 +4940,7 @@ namespace Opc.Ua.Client
 
                 default:
                     // build complete list of attributes.
-                    attributes = new Dictionary<uint, DataValue> {
+                    attributes = new Dictionary<uint, DataValue>(maxAttributes) {
                         { Attributes.NodeId, null },
                         { Attributes.NodeClass, null },
                         { Attributes.BrowseName, null },
