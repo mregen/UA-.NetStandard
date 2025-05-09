@@ -27,7 +27,6 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace Opc.Ua.X509StoreExtensions
@@ -44,11 +43,15 @@ namespace Opc.Ua.X509StoreExtensions
         /// <returns>True if Crl Support is given in the system X509 Store</returns>
         public static bool IsWindowsWithCrlSupport()
         {
+#if NETFRAMEWORK
+            return true;
+#else
             if (_isWindowsWithCrlSupport == null)
             {
                 _isWindowsWithCrlSupport = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             }
             return _isWindowsWithCrlSupport.Value;
+#endif
         }
     }
 }
