@@ -33,20 +33,28 @@ using System.Runtime.InteropServices;
 namespace Opc.Ua.X509StoreExtensions
 {
     /// <summary>
-    /// Static Helper class to retrieve if executed on a specific operating system
+    /// Static helper class to determine CRL support.
     /// </summary>
     internal static class PlatformHelper
     {
         private static bool? _isWindowsWithCrlSupport = null;
+
         /// <summary>
-        /// True if OS Windows.
+        /// True if OS Windows and >= Windows XP.
         /// </summary>
         /// <returns>True if Crl Support is given in the system X509 Store</returns>
         public static bool IsWindowsWithCrlSupport()
         {
             if (_isWindowsWithCrlSupport == null)
             {
+#if NETFRAMEWORK
+                OperatingSystem version = Environment.OSVersion;
+                _isWindowsWithCrlSupport = version.Platform == PlatformID.Win32NT
+                    && ((version.Version.Major > 5) || (version.Version.Major == 5 && version.Version.Minor >= 1));
+                return _isWindowsWithCrlSupport.Value;
+#else
                 _isWindowsWithCrlSupport = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
             }
             return _isWindowsWithCrlSupport.Value;
         }
