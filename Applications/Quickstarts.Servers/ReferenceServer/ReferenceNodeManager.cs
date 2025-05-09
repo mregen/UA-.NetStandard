@@ -570,7 +570,7 @@ namespace Quickstarts.ReferenceServer
                             }
                         }
                     }
-#endregion
+                    #endregion
 
                     #region DataAccess_AnalogType_Array
                     ResetRandomGenerator(11);
@@ -2784,7 +2784,7 @@ namespace Quickstarts.ReferenceServer
 
             return null;
         }
-#endregion
+        #endregion
 
         #region Overrides
         #endregion
