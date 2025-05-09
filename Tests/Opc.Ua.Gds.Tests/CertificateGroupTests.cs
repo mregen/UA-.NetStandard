@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -18,30 +16,31 @@ namespace Opc.Ua.Gds.Tests
     public class CertificateGroupTests
     {
 
-        private string _path;
+        private string m_path;
 
         [SetUp]
         public void Setup()
         {
-            _path = Utils.ReplaceSpecialFolderNames("%LocalApplicationData%/OPC/GDS/TestStore");
+            m_path = Utils.ReplaceSpecialFolderNames("%LocalApplicationData%/OPC/GDS/TestStore");
         }
+
         [TearDown]
         public void Dispose()
         {
-            if (Directory.Exists(_path))
+            if (Directory.Exists(m_path))
             {
-                Directory.Delete(_path, true);
+                Directory.Delete(m_path, true);
             }
         }
-        #region Test Methods
 
+        #region Test Methods
         [Test]
         public void TestCreateCACertificateAsyncThrowsException()
         {
             var configuration = new CertificateGroupConfiguration();
             configuration.SubjectName = "CN=GDS Test CA, O=OPC Foundation";
-            configuration.BaseStorePath = _path;
-            var certificateGroup = new CertificateGroup().Create(_path + "/authorities", configuration);
+            configuration.BaseStorePath = m_path;
+            var certificateGroup = new CertificateGroup().Create(m_path + "/authorities", configuration);
             Assert.That(() => certificateGroup.CreateCACertificateAsync("This is not the ValidSubjectName for my CertificateGroup"), Throws.TypeOf<ArgumentException>());
         }
 
@@ -50,8 +49,8 @@ namespace Opc.Ua.Gds.Tests
         {
             var configuration = new CertificateGroupConfiguration();
             configuration.SubjectName = "CN=GDS Test CA, O=OPC Foundation";
-            configuration.BaseStorePath = _path;
-            var certificateGroup = new CertificateGroup().Create(_path + "/authorities", configuration);
+            configuration.BaseStorePath = m_path;
+            var certificateGroup = new CertificateGroup().Create(m_path + "/authorities", configuration);
             var certificate = await certificateGroup.CreateCACertificateAsync(configuration.SubjectName).ConfigureAwait(false);
             Assert.NotNull(certificate);
             var certificateStoreIdentifier = new CertificateStoreIdentifier(configuration.TrustedListPath);
@@ -67,12 +66,12 @@ namespace Opc.Ua.Gds.Tests
         {
             var applicatioConfiguration = new ApplicationConfiguration();
             applicatioConfiguration.SecurityConfiguration = new SecurityConfiguration();
-            applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath = _path + Path.DirectorySeparatorChar + "issuers";
+            applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath = m_path + Path.DirectorySeparatorChar + "issuers";
             applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StoreType = CertificateStoreType.Directory;
             var cgConfiguration = new CertificateGroupConfiguration();
             cgConfiguration.SubjectName = "CN=GDS Test CA, O=OPC Foundation";
-            cgConfiguration.BaseStorePath = _path;
-            var certificateGroup = new CertificateGroup().Create(_path + Path.DirectorySeparatorChar + "authorities", cgConfiguration, applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath);
+            cgConfiguration.BaseStorePath = m_path;
+            var certificateGroup = new CertificateGroup().Create(m_path + Path.DirectorySeparatorChar + "authorities", cgConfiguration, applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath);
             X509Certificate2 certificate = await certificateGroup.CreateCACertificateAsync(cgConfiguration.SubjectName).ConfigureAwait(false);
             Assert.NotNull(certificate);
             using (ICertificateStore trustedStore = applicatioConfiguration.SecurityConfiguration.TrustedIssuerCertificates.OpenStore())

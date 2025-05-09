@@ -620,7 +620,7 @@ namespace Opc.Ua.Gds.Server.Database
                 return SkipToNext(target, targetIndex, tokens, ref tokenIndex);
             }
 
-            if (token.StartsWith("[", StringComparison.Ordinal))
+            if (token.StartsWith('['))
             {
                 bool inverse = false;
                 bool match = false;

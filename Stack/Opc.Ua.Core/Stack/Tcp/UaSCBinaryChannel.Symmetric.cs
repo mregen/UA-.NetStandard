@@ -237,14 +237,14 @@ namespace Opc.Ua.Bindings
                 case SecurityPolicies.Aes256_Sha256_RsaPss:
                 {
                     // create encryptors.
-                    SymmetricAlgorithm aesCbcEncryptorProvider = Aes.Create();
+                    var aesCbcEncryptorProvider = Aes.Create();
                     aesCbcEncryptorProvider.Mode = CipherMode.CBC;
                     aesCbcEncryptorProvider.Padding = PaddingMode.None;
                     aesCbcEncryptorProvider.Key = token.ClientEncryptingKey;
                     aesCbcEncryptorProvider.IV = token.ClientInitializationVector;
                     token.ClientEncryptor = aesCbcEncryptorProvider;
 
-                    SymmetricAlgorithm aesCbcDecryptorProvider = Aes.Create();
+                    var aesCbcDecryptorProvider = Aes.Create();
                     aesCbcDecryptorProvider.Mode = CipherMode.CBC;
                     aesCbcDecryptorProvider.Padding = PaddingMode.None;
                     aesCbcDecryptorProvider.Key = token.ServerEncryptingKey;

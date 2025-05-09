@@ -822,7 +822,7 @@ namespace Opc.Ua
         {
             if (exception != null && exception.Message != null)
             {
-                if (exception.Message.StartsWith("[", StringComparison.Ordinal) || exception is ServiceResultException)
+                if (exception.Message.StartsWith('[') || exception is ServiceResultException)
                 {
                     return exception.Message;
                 }
