@@ -45,16 +45,16 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
     public class XmlEncoderTests
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "Tests")]
-        static Regex REValue = new Regex("Value>([^<]*)<");
+        static Regex s_regexValue = new Regex("Value>([^<]*)<");
 
         #region Test Methods
         /// <summary>
         /// Validate the encoding and decoding of the float special values.
         /// </summary>
         [Test]
-        [TestCase(Single.PositiveInfinity, "INF")]
-        [TestCase(Single.NegativeInfinity, "-INF")]
-        [TestCase(Single.NaN, "NaN")]
+        [TestCase(float.PositiveInfinity, "INF")]
+        [TestCase(float.NegativeInfinity, "-INF")]
+        [TestCase(float.NaN, "NaN")]
         public void EncodeDecodeFloat(float binaryValue, string expectedXmlValue)
         {
             // Encode
@@ -69,14 +69,14 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             }
 
             // Check encode result against expected XML value
-            Match m = REValue.Match(actualXmlValue);
+            Match m = s_regexValue.Match(actualXmlValue);
             Assert.True(m.Success);
             Assert.True(m.Groups.Count == 2);
             Assert.AreEqual(m.Groups[1].Value, expectedXmlValue);
 
             // Decode
             float actualBinaryValue;
-            using (XmlReader reader = XmlReader.Create(new StringReader(actualXmlValue)))
+            using (var reader = XmlReader.Create(new StringReader(actualXmlValue)))
             {
                 using (IDecoder xmlDecoder = new XmlDecoder(null, reader, context))
                 {
@@ -85,19 +85,23 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             }
 
             // Check decode result against input value
-            if (Single.IsNaN(actualBinaryValue)) // NaN is not equal to anything!
-                Assert.True(Single.IsNaN(binaryValue));
+            if (float.IsNaN(actualBinaryValue)) // NaN is not equal to anything!
+            {
+                Assert.True(float.IsNaN(binaryValue));
+            }
             else
+            {
                 Assert.AreEqual(actualBinaryValue, binaryValue);
+            }
         }
 
         /// <summary>
         /// Validate the encoding and decoding of the double special values.
         /// </summary>
         [Test]
-        [TestCase(Double.PositiveInfinity, "INF")]
-        [TestCase(Double.NegativeInfinity, "-INF")]
-        [TestCase(Double.NaN, "NaN")]
+        [TestCase(double.PositiveInfinity, "INF")]
+        [TestCase(double.NegativeInfinity, "-INF")]
+        [TestCase(double.NaN, "NaN")]
         public void EncodeDecodeDouble(double binaryValue, string expectedXmlValue)
         {
             // Encode
@@ -112,14 +116,14 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             }
 
             // Check encode result against expected XML value
-            Match m = REValue.Match(actualXmlValue);
+            Match m = s_regexValue.Match(actualXmlValue);
             Assert.True(m.Success);
             Assert.True(m.Groups.Count == 2);
             Assert.AreEqual(m.Groups[1].Value, expectedXmlValue);
 
             // Decode
             double actualBinaryValue;
-            using (XmlReader reader = XmlReader.Create(new StringReader(actualXmlValue)))
+            using (var reader = XmlReader.Create(new StringReader(actualXmlValue)))
             {
                 using (IDecoder xmlDecoder = new XmlDecoder(null, reader, context))
                 {
@@ -128,10 +132,53 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             }
 
             // Check decode result against input value
-            if (Double.IsNaN(actualBinaryValue)) // NaN is not equal to anything!
-                Assert.True(Double.IsNaN(binaryValue));
+            if (double.IsNaN(actualBinaryValue)) // NaN is not equal to anything!
+            {
+                Assert.True(double.IsNaN(binaryValue));
+            }
             else
+            {
                 Assert.AreEqual(actualBinaryValue, binaryValue);
+            }
+        }
+
+        // <summary>
+        /// Validate the encoding and decoding of the a variant that contains a null value.
+        /// </summary>
+        [Test]
+        public void EncodeDecodeVariantNil()
+        {
+
+            Variant variant = Variant.Null;
+
+            string expected = "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<uax:VariantTest xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:uax=\"http://opcfoundation.org/UA/2008/02/Types.xsd\">\r\n  <uax:Test>\r\n    <uax:Value xsi:nil=\"true\" />\r\n  </uax:Test>\r\n</uax:VariantTest>";
+
+            // Encode
+            var context = new ServiceMessageContext();
+            string actualXmlValue;
+            using (IEncoder xmlEncoder = new XmlEncoder(new XmlQualifiedName("VariantTest", Namespaces.OpcUaXsd), null, context))
+            {
+                xmlEncoder.PushNamespace(Namespaces.OpcUaXsd);
+                xmlEncoder.WriteVariant("Test", variant);
+                xmlEncoder.PopNamespace();
+                actualXmlValue = xmlEncoder.CloseAndReturnText();
+            }
+
+            // Check encode result against expected XML value
+            Assert.AreEqual(expected.Replace("\r", "").Replace("\n", ""), actualXmlValue.Replace("\r", "").Replace("\n", ""));
+
+            // Decode
+            Variant actualVariant;
+            using (var reader = XmlReader.Create(new StringReader(actualXmlValue)))
+            {
+                using (IDecoder xmlDecoder = new XmlDecoder(null, reader, context))
+                {
+                    actualVariant = xmlDecoder.ReadVariant("Test");
+                }
+            }
+
+            // Check decode result against input value
+            Assert.AreEqual(actualVariant, Variant.Null);
         }
 
         /// <summary>
