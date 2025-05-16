@@ -800,6 +800,11 @@ namespace Opc.Ua
         {
             get
             {
+                if (m_value == null)
+                {
+                    return null;
+                }
+
                 // create encoder.
                 using (XmlEncoder encoder = new XmlEncoder(MessageContextExtension.CurrentContext))
                 {
@@ -824,15 +829,13 @@ namespace Opc.Ua
                     return;
                 }
 
-                TypeInfo typeInfo = null;
-
                 // create decoder.
                 using (XmlDecoder decoder = new XmlDecoder(value, MessageContextExtension.CurrentContext))
                 {
                     try
                     {
                         // read value.
-                        object body = decoder.ReadVariantContents(out typeInfo);
+                        object body = decoder.ReadVariantContents(out TypeInfo typeInfo);
                         Set(body, typeInfo);
                     }
                     catch (Exception e)
