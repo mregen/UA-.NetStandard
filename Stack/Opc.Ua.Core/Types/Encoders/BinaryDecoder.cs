@@ -400,9 +400,12 @@ namespace Opc.Ua
             // length is always >= 1 here
 #if NET6_0_OR_GREATER
             const int maxStackAlloc = 1024;
-            if (length <= maxStackAlloc)
+            byte[] buffer = null;
+            try
             {
-                Span<byte> bytes = stackalloc byte[length];
+                Span<byte> bytes = (length <= maxStackAlloc) ?
+                    stackalloc byte[length] :
+                    (buffer = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length);
 
                 // throws decoding error if length is not met
                 int utf8StringLength = SafeReadCharBytes(bytes);
@@ -414,24 +417,9 @@ namespace Opc.Ua
                 }
                 return Encoding.UTF8.GetString(bytes.Slice(0, utf8StringLength));
             }
-            else
+            finally
             {
-                byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
-                try
-                {
-                    Span<byte> bytes = buffer.AsSpan(0, length);
-
-                    // throws decoding error if length is not met
-                    int utf8StringLength = SafeReadCharBytes(bytes);
-
-                    // If 0 terminated, decrease length to remove 0 terminators before converting to string
-                    while (utf8StringLength > 0 && bytes[utf8StringLength - 1] == 0)
-                    {
-                        utf8StringLength--;
-                    }
-                    return Encoding.UTF8.GetString(buffer.AsSpan(0, utf8StringLength));
-                }
-                finally
+                if (buffer != null)
                 {
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
@@ -2202,29 +2190,24 @@ namespace Opc.Ua
                         Int32Collection dimensions = ReadInt32Array(null);
 
                         // check if ArrayDimensions are consistent with the ArrayLength.
-                        if (dimensions == null || dimensions.Count == 0)
+                        if (dimensions == null || dimensions.Count <= 1)
                         {
                             throw ServiceResultException.Create(StatusCodes.BadDecodingError,
-                                "ArrayDimensions not specified when ArrayDimensions encoding bit was set in Variant object.");
+                                "ArrayDimensions not specified or too small when ArrayDimensions encoding bit was set in Variant object.");
                         }
 
-                        int[] dimensionsArray = dimensions.ToArray();
-                        (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensionsArray, length, Context.MaxArrayLength);
-
+                        (bool valid, int matrixLength) = Matrix.ValidateDimensions(dimensions, length, Context.MaxArrayLength);
+                        if (valid && matrixLength == 0)
+                        {
+                            Matrix.ValidateDimensions(true, dimensions, Context.MaxArrayLength);
+                        }
                         if (!valid || (matrixLength != length))
                         {
                             throw ServiceResultException.Create(StatusCodes.BadDecodingError,
                                 "ArrayDimensions length does not match with the ArrayLength in Variant object.");
                         }
 
-                        if (dimensions.Count == 1)
-                        {
-                            value = new Variant(array, TypeInfo.CreateArray(builtInType));
-                        }
-                        else
-                        {
-                            value = new Variant(new Matrix(array, builtInType, dimensionsArray));
-                        }
+                        value = new Variant(new Matrix(array, builtInType, dimensions.ToArray()));
                     }
                     else
                     {

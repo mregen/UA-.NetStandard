@@ -49,7 +49,7 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes the object with a system type to encode and a XML writer.
         /// </summary>
-        public XmlEncoder(System.Type systemType, XmlWriter writer, IServiceMessageContext context)
+        public XmlEncoder(Type systemType, XmlWriter writer, IServiceMessageContext context)
         :
             this(EncodeableFactory.GetXmlName(systemType), writer, context)
         {
@@ -98,10 +98,7 @@ namespace Opc.Ua
 
             string uaxPrefix = m_writer.LookupPrefix(Namespaces.OpcUaXsd);
 
-            if (uaxPrefix == null)
-            {
-                uaxPrefix = "uax";
-            }
+            uaxPrefix ??= "uax";
 
             if (namespaceUri == Namespaces.OpcUaXsd)
             {
@@ -462,7 +459,7 @@ namespace Opc.Ua
                     throw new ServiceResultException(StatusCodes.BadEncodingLimitsExceeded);
                 }
 
-                if (!String.IsNullOrWhiteSpace(value))
+                if (!string.IsNullOrWhiteSpace(value))
                 {
                     m_writer.WriteString(value);
                 }
@@ -751,12 +748,12 @@ namespace Opc.Ua
 
                 if (value != null)
                 {
-                    if (!String.IsNullOrEmpty(value.Locale))
+                    if (!string.IsNullOrEmpty(value.Locale))
                     {
                         WriteString("Locale", value.Locale);
                     }
 
-                    if (!String.IsNullOrEmpty(value.Text))
+                    if (!string.IsNullOrEmpty(value.Text))
                     {
                         WriteString("Text", value.Text);
                     }
@@ -898,7 +895,7 @@ namespace Opc.Ua
         /// <summary>
         /// Writes an encodeable object to the stream.
         /// </summary>
-        public void WriteEncodeable(string fieldName, IEncodeable value, System.Type systemType)
+        public void WriteEncodeable(string fieldName, IEncodeable value, Type systemType)
         {
             CheckAndIncrementNestingLevel();
 
@@ -924,8 +921,8 @@ namespace Opc.Ua
             {
                 if (value != null)
                 {
-                    var valueSymbol = value.ToString();
-                    var valueInt32 = Convert.ToInt32(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
+                    string valueSymbol = value.ToString();
+                    string valueInt32 = Convert.ToInt32(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
                     if (valueSymbol != valueInt32)
                     {
                         m_writer.WriteString(Utils.Format("{0}_{1}", valueSymbol, valueInt32));
@@ -1697,7 +1694,7 @@ namespace Opc.Ua
         /// <summary>
         /// Writes an encodeable object array to the stream.
         /// </summary>
-        public void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, System.Type systemType)
+        public void WriteEncodeableArray(string fieldName, IList<IEncodeable> values, Type systemType)
         {
             if (BeginField(fieldName, values == null, true, true))
             {
@@ -1744,7 +1741,7 @@ namespace Opc.Ua
         /// <summary>
         /// Writes an enumerated value array to the stream.
         /// </summary>
-        public void WriteEnumeratedArray(string fieldName, Array values, System.Type systemType)
+        public void WriteEnumeratedArray(string fieldName, Array values, Type systemType)
         {
             if (BeginField(fieldName, values == null, true, true))
             {
@@ -1794,14 +1791,12 @@ namespace Opc.Ua
         /// <summary>
         /// Writes the contents of an Variant to the stream.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public void WriteVariantContents(object value, TypeInfo typeInfo)
         {
             // check for null.
             if (value == null)
             {
-                m_writer.WriteStartElement("Null", Namespaces.OpcUaXsd);
-                m_writer.WriteEndElement();
+                m_writer.WriteAttributeString("nil", Namespaces.XmlSchemaInstance, "true");
                 return;
             }
 
@@ -1872,9 +1867,9 @@ namespace Opc.Ua
 
                         case BuiltInType.Enumeration:
                         {
-                            if (!(value is int[] ints))
+                            if (value is not int[] ints)
                             {
-                                if (!(value is Enum[] enums))
+                                if (value is not Enum[] enums)
                                 {
                                     throw new ServiceResultException(
                                         StatusCodes.BadEncodingError,
@@ -1963,7 +1958,7 @@ namespace Opc.Ua
                 }
             }
 
-            if (!(body is IEncodeable encodeable))
+            if (body is not IEncodeable encodeable)
             {
                 throw new ServiceResultException(
                     StatusCodes.BadEncodingError,
@@ -2049,9 +2044,9 @@ namespace Opc.Ua
                         case BuiltInType.DiagnosticInfo: { WriteDiagnosticInfoArray(fieldName, (DiagnosticInfo[])array); return; }
                         case BuiltInType.Enumeration:
                         {
-                            if (!(array is int[] ints))
+                            if (array is not int[] ints)
                             {
-                                if (!(array is Enum[] enums))
+                                if (array is not Enum[] enums)
                                 {
                                     throw new ServiceResultException(
                                         StatusCodes.BadEncodingError,
@@ -2121,7 +2116,7 @@ namespace Opc.Ua
                      * product of the dimensions.
                      * The number of values is 0 if one or more dimension is less than or equal to 0.*/
 
-                    if (!(array is Matrix matrix))
+                    if (array is not Matrix matrix)
                     {
                         if (array is Array multiArray && multiArray.Rank == valueRank)
                         {
@@ -2175,11 +2170,9 @@ namespace Opc.Ua
 
                 if (value != null)
                 {
-                    m_writer.WriteStartElement("Elements", Namespaces.OpcUaXsd);
-                    WriteVariantContents(value.Elements, TypeInfo.CreateArray(value.TypeInfo.BuiltInType));
-                    m_writer.WriteEndElement();
-
                     WriteInt32Array("Dimensions", value.Dimensions);
+
+                    WriteArray("Elements", value.Elements, ValueRanks.OneDimension, value.TypeInfo.BuiltInType);
                 }
 
                 PopNamespace();
@@ -2196,7 +2189,7 @@ namespace Opc.Ua
         private bool BeginField(string fieldName, bool isDefault, bool isNillable, bool isArrayElement = false)
         {
             // specifying a null field name means the start/end tags should not be written.
-            if (!String.IsNullOrEmpty(fieldName))
+            if (!string.IsNullOrEmpty(fieldName))
             {
                 if (isNillable && isDefault && !isArrayElement)
                 {
@@ -2225,7 +2218,7 @@ namespace Opc.Ua
         /// </summary>
         private void EndField(string fieldName)
         {
-            if (!String.IsNullOrEmpty(fieldName))
+            if (!string.IsNullOrEmpty(fieldName))
             {
                 m_writer.WriteEndElement();
             }
