@@ -72,7 +72,7 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
       </ItemGroup>
     </Otherwise>
   </Choose>
