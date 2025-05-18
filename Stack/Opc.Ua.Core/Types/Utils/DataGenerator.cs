@@ -503,7 +503,7 @@ namespace Opc.Ua.Test
         {
             Array array = GetRandomArray(builtInType, useBoundaryValues, length, fixedLength);
             Variant[] variants = new Variant[array.Length];
-            TypeInfo typeInfo = new TypeInfo(builtInType, ValueRanks.Scalar);
+            TypeInfo typeInfo = TypeInfo.CreateScalar(builtInType);
 
             for (int ii = 0; ii < variants.Length; ii++)
             {
@@ -928,12 +928,25 @@ namespace Opc.Ua.Test
         #endregion
 
         #region StatusCode
+        private readonly List<KeyValuePair<uint, string>> KnownsStatusCodes = new List<KeyValuePair<uint, string>>();
+
         /// <summary cref="GetRandom(Type)" />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public StatusCode GetRandomStatusCode()
         {
-            int offset = GetRandomRange((int)(StatusCodes.BadUnexpectedError >> 16), (int)(StatusCodes.BadMaxConnectionsReached >> 16));
-            return (uint)(StatusCodes.BadUnexpectedError + (offset << 16));
+            if (KnownsStatusCodes.Count == 0)
+            {
+                foreach (var field in typeof(StatusCodes).GetFields(BindingFlags.Public | BindingFlags.Static))
+                {
+                    if (field.Name.StartsWith("Good") || field.Name.StartsWith("Uncertain") || field.Name.StartsWith("Bad"))
+                    {
+                        KnownsStatusCodes.Add(new KeyValuePair<uint, string>((uint)field.GetValue(null), field.Name));
+                    }
+                }
+            }
+
+            var index = GetRandomRange(0, KnownsStatusCodes.Count-1);
+            return KnownsStatusCodes[index].Key;
         }
         #endregion
 
@@ -1202,7 +1215,7 @@ namespace Opc.Ua.Test
                             continue;
                         }
 
-                        if (token.StartsWith("=", StringComparison.Ordinal))
+                        if (token.StartsWith('='))
                         {
                             if (locale != null)
                             {

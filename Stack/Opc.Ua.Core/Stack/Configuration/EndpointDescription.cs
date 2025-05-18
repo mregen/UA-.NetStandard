@@ -93,11 +93,14 @@ namespace Opc.Ua
         /// </summary>
         public UserTokenPolicy FindUserTokenPolicy(string policyId)
         {
-            foreach (UserTokenPolicy policy in m_userIdentityTokens)
+            if (!string.IsNullOrEmpty(policyId))
             {
-                if (policy.PolicyId == policyId)
+                foreach (UserTokenPolicy policy in m_userIdentityTokens)
                 {
-                    return policy;
+                    if (policyId.Equals(policy.PolicyId, StringComparison.Ordinal))
+                    {
+                        return policy;
+                    }
                 }
             }
 

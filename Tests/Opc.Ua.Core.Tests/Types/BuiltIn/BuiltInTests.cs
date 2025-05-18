@@ -112,7 +112,7 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
             object randomData = DataGenerator.GetRandom(builtInType);
             Variant variant1 = new Variant(randomData);
             Assert.AreEqual(builtInType, variant1.TypeInfo.BuiltInType);
-            Variant variant2 = new Variant(randomData, new TypeInfo(builtInType, ValueRanks.Scalar));
+            Variant variant2 = new Variant(randomData, TypeInfo.CreateScalar(builtInType));
             Assert.AreEqual(builtInType, variant2.TypeInfo.BuiltInType);
             Variant variant3 = new Variant(variant2);
             Assert.AreEqual(builtInType, variant3.TypeInfo.BuiltInType);
@@ -139,7 +139,7 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
             {
                 Assert.AreEqual(builtInType, variant1.TypeInfo.BuiltInType);
             }
-            Variant variant2 = new Variant(randomData, new TypeInfo(builtInType, ValueRanks.OneDimension));
+            Variant variant2 = new Variant(randomData, TypeInfo.CreateArray(builtInType));
             Assert.AreEqual(builtInType, variant2.TypeInfo.BuiltInType);
         }
 
@@ -162,16 +162,16 @@ namespace Opc.Ua.Core.Tests.Types.BuiltIn
         {
             // Enum Scalar
             Variant variant0 = new Variant(DayOfWeek.Monday);
-            Variant variant1 = new Variant(DayOfWeek.Monday, new TypeInfo(BuiltInType.Enumeration, ValueRanks.Scalar));
+            Variant variant1 = new Variant(DayOfWeek.Monday, TypeInfo.Scalars.Enumeration);
 
             // Enum array
             DayOfWeek[] days = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Tuesday };
-            Variant variant2 = new Variant(days, new TypeInfo(BuiltInType.Enumeration, ValueRanks.OneDimension));
+            Variant variant2 = new Variant(days, TypeInfo.Arrays.Enumeration);
             Variant variant3 = new Variant(days);
 
             // Enum 2-dim Array
             DayOfWeek[,] daysdays = new DayOfWeek[,] { { DayOfWeek.Monday, DayOfWeek.Tuesday }, { DayOfWeek.Monday, DayOfWeek.Tuesday } };
-            Variant variant5 = new Variant(daysdays, new TypeInfo(BuiltInType.Enumeration, ValueRanks.TwoDimensions));
+            Variant variant5 = new Variant(daysdays, TypeInfo.Create(BuiltInType.Enumeration, ValueRanks.TwoDimensions));
 
             // not supported
             // Variant variant6 = new Variant(daysdays);

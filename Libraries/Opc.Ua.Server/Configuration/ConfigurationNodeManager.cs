@@ -249,9 +249,9 @@ namespace Opc.Ua.Server
                 return null;
             }
 
-            if (m_namespaceMetadataStates.ContainsKey(namespaceUri))
+            if (m_namespaceMetadataStates.TryGetValue(namespaceUri, out NamespaceMetadataState value))
             {
-                return m_namespaceMetadataStates[namespaceUri];
+                return value;
             }
 
             NamespaceMetadataState namespaceMetadataState = FindNamespaceMetadataState(namespaceUri);

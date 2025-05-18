@@ -55,6 +55,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
         }
 
         public EncodingType EncoderType { get; }
+
         public JsonEncodingType JsonEncodingType { get; }
 
         public string ToString(string format, IFormatProvider formatProvider)
@@ -274,10 +275,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                Assert.Throws(
-                    typeof(ServiceResultException),
-                    () => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible)
-                );
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible));
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.NonReversible);
@@ -297,10 +295,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                Assert.Throws(
-                    typeof(ServiceResultException),
-                    () => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose)
-                );
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose));
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.Verbose);
@@ -393,7 +388,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                 new Variant(new string[] {"1", "2", "3", "4", "5" }),
                 //TODO: works as expected, but the expected need to be tweaked for the Int32 result
                 //new Variant(new TestEnumType[] { TestEnumType.One, TestEnumType.Two, TestEnumType.Hundred }),
-                new Variant(new Int32[] { 2, 3, 10 }, new TypeInfo(BuiltInType.Enumeration, 1))
+                new Variant(new Int32[] { 2, 3, 10 }, TypeInfo.Arrays.Enumeration)
             };
             EncodeDecodeDataValue(encoderType, jsonEncodingType, BuiltInType.Variant, MemoryStreamType.ArraySegmentStream, variant);
         }
@@ -526,7 +521,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             Assume.That(builtInType != BuiltInType.Null);
             int arrayDimension = RandomSource.NextInt32(99) + 1;
             Array randomData = DataGenerator.GetRandomArray(builtInType, false, arrayDimension, true);
-            var variant = new Variant(randomData, new TypeInfo(builtInType, 1));
+            var variant = new Variant(randomData, TypeInfo.CreateArray(builtInType));
             EncodeDecodeDataValue(encoderType, jsonEncodingType, BuiltInType.Variant, MemoryStreamType.RecyclableMemoryStream, variant);
         }
 

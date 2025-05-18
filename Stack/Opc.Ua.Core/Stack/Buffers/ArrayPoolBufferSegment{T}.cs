@@ -34,7 +34,6 @@ using System.Threading;
 
 namespace Opc.Ua.Buffers
 {
-
     /// <summary>
     /// Helper to build a ReadOnlySequence from a set of <see cref="ArrayPool{T}"/> allocated buffers.
     /// </summary>

@@ -1213,11 +1213,9 @@ namespace Opc.Ua.Server
                     throw new ArgumentException("Provided List<T> nodesCollection is of wrong type, T should be type BrowseDescription, ReadValueId or CallMethodRequest", nameof(nodesCollection));
                 }
 
-                if (!uniqueNodes.Contains(nodeId))
-                {
-                    uniqueNodes.Add(nodeId);
-                }
+                uniqueNodes.Add(nodeId);
             }
+
             // uniqueNodesReadAttributes is the place where the attributes for each unique nodeId are kept on the services
             uniqueNodesServiceAttributes = new Dictionary<NodeId, List<object>>();
             foreach (var uniqueNode in uniqueNodes)
@@ -3313,9 +3311,9 @@ namespace Opc.Ua.Server
                 // intersect role permissions from node and user
                 foreach (NodeId roleId in roleIdPermissions.Keys)
                 {
-                    if (roleIdPermissionsDefinedForUser.ContainsKey(roleId))
+                    if (roleIdPermissionsDefinedForUser.TryGetValue(roleId, out PermissionType value))
                     {
-                        commonRoleIdPermissions[roleId] = roleIdPermissions[roleId] & roleIdPermissionsDefinedForUser[roleId];
+                        commonRoleIdPermissions[roleId] = roleIdPermissions[roleId] & value;
                     }
                 }
             }
@@ -3328,7 +3326,7 @@ namespace Opc.Ua.Server
 
             foreach (NodeId currentRoleId in currentRoleIds)
             {
-                if (commonRoleIdPermissions.ContainsKey(currentRoleId) && commonRoleIdPermissions[currentRoleId] != PermissionType.None)
+                if (commonRoleIdPermissions.TryGetValue(currentRoleId, out PermissionType value) && value != PermissionType.None)
                 {
                     // there is one role that current session has na is listed in requested role
                     return StatusCodes.Good;

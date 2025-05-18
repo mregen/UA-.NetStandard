@@ -17,6 +17,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
+
 namespace Opc.Ua
 {
     /// <summary>
@@ -31,6 +35,11 @@ namespace Opc.Ua
         private static readonly Lazy<ReadOnlyDictionary<uint, string>> BrowseNames = new Lazy<ReadOnlyDictionary<uint, string>>(CreateBrowseNamesDictionary);
 
         /// <summary>
+        /// Creates a dictionary of Utf8 browse names for the status codes.
+        /// </summary>
+        private static readonly Lazy<ReadOnlyDictionary<uint, byte[]>> Utf8BrowseNames = new Lazy<ReadOnlyDictionary<uint, byte[]>>(CreateUtf8BrowseNamesDictionary);
+
+        /// <summary>
 		/// Returns the browse utf8BrowseName for the attribute.
 		/// </summary>
         public static string GetBrowseName(uint identifier)
@@ -41,6 +50,19 @@ namespace Opc.Ua
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+	/// Returns the browse utf8BrowseName for the attribute.
+        /// </summary>
+        public static byte[] GetUtf8BrowseName(uint identifier)
+        {
+            if (Utf8BrowseNames.Value.TryGetValue(identifier, out var utf8BrowseName))
+            {
+                return utf8BrowseName;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -78,8 +100,28 @@ namespace Opc.Ua
             {
                 keyValuePairs.Add((uint)field.GetValue(typeof(StatusCodes)), field.Name);
             }
-
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
             return new ReadOnlyDictionary<uint, string>(keyValuePairs);
+#endif
+        }
+
+        private static ReadOnlyDictionary<uint, byte[]> CreateUtf8BrowseNamesDictionary()
+        {
+            FieldInfo[] fields = typeof(StatusCodes).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            var keyValuePairs = new Dictionary<uint, byte[]>();
+            foreach (FieldInfo field in fields)
+            {
+                keyValuePairs.Add((uint)field.GetValue(typeof(StatusCodes)), Encoding.UTF8.GetBytes(field.Name));
+            }
+
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
+            return new ReadOnlyDictionary<uint, byte[]>(keyValuePairs);
+#endif
         }
         #endregion
     }
