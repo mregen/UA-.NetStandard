@@ -329,6 +329,7 @@ namespace Opc.Ua.Client.Tests
                 .AsClient()
                 .AddSecurityConfiguration(ClientFixture.Config.SecurityConfiguration.ApplicationCertificate.SubjectName)
                 .Create().ConfigureAwait(false);
+            Assert.NotNull(config);
         }
 
         [Theory, Order(200)]
@@ -968,6 +969,8 @@ namespace Opc.Ua.Client.Tests
         {
             // Test Read a DataType Node, the nodeclass is known
             Session.ReadNodes(new NodeIdCollection() { DataTypeIds.ProgramDiagnosticDataType }, NodeClass.DataType, out IList<Node> nodes, out IList<ServiceResult> errors, false);
+            Assert.NotNull(errors);
+            Assert.NotNull(nodes);
             ValidateDataTypeDefinition(nodes[0]);
         }
 
@@ -1425,9 +1428,9 @@ namespace Opc.Ua.Client.Tests
                 return default;
             }
 
-            ActivityTraceId traceId = default;
-            ActivitySpanId spanId = default;
-            ActivityTraceFlags traceFlags = ActivityTraceFlags.None;
+            ActivityTraceId traceId;
+            ActivitySpanId spanId;
+            ActivityTraceFlags traceFlags;
 
             foreach (var item in parameters.Parameters)
             {
@@ -1539,6 +1542,7 @@ namespace Opc.Ua.Client.Tests
             Assert.AreEqual(nodes.Count, errors2.Count);
 
             IList<VariableNode> variableNodes = nodeCollection.Cast<VariableNode>().ToList();
+            Assert.NotNull(variableNodes);
 
             // test build info contains the equal values as the properties
             var buildInfo = (values[0].Value as ExtensionObject)?.Body as BuildInfo;

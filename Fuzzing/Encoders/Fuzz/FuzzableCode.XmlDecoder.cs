@@ -64,7 +64,7 @@ public static partial class FuzzableCode
         // encode the fuzzed object and see if it crashes
         if (encodeable != null)
         {
-            using (var encoder = new JsonEncoder(messageContext, true))
+            using (var encoder = new JsonEncoder(MessageContext, true))
             {
                 encoder.EncodeMessage(encodeable);
                 encoder.Close();
@@ -104,7 +104,7 @@ public static partial class FuzzableCode
         // encode the fuzzed object and see if it crashes
         if (encodeable != null)
         {
-            using (var encoder = new XmlEncoder(messageContext))
+            using (var encoder = new XmlEncoder(MessageContext))
             {
                 encoder.EncodeMessage(encodeable);
                 encoder.Close();
@@ -128,7 +128,7 @@ public static partial class FuzzableCode
                 reader.MoveToContent();
                 string typeName = reader.LocalName;
                 string namespaceUri = reader.NamespaceURI;
-                systemType = messageContext.Factory.EncodeableTypes
+                systemType = MessageContext.Factory.EncodeableTypes
                     .Where(entry => entry.Value.Name == typeName/* && entry.Key.NamespaceUri == namespaceUri*/)
                     .Select(entry => entry.Value)
                     .FirstOrDefault();
@@ -152,7 +152,7 @@ public static partial class FuzzableCode
             }
 
             // TODO: match ns GetEncodeableFactory(typeName, namespaceUri, out IEncodeable encodeable, out _);
-            using (var decoder = new XmlDecoder(reader, messageContext))
+            using (var decoder = new XmlDecoder(reader, MessageContext))
             {
                 return decoder.DecodeMessage(systemType);
             }

@@ -96,7 +96,7 @@ namespace Opc.Ua.Client
             }
 
             int count = nodeIds.Count;
-            IList<INode> nodes = new List<INode>(count);
+            var nodes = new List<INode>(count);
             var fetchNodeIds = new ExpandedNodeIdCollection();
 
             int ii;

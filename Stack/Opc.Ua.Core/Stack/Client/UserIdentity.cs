@@ -65,13 +65,13 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate identifier and a CertificatePasswordProvider
+        /// Initializes the object with a X509 certificate identifier and a CertificatePasswordProvider.
         /// </summary>
         public UserIdentity(CertificateIdentifier certificateId, CertificatePasswordProvider certificatePasswordProvider)
         {
             if (certificateId == null) throw new ArgumentNullException(nameof(certificateId));
 
-            X509Certificate2 certificate = certificateId.LoadPrivateKeyEx(certificatePasswordProvider).Result;
+            X509Certificate2 certificate = certificateId.LoadPrivateKeyEx(certificatePasswordProvider).GetAwaiter().GetResult();
 
             if (certificate == null || !certificate.HasPrivateKey)
             {
@@ -82,7 +82,7 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate
+        /// Initializes the object with a X509 certificate.
         /// </summary>
         public UserIdentity(X509Certificate2 certificate)
         {
@@ -134,6 +134,7 @@ namespace Opc.Ua
         public string DisplayName
         {
             get { return m_displayName; }
+            set { m_displayName = value; }
         }
 
         /// <summary cref="IUserIdentity.TokenType" />
@@ -254,9 +255,10 @@ namespace Opc.Ua
         /// </summary>
         private void Initialize(X509Certificate2 certificate)
         {
-            X509IdentityToken token = new X509IdentityToken();
-            token.CertificateData = certificate.RawData;
-            token.Certificate = certificate;
+            var token = new X509IdentityToken {
+                CertificateData = certificate.RawData,
+                Certificate = certificate
+            };
             Initialize(token);
         }
         #endregion

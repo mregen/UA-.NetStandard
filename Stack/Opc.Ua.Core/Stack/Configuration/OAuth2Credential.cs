@@ -186,7 +186,7 @@ namespace Opc.Ua
                     // in a real system explicit host names would be used so this would have no effect.
                     var uri = ii.AuthorityUrl.Replace("localhost", System.Net.Dns.GetHostName().ToLowerInvariant());
 
-                    if (!uri.EndsWith("/", StringComparison.Ordinal))
+                    if (!uri.EndsWith('/'))
                     {
                         uri += "/";
                     }

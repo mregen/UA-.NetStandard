@@ -586,7 +586,11 @@ namespace Opc.Ua
                 {
                     if (fields.Length > 0)
                     {
+#if NET6_0_OR_GREATER
+                        securityMode = Enum.Parse<MessageSecurityMode>(fields[0], false);
+#else
                         securityMode = (MessageSecurityMode)Enum.Parse(typeof(MessageSecurityMode), fields[0], false);
+#endif
                     }
                     else
                     {
@@ -694,33 +698,18 @@ namespace Opc.Ua
 
                 if (!String.IsNullOrEmpty(server.ApplicationUri))
                 {
+#if NET6_0_OR_GREATER
+                    servers.TryAdd(server.ApplicationUri, server);
+#else
                     if (!servers.ContainsKey(server.ApplicationUri))
                     {
                         servers.Add(server.ApplicationUri, server);
                     }
+#endif
                 }
             }
 
             return new ApplicationDescriptionCollection(servers.Values);
-        }
-
-        /// <summary>
-        /// Copies the endpoints.
-        /// </summary>
-        /// <param name="serverUri">The server URI.</param>
-        /// <returns></returns>
-        [Obsolete("Non-functional - replaced with GetEndpoints()")]
-        public List<ConfiguredEndpoint> CopyEndpoints(string serverUri)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Updates an endpoint with information from the server's discovery endpoint.
-        /// </summary>
-        [Obsolete("Non-functional - method not used - updates should be done with ConfiguredEndpoint.UpdateFromServer()")]
-        public void UpdateEndpointsForServer(string serverUri)
-        {
         }
         #endregion
 

@@ -130,7 +130,7 @@ namespace Quickstarts.Servers
         /// Enumerates all node manager factories.
         /// </summary>
         /// <returns></returns>
-        private static IList<INodeManagerFactory> GetNodeManagerFactories()
+        private static List<INodeManagerFactory> GetNodeManagerFactories()
         {
             var assembly = typeof(Utils).Assembly;
             var nodeManagerFactories = assembly.GetExportedTypes().Select(type => IsINodeManagerFactoryType(type)).Where(type => type != null);

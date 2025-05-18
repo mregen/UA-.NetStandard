@@ -1087,6 +1087,9 @@ namespace Quickstarts
                 };
                 session.AddSubscription(subscription);
 
+                // hook state changed event handler
+                subscription.StateChanged += OnSubscriptionStateChanged;
+
                 // Create the subscription on Server side
                 await subscription.CreateAsync().ConfigureAwait(false);
                 m_output.WriteLine("New Subscription created with SubscriptionId = {0}.", subscription.Id);
@@ -1275,7 +1278,18 @@ namespace Quickstarts
         }
 
         /// <summary>
-        /// Handle DataChange notifications from Server
+        /// A suscription callback sample.
+        /// </summary>
+        private void OnSubscriptionStateChanged(Subscription subscription, SubscriptionStateChangedEventArgs newState)
+        {
+            if ((newState.Status & ~SubscriptionChangeMask.ItemsAdded) != 0)
+            {
+                m_output.WriteLine("Subscription Status Changed {0}", newState.Status.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Handle DataChange notifications from Server.
         /// </summary>
         private void OnMonitoredItemNotification(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs e)
         {
@@ -1297,11 +1311,11 @@ namespace Quickstarts
         private void DeferSubscriptionAcknowledge(ISession session, PublishSequenceNumbersToAcknowledgeEventArgs e)
         {
             // for testing keep the latest sequence numbers for a while
-            const int AckDelay = 5;
+            const int ackDelay = 5;
             if (e.AcknowledgementsToSend.Count > 0)
             {
                 // defer latest sequence numbers
-                var deferredItems = e.AcknowledgementsToSend.OrderByDescending(s => s.SequenceNumber).Take(AckDelay).ToList();
+                var deferredItems = e.AcknowledgementsToSend.OrderByDescending(s => s.SequenceNumber).Take(ackDelay).ToList();
                 e.DeferredAcknowledgementsToSend.AddRange(deferredItems);
                 foreach (var deferredItem in deferredItems)
                 {

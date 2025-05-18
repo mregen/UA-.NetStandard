@@ -177,7 +177,7 @@ namespace Opc.Ua.Gds.Server
             }
         }
 
-        public async virtual Task<X509CRL> RevokeCertificateAsync(
+        public virtual async Task<X509CRL> RevokeCertificateAsync(
             X509Certificate2 certificate)
         {
             X509CRL crl = await RevokeCertificateAsync(

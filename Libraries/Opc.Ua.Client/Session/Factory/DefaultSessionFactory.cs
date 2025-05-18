@@ -68,7 +68,7 @@ namespace Opc.Ua.Client
         }
 
         /// <inheritdoc/>
-        public async virtual Task<ISession> CreateAsync(
+        public virtual async Task<ISession> CreateAsync(
             ApplicationConfiguration configuration,
             ConfiguredEndpoint endpoint,
             bool updateBeforeConnect,
@@ -85,7 +85,7 @@ namespace Opc.Ua.Client
         }
 
         /// <inheritdoc/>
-        public async virtual Task<ISession> CreateAsync(
+        public virtual async Task<ISession> CreateAsync(
             ApplicationConfiguration configuration,
             ITransportWaitingConnection connection,
             ConfiguredEndpoint endpoint,
@@ -104,7 +104,7 @@ namespace Opc.Ua.Client
         }
 
         /// <inheritdoc/>
-        public async virtual Task<ISession> CreateAsync(
+        public virtual async Task<ISession> CreateAsync(
             ApplicationConfiguration configuration,
             ReverseConnectManager reverseConnectManager,
             ConfiguredEndpoint endpoint,

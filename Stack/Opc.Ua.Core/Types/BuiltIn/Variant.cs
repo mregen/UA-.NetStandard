@@ -800,6 +800,11 @@ namespace Opc.Ua
         {
             get
             {
+                if (m_value == null)
+                {
+                    return null;
+                }
+
                 // create encoder.
                 using (XmlEncoder encoder = new XmlEncoder(MessageContextExtension.CurrentContext))
                 {
@@ -824,15 +829,13 @@ namespace Opc.Ua
                     return;
                 }
 
-                TypeInfo typeInfo = null;
-
                 // create decoder.
                 using (XmlDecoder decoder = new XmlDecoder(value, MessageContextExtension.CurrentContext))
                 {
                     try
                     {
                         // read value.
-                        object body = decoder.ReadVariantContents(out typeInfo);
+                        object body = decoder.ReadVariantContents(out TypeInfo typeInfo);
                         Set(body, typeInfo);
                     }
                     catch (Exception e)
@@ -2587,9 +2590,6 @@ namespace Opc.Ua
         /// <summary>
         /// Initializes the collection with the specified capacity.
         /// </summary>
-        /// <remarks>
-        /// Initializes the collection with the specified capacity.
-        /// </remarks>
         /// <param name="capacity">The capacity to constrain the collection to</param>
         public VariantCollection(int capacity) : base(capacity) { }
 
@@ -2632,9 +2632,6 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a deep copy of the collection.
         /// </summary>
-        /// <remarks>
-        /// Creates a deep copy of the collection.
-        /// </remarks>
         public new object MemberwiseClone()
         {
             VariantCollection clone = new VariantCollection(this.Count);
