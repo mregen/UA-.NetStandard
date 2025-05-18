@@ -933,6 +933,28 @@ namespace Quickstarts
         }
         #endregion
 
+        #region Fetch ReferenceId Types
+        /// <summary>
+        /// Read all ReferenceTypeIds from the server that are not known by the client.
+        /// To reduce the number of calls due to traversal call pyramid, start with all
+        /// known reference types to reduce the number of FetchReferences/FetchNodes calls.
+        /// </summary>
+        /// <remarks>
+        /// The NodeCache needs this information to function properly with subtypes of hierarchical calls.
+        /// </remarks>
+        /// <param name="session">The session to use</param>
+        void FetchReferenceIdTypes(ISession session)
+        {
+            // fetch the reference types first, otherwise browse for e.g. hierarchical references with subtypes won't work
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
+            var namespaceUris = session.NamespaceUris;
+            var referenceTypes = typeof(ReferenceTypeIds)
+                     .GetFields(bindingFlags)
+                     .Select(field => NodeId.ToExpandedNodeId((NodeId)field.GetValue(null), namespaceUris));
+            session.FetchTypeTree(new ExpandedNodeIdCollection(referenceTypes));
+        }
+        #endregion
+
         #region Read Values and output as JSON sample
         /// <summary>
         /// Output all values as JSON.
@@ -1091,6 +1113,81 @@ namespace Quickstarts
                 // Create the monitored items on Server side
                 await subscription.ApplyChangesAsync().ConfigureAwait(false);
                 m_output.WriteLine("MonitoredItems {0} created for SubscriptionId = {1}.", subscription.MonitoredItemCount, subscription.Id);
+            }
+            catch (Exception ex)
+            {
+                m_output.WriteLine("Subscribe error: {0}", ex.Message);
+            }
+        }
+        #endregion
+
+        #region Subscribe Values
+        /// <summary>
+        /// Output all values as JSON.
+        /// </summary>
+        /// <param name="uaClient">The UAClient with a session to use.</param>
+        /// <param name="variableIds">The variables to subscribe.</param>
+        public async Task SubscribeAllValuesAsync(
+            IUAClient uaClient,
+            NodeCollection variableIds,
+            int publishingInterval,
+            uint lifetimeCount,
+            uint keepAliveCount)
+        {
+            if (uaClient.Session == null || !uaClient.Session.Connected)
+            {
+                m_output.WriteLine("Session not connected!");
+                return;
+            }
+
+            try
+            {
+                // Create a subscription for receiving data change notifications
+                var session = uaClient.Session;
+
+                // Define Subscription parameters
+                Subscription subscription = new Subscription(session.DefaultSubscription) {
+                    DisplayName = "Console ReferenceClient Subscription",
+                    PublishingEnabled = true,
+                    PublishingInterval = publishingInterval,
+                    LifetimeCount = lifetimeCount,
+                    KeepAliveCount = keepAliveCount,
+                    SequentialPublishing = true,
+                    RepublishAfterTransfer = true,
+                    MaxNotificationsPerPublish = 1000,
+                    MinLifetimeInterval = (uint)session.SessionTimeout,
+                };
+                session.AddSubscription(subscription);
+
+                // Create the subscription on Server side
+                await subscription.CreateAsync().ConfigureAwait(false);
+                m_output.WriteLine("New Subscription created with SubscriptionId = {0}.", subscription.Id);
+
+                uint queueSize = 10;
+
+                // Create MonitoredItems for data changes
+                foreach (var item in variableIds)
+                {
+                    Type type = Opc.Ua.TypeInfo.GetSystemType(item.TypeId, session.Factory);
+                    string displayName = type?.FullName ?? "(unknown type)";
+                    MonitoredItem monitoredItem = new MonitoredItem(subscription.DefaultItem) {
+                        StartNodeId = item.NodeId,
+                        AttributeId = Attributes.Value,
+                        DisplayName = displayName,
+                        SamplingInterval = 1000,
+                        QueueSize = queueSize,
+                        DiscardOldest = true,
+                        MonitoringMode = MonitoringMode.Sampling,
+                    };
+                    monitoredItem.Notification += OnMonitoredItemNotification;
+                    subscription.AddItem(monitoredItem);
+                    if (queueSize > 0) { queueSize--; }
+                    if (subscription.CurrentKeepAliveCount > 1000) break;
+                }
+
+                // Create the monitored items on Server side
+                subscription.ApplyChanges();
+                m_output.WriteLine("MonitoredItems created for SubscriptionId = {0}.", subscription.Id);
             }
             catch (Exception ex)
             {
