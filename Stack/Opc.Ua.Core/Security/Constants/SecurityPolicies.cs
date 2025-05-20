@@ -84,7 +84,7 @@ namespace Opc.Ua
             if (SecurityPolicyUriNames.Value.TryGetValue(displayName, out var uri) && IsPlatformSupportedUri(displayName))
             {
                 return uri;
-                }
+            }
 
             return null;
         }
@@ -148,15 +148,15 @@ namespace Opc.Ua
         /// <summary>
         /// Encrypts the text using the SecurityPolicyUri and returns the result.
         /// </summary>
-        public static EncryptedData Encrypt(X509Certificate2 certificate, string securityPolicyUri, byte[] plainText)
+        public static EncryptedData Encrypt(X509Certificate2 certificate, string securityPolicyUri, ReadOnlySpan<byte> plainText)
         {
-            EncryptedData encryptedData = new EncryptedData();
-
-            encryptedData.Algorithm = null;
-            encryptedData.Data = plainText;
+            EncryptedData encryptedData = new EncryptedData {
+                Algorithm = null,
+                Data = plainText.IsEmpty ? null : plainText.ToArray()
+            };
 
             // check if nothing to do.
-            if (plainText == null)
+            if (plainText.IsEmpty)
             {
                 return encryptedData;
             }
@@ -195,7 +195,7 @@ namespace Opc.Ua
 
                 case SecurityPolicies.None:
                 {
-                    break;
+                    return encryptedData;
                 }
 
                 default:

@@ -30,6 +30,7 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua.Configuration;
 using Opc.Ua.Gds.Client;
@@ -118,15 +119,16 @@ namespace Opc.Ua.Gds.Tests
             m_client = new ServerPushConfigurationClient(application.ApplicationConfiguration) {
                 EndpointUrl = TestUtils.PatchOnlyGDSEndpointUrlPort(clientConfiguration.ServerUrl, port)
             };
-            if (String.IsNullOrEmpty(clientConfiguration.AppUserName))
+
+            if (string.IsNullOrEmpty(clientConfiguration.AppUserName))
             {
                 AppUser = new UserIdentity(new AnonymousIdentityToken());
             }
             else
             {
-                AppUser = new UserIdentity(clientConfiguration.AppUserName, clientConfiguration.AppPassword);
+                AppUser = new UserIdentity(clientConfiguration.AppUserName, Encoding.UTF8.GetBytes(clientConfiguration.AppPassword));
             }
-            SysAdminUser = new UserIdentity(clientConfiguration.SysAdminUserName, clientConfiguration.SysAdminPassword);
+            SysAdminUser = new UserIdentity(clientConfiguration.SysAdminUserName, Encoding.UTF8.GetBytes(clientConfiguration.SysAdminPassword));
             TempStorePath = clientConfiguration.TempStorePath;
         }
 

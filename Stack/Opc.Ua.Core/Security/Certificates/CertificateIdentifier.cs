@@ -24,7 +24,7 @@ namespace Opc.Ua
     /// <summary>
     /// The identifier for an X509 certificate.
     /// </summary>
-    public partial class CertificateIdentifier : IFormattable
+    public partial class CertificateIdentifier : IOpenStore, IFormattable
     {
         #region IFormattable Members
         /// <summary>
@@ -157,8 +157,8 @@ namespace Opc.Ua
         /// <summary>
         /// Loads the private key for the certificate with an optional password.
         /// </summary>
-        public Task<X509Certificate2> LoadPrivateKey(string password)
-            => LoadPrivateKeyEx(password != null ? new CertificatePasswordProvider(password) : null);
+        public Task<X509Certificate2> LoadPrivateKey(ReadOnlySpan<char> password)
+            => LoadPrivateKeyEx(!password.IsEmpty ? new CertificatePasswordProvider(password) : null);
 
         /// <summary>
         /// Loads the private key for the certificate with an optional password.
@@ -172,8 +172,8 @@ namespace Opc.Ua
                 {
                     if (store?.SupportsLoadPrivateKey == true)
                     {
-                        string password = passwordProvider?.GetPassword(this);
-                        m_certificate = await store.LoadPrivateKey(this.Thumbprint, this.SubjectName, password).ConfigureAwait(false);
+                        char[] password = passwordProvider?.GetPassword(this);
+                        m_certificate = store.LoadPrivateKey(this.Thumbprint, this.SubjectName, password);
                         return m_certificate;
                     }
                 }
@@ -574,7 +574,6 @@ namespace Opc.Ua
     /// </summary>
     public partial class CertificateIdentifierCollection : ICertificateStore, ICloneable
     {
-
         #region ICloneable
         /// <inheritdoc/>
         public virtual object Clone()
@@ -667,7 +666,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public async Task Add(X509Certificate2 certificate, string password = null)
+        public async Task Add(X509Certificate2 certificate, char[] password = null)
         {
             if (certificate == null) throw new ArgumentNullException(nameof(certificate));
 
@@ -735,9 +734,9 @@ namespace Opc.Ua
         public bool SupportsLoadPrivateKey => false;
 
         /// <inheritdoc/>
-        public Task<X509Certificate2> LoadPrivateKey(string thumbprint, string subjectName, string password)
+        public X509Certificate2 LoadPrivateKey(string thumbprint, string subjectName, ReadOnlySpan<char> password)
         {
-            return Task.FromResult<X509Certificate2>(null);
+            return null;
         }
 
         /// <inheritdoc/>

@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua.Security.Certificates;
 using Opc.Ua.Redaction;
+using System.Threading;
 
 namespace Opc.Ua
 {
@@ -168,7 +169,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public Task Add(X509Certificate2 certificate, string password = null)
+        public Task Add(X509Certificate2 certificate, char[] password = null)
         {
             if (certificate == null) throw new ArgumentNullException(nameof(certificate));
 
@@ -187,7 +188,7 @@ namespace Opc.Ua
                 bool writePrivateKey = !NoPrivateKeys && certificate.HasPrivateKey;
                 if (writePrivateKey)
                 {
-                    string passcode = password ?? string.Empty;
+                    string passcode = password == null || password.Length == 0 ? string.Empty : new string(password);
                     data = certificate.Export(X509ContentType.Pkcs12, passcode);
                 }
                 else
@@ -424,7 +425,7 @@ namespace Opc.Ua
         /// <summary>
         /// Loads the private key from a PFX/PEM file in the certificate store.
         /// </summary>
-        public async Task<X509Certificate2> LoadPrivateKey(string thumbprint, string subjectName, string password)
+        public X509Certificate2 LoadPrivateKey(string thumbprint, string subjectName, ReadOnlySpan<char> password)
         {
             if (NoPrivateKeys || m_privateKeySubdir == null ||
                 m_certificateSubdir == null || !m_certificateSubdir.Exists)
@@ -504,7 +505,6 @@ namespace Opc.Ua
 
                         var privateKeyFilePfx = new FileInfo(filePath + kPfxExtension);
                         var privateKeyFilePem = new FileInfo(filePath + kPemExtension);
-                        password = password ?? String.Empty;
                         if (privateKeyFilePfx.Exists)
                         {
                             certificateFound = true;
@@ -585,7 +585,7 @@ namespace Opc.Ua
                 if (retryCounter > 0)
                 {
                     Utils.LogInfo(Utils.TraceMasks.Security, "Retry to import private key after {0} ms.", retryDelay);
-                    await Task.Delay(retryDelay).ConfigureAwait(false);
+                    Thread.Sleep(retryDelay);
                 }
             }
 
@@ -943,7 +943,7 @@ namespace Opc.Ua
             {
                 char ch = commonName[ii];
 
-                if ("<>:\"/\\|?*".IndexOf(ch) != -1)
+                if ("<>:\"/\\|?*".Contains(ch))
                 {
                     ch = '+';
                 }

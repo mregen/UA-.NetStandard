@@ -381,7 +381,7 @@ namespace Opc.Ua.Client.Tests
         }
 
         [Test, Order(204)]
-        public async Task ConnectAndCloseAsyncReadAfterCloseSessionReconnect()
+        public async Task ConnectAndCloseAsyncReadAfterCloseSessionReconnectAsync()
         {
             var securityPolicy = SecurityPolicies.Basic256Sha256;
             using (var session = await ClientFixture.ConnectAsync(ServerUrl, securityPolicy, Endpoints).ConfigureAwait(false))
@@ -731,7 +731,7 @@ namespace Opc.Ua.Client.Tests
         {
             ServiceResultException sre;
 
-            IUserIdentity userIdentity = anonymous ? new UserIdentity() : new UserIdentity("user1", "password");
+            IUserIdentity userIdentity = anonymous ? new UserIdentity() : new UserIdentity("user1", "password"u8);
 
             // the first channel determines the endpoint
             ConfiguredEndpoint endpoint = await ClientFixture.GetEndpointAsync(ServerUrl, securityPolicy, Endpoints).ConfigureAwait(false);

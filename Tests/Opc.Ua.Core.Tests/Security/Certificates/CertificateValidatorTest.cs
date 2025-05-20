@@ -860,8 +860,9 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
                 var pemString = Encoding.UTF8.GetString(pemDataBlob);
                 TestContext.Out.WriteLine(pemString);
                 CertificateFactory.CreateCertificateWithPEMPrivateKey(X509CertificateLoader.LoadCertificate(appCert.RawData), pemDataBlob);
+
                 // note: password is ignored
-                var newCert = CertificateFactory.CreateCertificateWithPEMPrivateKey(X509CertificateLoader.LoadCertificate(appCert.RawData), pemDataBlob, "password");
+                var newCert = CertificateFactory.CreateCertificateWithPEMPrivateKey(X509CertificateLoader.LoadCertificate(appCert.RawData), pemDataBlob, "password".ToCharArray());
                 X509Utils.VerifyRSAKeyPair(newCert, newCert, true);
             }
         }
