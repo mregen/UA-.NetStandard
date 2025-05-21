@@ -173,13 +173,13 @@ namespace Opc.Ua.Configuration
         /// Starts the UA server.
         /// </summary>
         /// <param name="server">The server.</param>
-        public async Task Start(ServerBase server)
+        public async Task StartAsync(ServerBase server)
         {
             m_server = server;
 
             if (m_applicationConfiguration == null)
             {
-                await LoadApplicationConfiguration(false).ConfigureAwait(false);
+                await LoadApplicationConfigurationAsync(false).ConfigureAwait(false);
             }
 
             server.Start(m_applicationConfiguration);
@@ -196,7 +196,7 @@ namespace Opc.Ua.Configuration
         /// <summary>
         /// Loads the configuration.
         /// </summary>
-        public async Task<ApplicationConfiguration> LoadAppConfig(
+        public async Task<ApplicationConfiguration> LoadAppConfigAsync(
             bool silent,
             string filePath,
             ApplicationType applicationType,
@@ -216,11 +216,6 @@ namespace Opc.Ua.Configuration
                     applyTraceSettings,
                     certificatePasswordProvider)
                     .ConfigureAwait(false);
-
-                if (configuration == null)
-                {
-                    return null;
-                }
 
                 return configuration;
             }
@@ -247,7 +242,7 @@ namespace Opc.Ua.Configuration
         /// <summary>
         /// Loads the configuration.
         /// </summary>
-        public async Task<ApplicationConfiguration> LoadAppConfig(
+        public async Task<ApplicationConfiguration> LoadAppConfigAsync(
             bool silent,
             Stream stream,
             ApplicationType applicationType,
@@ -298,13 +293,13 @@ namespace Opc.Ua.Configuration
         /// <summary>
         /// Loads the application configuration.
         /// </summary>
-        public async Task<ApplicationConfiguration> LoadApplicationConfiguration(Stream stream, bool silent)
+        public async Task<ApplicationConfiguration> LoadApplicationConfigurationAsync(Stream stream, bool silent)
         {
             ApplicationConfiguration configuration = null;
 
             try
             {
-                configuration = await LoadAppConfig(
+                configuration = await LoadAppConfigAsync(
                     silent, stream, ApplicationType, ConfigurationType, true, CertificatePasswordProvider)
                     .ConfigureAwait(false);
             }
@@ -325,13 +320,13 @@ namespace Opc.Ua.Configuration
         /// <summary>
         /// Loads the application configuration.
         /// </summary>
-        public async Task<ApplicationConfiguration> LoadApplicationConfiguration(string filePath, bool silent)
+        public async Task<ApplicationConfiguration> LoadApplicationConfigurationAsync(string filePath, bool silent)
         {
             ApplicationConfiguration configuration = null;
 
             try
             {
-                configuration = await LoadAppConfig(
+                configuration = await LoadAppConfigAsync(
                     silent, filePath, ApplicationType, ConfigurationType, true, CertificatePasswordProvider)
                     .ConfigureAwait(false);
             }
@@ -352,11 +347,11 @@ namespace Opc.Ua.Configuration
         /// <summary>
         /// Loads the application configuration.
         /// </summary>
-        public async Task<ApplicationConfiguration> LoadApplicationConfiguration(bool silent)
+        public async Task<ApplicationConfiguration> LoadApplicationConfigurationAsync(bool silent)
         {
             string filePath = ApplicationConfiguration.GetFilePathFromAppConfig(ConfigSectionName);
 
-            return await LoadApplicationConfiguration(filePath, silent).ConfigureAwait(false);
+            return await LoadApplicationConfigurationAsync(filePath, silent).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -411,17 +406,17 @@ namespace Opc.Ua.Configuration
         /// </summary>
         /// <param name="silent">if set to <c>true</c> no dialogs will be displayed.</param>
         /// <param name="minimumKeySize">Minimum size of the key.</param>
-        public Task<bool> CheckApplicationInstanceCertificate(
+        public Task<bool> CheckApplicationInstanceCertificateAsync(
             bool silent,
             ushort minimumKeySize)
         {
-            return CheckApplicationInstanceCertificate(silent, minimumKeySize, CertificateFactory.DefaultLifeTime);
+            return CheckApplicationInstanceCertificateAsync(silent, minimumKeySize, CertificateFactory.DefaultLifeTime);
         }
 
         /// <summary>
         /// Delete the application certificate.
         /// </summary>
-        public async Task DeleteApplicationInstanceCertificate(CancellationToken ct = default)
+        public async Task DeleteApplicationInstanceCertificateAsync(CancellationToken ct = default)
         {
             if (m_applicationConfiguration == null) throw new ArgumentException("Missing configuration.");
             await DeleteApplicationInstanceCertificateAsync(m_applicationConfiguration, ct).ConfigureAwait(false);
@@ -434,7 +429,7 @@ namespace Opc.Ua.Configuration
         /// <param name="minimumKeySize">Minimum size of the key.</param>
         /// <param name="lifeTimeInMonths">The lifetime in months.</param>
         /// <param name="ct">The cancellation token.</param>
-        public async Task<bool> CheckApplicationInstanceCertificate(
+        public async Task<bool> CheckApplicationInstanceCertificateAsync(
             bool silent,
             ushort minimumKeySize,
             ushort lifeTimeInMonths,
@@ -444,7 +439,7 @@ namespace Opc.Ua.Configuration
 
             if (m_applicationConfiguration == null)
             {
-                await LoadApplicationConfiguration(silent).ConfigureAwait(false);
+                await LoadApplicationConfigurationAsync(silent).ConfigureAwait(false);
             }
 
             ApplicationConfiguration configuration = m_applicationConfiguration;
@@ -459,7 +454,7 @@ namespace Opc.Ua.Configuration
             }
 
             // reload the certificate from disk in the cache.
-            var passwordProvider = configuration.SecurityConfiguration.CertificatePasswordProvider;
+            ICertificatePasswordProvider passwordProvider = configuration.SecurityConfiguration.CertificatePasswordProvider;
             await configuration.SecurityConfiguration.ApplicationCertificate.LoadPrivateKeyEx(passwordProvider).ConfigureAwait(false);
 
             // load the certificate
@@ -498,7 +493,7 @@ namespace Opc.Ua.Configuration
                 {
                     if (!String.IsNullOrEmpty(id.SubjectName))
                     {
-                        CertificateIdentifier id2 = new CertificateIdentifier {
+                        var id2 = new CertificateIdentifier {
                             StoreType = id.StoreType,
                             StorePath = id.StorePath,
                             SubjectName = id.SubjectName
@@ -714,13 +709,13 @@ namespace Opc.Ua.Configuration
             IList<string> certificateDomainNames = X509Utils.GetDomainsFromCertificate(certificate);
 
             Utils.LogInfo("Server Domain names:");
-            foreach (var name in serverDomainNames)
+            foreach (string name in serverDomainNames)
             {
                 Utils.LogInfo(" {0}", name);
             }
 
             Utils.LogInfo("Certificate Domain names:");
-            foreach (var name in certificateDomainNames)
+            foreach (string name in certificateDomainNames)
             {
                 Utils.LogInfo(" {0}", name);
             }
@@ -823,7 +818,7 @@ namespace Opc.Ua.Configuration
                 Utils.GetAbsoluteDirectoryPath(id.StorePath, true, true, true);
             }
 
-            var passwordProvider = configuration.SecurityConfiguration.CertificatePasswordProvider;
+            ICertificatePasswordProvider passwordProvider = configuration.SecurityConfiguration.CertificatePasswordProvider;
             X509Certificate2 certificate = CertificateFactory.CreateCertificate(
                 configuration.ApplicationUri,
                 configuration.ApplicationName,

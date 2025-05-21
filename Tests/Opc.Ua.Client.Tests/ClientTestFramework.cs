@@ -94,7 +94,7 @@ namespace Opc.Ua.Client.Tests
         #region DataPointSources
         [DatapointSource]
         public static readonly string[] Policies = SecurityPolicies.GetDisplayNames()
-            .Select(displayName => SecurityPolicies.GetUri(displayName)).ToArray();
+            .Select(SecurityPolicies.GetUri).ToArray();
         #endregion
 
         #region Test Setup

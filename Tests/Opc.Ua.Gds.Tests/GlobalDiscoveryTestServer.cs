@@ -95,7 +95,7 @@ namespace Opc.Ua.Gds.Tests
             }
 
             // check the application certificate.
-            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");
@@ -143,7 +143,7 @@ namespace Opc.Ua.Gds.Tests
                 applicationsDatabase,
                 new CertificateGroup(),
                 userDatabase);
-            await Application.Start(m_server).ConfigureAwait(false);
+            await Application.StartAsync(m_server).ConfigureAwait(false);
 
             ServerState serverState = Server.GetStatus().State;
             if (serverState != ServerState.Running)
@@ -221,7 +221,7 @@ namespace Opc.Ua.Gds.Tests
         {
 #if !USE_FILE_CONFIG
             // load the application configuration.
-            ApplicationConfiguration config = await application.LoadApplicationConfiguration(true).ConfigureAwait(false);
+            ApplicationConfiguration config = await application.LoadApplicationConfigurationAsync(true).ConfigureAwait(false);
 #else
             string root = Path.Combine("%LocalApplicationData%", "OPC");
             string gdsRoot = Path.Combine(root, "GDS");

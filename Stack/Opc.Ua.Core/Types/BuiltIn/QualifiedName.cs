@@ -483,13 +483,14 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Parses a string containing a QualifiedName with the syntax n:qname
+        /// Parses a string containing a QualifiedName with the syntax n:qname.
         /// </summary>
         /// <param name="context">The QualifiedName value as a string.</param>
         /// <param name="text">The QualifiedName value as a string.</param>
         /// <param name="updateTables">Whether the NamespaceTable should be updated with the NamespaceUri.</param>
+        /// <param name="decoder">Set to true if the parser is called by a decoder which expects a BadDecodingError, otherwise throws a BadInvalidNodeId.</param>
         /// <exception cref="ServiceResultException">Thrown under a variety of circumstances, each time with a specific message.</exception>
-        public static QualifiedName Parse(IServiceMessageContext context, string text, bool updateTables)
+        public static QualifiedName Parse(IServiceMessageContext context, string text, bool updateTables, bool decoder)
         {
             // check for null.
             if (String.IsNullOrEmpty(text))
@@ -498,6 +499,7 @@ namespace Opc.Ua
             }
 
             var originalText = text;
+            var errorCode = decoder ? StatusCodes.BadDecodingError : StatusCodes.BadNodeIdInvalid;
             int namespaceIndex = 0;
 
             if (text.StartsWith("nsu=", StringComparison.Ordinal))
@@ -506,7 +508,7 @@ namespace Opc.Ua
 
                 if (index < 0)
                 {
-                    throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid QualifiedName ({originalText}).");
+                    throw ServiceResultException.Create(errorCode, "Invalid QualifiedName ({0}).", originalText);
                 }
 
 #if NET9_0_OR_GREATER
@@ -518,7 +520,7 @@ namespace Opc.Ua
 
                 if (namespaceIndex < 0)
                 {
-                    throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"No mapping to NamespaceIndex for NamespaceUri ({namespaceUri}).");
+                    throw ServiceResultException.Create(errorCode, "No mapping to NamespaceIndex for NamespaceUri ({0}).", namespaceUri);
                 }
 
                 text = text.Substring(index + 1);
@@ -539,7 +541,7 @@ namespace Opc.Ua
                     }
                     else
                     {
-                        throw new ServiceResultException(StatusCodes.BadNodeIdInvalid, $"Invalid QualifiedName ({originalText}).");
+                        throw ServiceResultException.Create(errorCode, "Invalid QualifiedName ({0}).", originalText);
                     }
                 }
 

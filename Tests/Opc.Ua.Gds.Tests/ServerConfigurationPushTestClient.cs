@@ -63,7 +63,7 @@ namespace Opc.Ua.Gds.Tests
             };
 #if USE_FILE_CONFIG
             // load the application configuration.
-            Config = await application.LoadApplicationConfiguration(false).ConfigureAwait(false);
+            Config = await application.LoadApplicationConfigurationAsync(false).ConfigureAwait(false);
 #else
             string root = Path.Combine("%LocalApplicationData%", "OPC");
             string pkiRoot = Path.Combine(root, "pki");
@@ -107,7 +107,7 @@ namespace Opc.Ua.Gds.Tests
                 .Create().ConfigureAwait(false);
 #endif
             // check the application certificate.
-            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");

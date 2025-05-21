@@ -168,11 +168,11 @@ namespace Quickstarts.ConsoleReferenceClient
                 // delete old certificate
                 if (renewCertificate)
                 {
-                    await application.DeleteApplicationInstanceCertificate().ConfigureAwait(false);
+                    await application.DeleteApplicationInstanceCertificateAsync().ConfigureAwait(false);
                 }
 
                 // check the application certificate.
-                bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(false, minimumKeySize: 0).ConfigureAwait(false);
+                bool haveAppCertificate = await application.CheckApplicationInstanceCertificateAsync(false, minimumKeySize: 0).ConfigureAwait(false);
                 if (!haveAppCertificate)
                 {
                     throw new ErrorExitException("Application instance certificate invalid!", ExitCode.ErrorCertificate);
