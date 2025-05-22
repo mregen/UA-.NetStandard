@@ -327,10 +327,34 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
+        /// <remarks>
+        /// Internally always creates a deep copy on get and set, so that the user
+        /// can clear the token data after using or setting it.
+        /// </remarks>
         public byte[] DecryptedTokenData
         {
-            get { return m_decryptedTokenData; }
-            set { m_decryptedTokenData = value; }
+            get
+            {
+                if (m_decryptedTokenData != null)
+                {
+                    var result = new byte[m_decryptedTokenData.Length];
+                    Array.Copy(m_decryptedTokenData, result, m_decryptedTokenData.Length);
+                    return result;
+                }
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    m_decryptedTokenData = new byte[value.Length];
+                    Array.Copy(value, m_decryptedTokenData, value.Length);
+                }
+                else
+                {
+                    m_decryptedTokenData = null;
+                }
+            }
         }
         #endregion
 
