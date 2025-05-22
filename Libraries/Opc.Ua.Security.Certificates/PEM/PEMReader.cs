@@ -86,7 +86,7 @@ namespace Opc.Ua.Security.Certificates
                         switch (count)
                         {
                             case 1:
-                                if (password == null)
+                                if (password.IsEmpty || password.IsWhiteSpace())
                                 {
                                     throw new ArgumentException("Need password for encrypted private key.");
                                 }
