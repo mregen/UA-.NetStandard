@@ -150,7 +150,7 @@ namespace Quickstarts.ConsoleReferenceClient
                 };
 
                 // load the application configuration.
-                ApplicationConfiguration config = await application.LoadApplicationConfiguration(silent: false).ConfigureAwait(false);
+                ApplicationConfiguration config = await application.LoadApplicationConfigurationAsync(silent: false).ConfigureAwait(false);
 
                 // override logfile
                 if (logFile != null)
