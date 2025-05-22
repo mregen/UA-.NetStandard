@@ -307,11 +307,6 @@ namespace Opc.Ua
                 Array.Clear(m_decryptedTokenData, 0, m_decryptedTokenData.Length);
                 m_decryptedTokenData = null;
             }
-            if (m_tokenData != null)
-            {
-                Array.Clear(m_tokenData, 0, m_tokenData.Length);
-                m_tokenData = null;
-            }
         }
 
         #region Public Properties
