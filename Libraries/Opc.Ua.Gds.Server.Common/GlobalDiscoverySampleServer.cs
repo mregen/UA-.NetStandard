@@ -57,8 +57,7 @@ namespace Opc.Ua.Gds.Server
             ICertificateRequest request,
             ICertificateGroup certificateGroup,
             IUserDatabase userDatabase,
-            bool autoApprove = true,
-            bool createStandardUsers = true
+            bool autoApprove = true
             )
         {
             m_database = database;
@@ -66,7 +65,6 @@ namespace Opc.Ua.Gds.Server
             m_certificateGroup = certificateGroup;
             m_userDatabase = userDatabase;
             m_autoApprove = autoApprove;
-            m_createStandardUsers = createStandardUsers;
         }
 
         #region Overridden Methods
@@ -77,12 +75,6 @@ namespace Opc.Ua.Gds.Server
         {
             base.OnServerStarted(server);
 
-            //ToDo delete this code in a production environment as this creates hardcoded passwords
-            if (m_createStandardUsers)
-            {
-
-                RegisterDefaultUsers();
-            }
             // request notifications when the user identity is changed. all valid users are accepted by default.
             server.SessionManager.ImpersonateUser += SessionManager_ImpersonateUser;
         }
@@ -326,20 +318,6 @@ namespace Opc.Ua.Gds.Server
         }
 
         /// <summary>
-        /// registers the default GDS users
-        /// ToDo delete this in a production environment
-        /// </summary>
-        private void RegisterDefaultUsers()
-        {
-            m_userDatabase.CreateUser("sysadmin", "demo", new List<Role> { GdsRole.CertificateAuthorityAdmin, GdsRole.DiscoveryAdmin, Role.SecurityAdmin, Role.ConfigureAdmin });
-            m_userDatabase.CreateUser("appadmin", "demo", new List<Role> { Role.AuthenticatedUser, GdsRole.CertificateAuthorityAdmin, GdsRole.DiscoveryAdmin });
-            m_userDatabase.CreateUser("appuser", "demo", new List<Role> { Role.AuthenticatedUser });
-
-            m_userDatabase.CreateUser("DiscoveryAdmin", "demo", new List<Role> { Role.AuthenticatedUser, GdsRole.DiscoveryAdmin });
-            m_userDatabase.CreateUser("CertificateAuthorityAdmin", "demo", new List<Role> { Role.AuthenticatedUser, GdsRole.CertificateAuthorityAdmin });
-        }
-
-        /// <summary>
         /// Impersonates the current Session as ApplicationSelfAdmin
         /// </summary>
         /// <param name="session">the current session</param>
@@ -359,7 +337,6 @@ namespace Opc.Ua.Gds.Server
             args.Identity = new GdsRoleBasedIdentity(new UserIdentity(), new List<Role> { GdsRole.ApplicationSelfAdmin }, applicationId);
             return;
         }
-
         #endregion
 
         #region Private Fields
@@ -369,7 +346,6 @@ namespace Opc.Ua.Gds.Server
         private ICertificateGroup m_certificateGroup = null;
         private IUserDatabase m_userDatabase = null;
         private bool m_autoApprove;
-        private bool m_createStandardUsers;
         #endregion 
     }
 }

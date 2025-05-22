@@ -321,8 +321,19 @@ namespace Opc.Ua
         /// </summary>
         public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
             X509Certificate2 certificate,
+            byte[] pemDataBlob)
+        {
+            return CreateCertificateWithPEMPrivateKey(certificate, pemDataBlob, ReadOnlySpan<char>.Empty);
+        }
+
+        /// <summary>
+        /// Create a X509Certificate2 with a private key by combining 
+        /// the certificate with a private key from a PEM stream
+        /// </summary>
+        public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
+            X509Certificate2 certificate,
             byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<char> password)
         {
             RSA rsaPrivateKey = PEMReader.ImportPrivateKeyFromPEM(pemDataBlob, password);
             return X509CertificateLoader.LoadCertificate(certificate.RawData).CopyWithPrivateKey(rsaPrivateKey);
@@ -359,12 +370,19 @@ namespace Opc.Ua
                 throw new NotSupportedException("The public and the private key pair doesn't match.");
             }
 
-            string passcode = X509Utils.GeneratePasscode();
-            using (RSA rsaPrivateKey = certificateWithPrivateKey.GetRSAPrivateKey())
+            char[] passcode = X509Utils.GeneratePasscode();
+            try
             {
-                byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
-                    certificate, certificate.FriendlyName, rsaPrivateKey, passcode);
-                return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+                using (RSA rsaPrivateKey = certificateWithPrivateKey.GetRSAPrivateKey())
+                {
+                    byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
+                        certificate, certificate.FriendlyName, rsaPrivateKey, passcode);
+                    return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+                }
+            }
+            finally
+            {
+                Array.Clear(passcode, 0, passcode.Length);
             }
         }
 
@@ -375,7 +393,7 @@ namespace Opc.Ua
         public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
             X509Certificate2 certificate,
             byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<char> password)
         {
             RSA privateKey = PEMReader.ImportPrivateKeyFromPEM(pemDataBlob, password);
             if (privateKey == null)
@@ -383,10 +401,17 @@ namespace Opc.Ua
                 throw new ServiceResultException("PEM data blob does not contain a private key.");
             }
 
-            string passcode = X509Utils.GeneratePasscode();
-            byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
-                certificate, certificate.FriendlyName, privateKey, passcode);
-            return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+            char[] passcode = X509Utils.GeneratePasscode();
+            try
+            {
+                byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
+                    certificate, certificate.FriendlyName, privateKey, passcode);
+                return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+            }
+            finally
+            {
+                Array.Clear(passcode, 0, passcode.Length);
+            }
         }
 #endif
         #endregion

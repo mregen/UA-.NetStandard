@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2020 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2025 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -29,7 +29,12 @@
 
 using System;
 using System.IO;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Opc.Ua.Server.UserDatabase
 {
@@ -37,7 +42,7 @@ namespace Opc.Ua.Server.UserDatabase
     /// A user database with JSON storage.
     /// </summary>
     /// <remarks>
-    /// This db is good for testing but not for production use.
+    /// This db is used for testing, not for production.
     /// </remarks>
     public class JsonUserDatabase : LinqUserDatabase
     {
@@ -47,28 +52,29 @@ namespace Opc.Ua.Server.UserDatabase
         /// </summary>
         public JsonUserDatabase(string fileName)
         {
-            m_fileName = fileName;
+            FileName = fileName;
         }
 
         /// <summary>
         /// Load the JSON application database.
         /// </summary>
-        static public JsonUserDatabase Load(string fileName)
+        public static IUserDatabase Load(string fileName)
         {
             if (fileName == null) throw new ArgumentNullException(nameof(fileName));
             try
             {
                 if (File.Exists(fileName))
                 {
-                    string json = File.ReadAllText(fileName);
-                    JsonUserDatabase db = JsonConvert.DeserializeObject<JsonUserDatabase>(json);
+                    var utf8Json = File.ReadAllBytes(fileName);
+                    var utf8JsonReader = new Utf8JsonReader(utf8Json, allowTrailingCommasInJsonReader);
+                    var db = JsonSerializer.Deserialize<JsonUserDatabase>(ref utf8JsonReader, exchangeJsonSerializerOptions);
                     db.FileName = fileName;
                     return db;
                 }
             }
             catch
             {
-
+                Utils.LogWarning("User database {0} was not found.", fileName);
             }
             return new JsonUserDatabase(fileName);
         }
@@ -78,22 +84,70 @@ namespace Opc.Ua.Server.UserDatabase
         /// <summary>
         /// Save the complete database.
         /// </summary>
-        public override void Save()
+        protected override void Save()
         {
-            string json = JsonConvert.SerializeObject(this, Formatting.Indented);
-            File.WriteAllText(m_fileName, json);
+            var utf8Json = JsonSerializer.SerializeToUtf8Bytes<JsonUserDatabase>(this, exchangeJsonSerializerOptions);
+            File.WriteAllBytes(FileName, utf8Json);
         }
 
         /// <summary>
         /// Get or set the filename.
         /// </summary>
-        [JsonIgnore]
-        public string FileName { get { return m_fileName; } private set { m_fileName = value; } }
+        [IgnoreDataMember, JsonIgnore]
+        public string FileName { get; private set; }
         #endregion
 
         #region Private Fields
-        [JsonIgnore]
-        string m_fileName;
+        private static readonly JsonSerializerOptions exchangeJsonSerializerOptions = new JsonSerializerOptions {
+            AllowTrailingCommas = true,
+            Converters =
+            {
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
+            },
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+            TypeInfoResolver = new SystemRuntimeSerializationAttributeResolver(),
+        };
+
+        private static readonly JsonReaderOptions allowTrailingCommasInJsonReader = new JsonReaderOptions {
+            AllowTrailingCommas = true,
+        };
+
+        private class SystemRuntimeSerializationAttributeResolver : DefaultJsonTypeInfoResolver
+        {
+            public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+            {
+                JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
+
+                if (jsonTypeInfo.Kind == JsonTypeInfoKind.Object &&
+                    type.GetCustomAttribute<DataContractAttribute>() is not null)
+                {
+                    jsonTypeInfo.Properties.Clear();
+
+                    foreach ((PropertyInfo propertyInfo, DataMemberAttribute attr) in type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        .Select((prop) => (prop, prop.GetCustomAttribute<DataMemberAttribute>() as DataMemberAttribute))
+                        .Where((x) => x.Item2 != null)
+                        .OrderBy((x) => x.Item2!.Order))
+                    {
+                        JsonPropertyInfo jsonPropertyInfo = jsonTypeInfo.CreateJsonPropertyInfo(propertyInfo.PropertyType, attr.Name ?? propertyInfo.Name);
+                        jsonPropertyInfo.Get =
+                            propertyInfo.CanRead
+                            ? propertyInfo.GetValue
+                            : null;
+
+                        jsonPropertyInfo.Set = propertyInfo.CanWrite
+                            ? (obj, value) => propertyInfo.SetValue(obj, value)
+                            : null;
+
+                        jsonTypeInfo.Properties.Add(jsonPropertyInfo);
+                    }
+                }
+
+                return jsonTypeInfo;
+            }
+        }
         #endregion
     }
 }

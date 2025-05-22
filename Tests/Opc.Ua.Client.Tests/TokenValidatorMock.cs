@@ -27,7 +27,6 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-using Opc.Ua;
 using Quickstarts.ReferenceServer;
 
 namespace Opc.Ua.Client.Tests
@@ -35,7 +34,7 @@ namespace Opc.Ua.Client.Tests
     public class TokenValidatorMock : ITokenValidator
     {
         public IssuedIdentityToken LastIssuedToken { get; set; }
-            
+
         public IUserIdentity ValidateToken(IssuedIdentityToken issuedToken)
         {
             this.LastIssuedToken = issuedToken;
