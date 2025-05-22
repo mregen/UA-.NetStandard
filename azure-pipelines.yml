@@ -50,6 +50,7 @@ stages:
       poolImage: 'windows-2022'
       jobnamesuffix: win2022
   - template: .azurepipelines/sln.yml
+    condition: false
     parameters:
       poolImage: 'windows-2019'
       jobnamesuffix: win2019
