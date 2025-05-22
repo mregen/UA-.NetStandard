@@ -275,8 +275,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible)
-);
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.NonReversible));
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.NonReversible);
@@ -296,8 +295,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
             object randomData = DataGenerator.GetRandom(builtInType);
             if (builtInType == BuiltInType.DiagnosticInfo)
             {
-                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose)
-);
+                NUnit.Framework.Assert.Throws<ServiceResultException>(() => EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.ArraySegmentStream, randomData, JsonEncodingType.Verbose));
                 return;
             }
             string json = EncodeDataValue(EncodingType.Json, builtInType, MemoryStreamType.MemoryStream, randomData, JsonEncodingType.Verbose);

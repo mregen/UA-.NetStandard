@@ -44,36 +44,6 @@ namespace Opc.Ua.Server
         /// <summary>
         /// Initializes the object with its node type.
         /// </summary>
-        [Obsolete("Use MonitoredItem constructor without the session parameter.")]
-        public MonitoredItem(
-            IServerInternal server,
-            INodeManager nodeManager,
-            object mangerHandle,
-            uint subscriptionId,
-            uint id,
-            Session session,
-            ReadValueId itemToMonitor,
-            DiagnosticsMasks diagnosticsMasks,
-            TimestampsToReturn timestampsToReturn,
-            MonitoringMode monitoringMode,
-            uint clientHandle,
-            MonitoringFilter originalFilter,
-            MonitoringFilter filterToUse,
-            Range range,
-            double samplingInterval,
-            uint queueSize,
-            bool discardOldest,
-            double sourceSamplingInterval)
-         : this(server, nodeManager, mangerHandle, subscriptionId,
-            id, itemToMonitor, diagnosticsMasks, timestampsToReturn, monitoringMode,
-            clientHandle, originalFilter, filterToUse, range, samplingInterval,
-            queueSize, discardOldest, sourceSamplingInterval)
-        {
-        }
-
-        /// <summary>
-        /// Initializes the object with its node type.
-        /// </summary>
         public MonitoredItem(
             IServerInternal server,
             INodeManager nodeManager,
@@ -1076,27 +1046,6 @@ namespace Opc.Ua.Server
                 m_events.Add(fields);
                 m_readyToPublish = true;
                 m_readyToTrigger = true;
-            }
-        }
-
-        /// <summary>
-        /// Whether the item has notifications that are ready to publish.
-        /// </summary>
-        [Obsolete("Not used - Use IsReadyToPublish")]
-        public virtual bool ReadyToPublish
-        {
-            get
-            {
-                lock (m_lock)
-                {
-                    // only publish if reporting.
-                    if (m_monitoringMode != MonitoringMode.Reporting)
-                    {
-                        return false;
-                    }
-
-                    return m_readyToPublish;
-                }
             }
         }
 

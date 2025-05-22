@@ -114,10 +114,10 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
             var appCertificate = GetTestCert();
             Assert.NotNull(appCertificate);
             Assert.True(appCertificate.HasPrivateKey);
-            appCertificate.AddToStore(
+            await appCertificate.AddToStoreAsync(
                     CertificateStoreType.X509Store,
                     storePath
-                );
+                ).ConfigureAwait(false);
             using (var publicKey = X509CertificateLoader.LoadCertificate(appCertificate.RawData))
             {
                 Assert.NotNull(publicKey);
@@ -153,15 +153,16 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
             Assert.NotNull(appCertificate);
             Assert.True(appCertificate.HasPrivateKey);
 
-            string password = Guid.NewGuid().ToString();
+            var password = Guid.NewGuid().ToString().ToCharArray();
+
             // pki directory root for app cert
             var pkiRoot = Path.GetTempPath() + Path.GetRandomFileName() + Path.DirectorySeparatorChar;
             var storePath = pkiRoot + "own";
             var certificateStoreIdentifier = new CertificateStoreIdentifier(storePath, false);
             const string storeType = CertificateStoreType.Directory;
-            appCertificate.AddToStore(
+            await appCertificate.AddToStoreAsync(
                 certificateStoreIdentifier, password
-                );
+                ).ConfigureAwait(false);
 
             using (var publicKey = X509CertificateLoader.LoadCertificate(appCertificate.RawData))
             {
@@ -182,13 +183,13 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
 
                 {
                     // check invalid password fails to load
-                    var nullKey = await id.LoadPrivateKey("123").ConfigureAwait(false);
+                    var nullKey = await id.LoadPrivateKey("123".ToCharArray()).ConfigureAwait(false);
                     Assert.IsNull(nullKey);
                 }
 
                 {
                     // check invalid password fails to load
-                    var nullKey = await id.LoadPrivateKeyEx(new CertificatePasswordProvider("123")).ConfigureAwait(false);
+                    var nullKey = await id.LoadPrivateKeyEx(new CertificatePasswordProvider("123".ToCharArray())).ConfigureAwait(false);
                     Assert.IsNull(nullKey);
                 }
 
@@ -214,14 +215,14 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
         public void VerifyInvalidAppCertX509Store()
         {
             var appCertificate = GetTestCert();
-            _ = Assert.Throws<ServiceResultException>(
-                () => appCertificate.AddToStore(
+            _ = Assert.ThrowsAsync<ServiceResultException>(
+                async () => await appCertificate.AddToStoreAsync(
                     CertificateStoreType.X509Store,
-                    "User\\UA_MachineDefault"));
-            _ = Assert.Throws<ServiceResultException>(
-                () => appCertificate.AddToStore(
+                    "User\\UA_MachineDefault").ConfigureAwait(false));
+            _ = Assert.ThrowsAsync<ServiceResultException>(
+                async () => await appCertificate.AddToStoreAsync(
                     CertificateStoreType.X509Store,
-                    "System\\UA_MachineDefault"));
+                    "System\\UA_MachineDefault").ConfigureAwait(false));
         }
 
         /// <summary>

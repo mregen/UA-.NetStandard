@@ -522,7 +522,7 @@ namespace Opc.Ua.Schema.Binary
         /// <summary>
         /// Well known embedded binary schemas.
         /// </summary>
-        protected readonly static string[][] WellKnownDictionaries = new string[][]
+        protected static readonly string[][] WellKnownDictionaries = new string[][]
         {
             new string[] { Namespaces.OpcBinarySchema,   "Opc.Ua.Types.Schemas.StandardTypes.bsd" },
             new string[] { Namespaces.OpcUaBuiltInTypes, "Opc.Ua.Types.Schemas.BuiltInTypes.bsd"  },

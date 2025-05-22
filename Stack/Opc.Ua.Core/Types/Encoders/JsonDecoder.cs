@@ -1125,15 +1125,7 @@ namespace Opc.Ua
 
             if (token is string text)
             {
-                QualifiedName qn;
-                try
-                {
-                    qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable);
-                }
-                catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadInvalidArgument)
-                {
-                    throw ServiceResultException.Create(StatusCodes.BadDecodingError, sre, "Failed to decode QualifiedName: {0}", sre.Message);
-                }
+                QualifiedName qn = QualifiedName.Parse(m_context, text, UpdateNamespaceTable, true);
 
                 if (qn.NamespaceIndex != 0)
                 {
@@ -2645,7 +2637,6 @@ namespace Opc.Ua
                 }
 
                 Matrix matrix = null;
-
                 switch (builtInType)
                 {
                     case BuiltInType.Boolean:

@@ -30,6 +30,7 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua.Configuration;
 using Opc.Ua.Gds.Client;
@@ -62,7 +63,7 @@ namespace Opc.Ua.Gds.Tests
             };
 #if USE_FILE_CONFIG
             // load the application configuration.
-            Config = await application.LoadApplicationConfiguration(false).ConfigureAwait(false);
+            Config = await application.LoadApplicationConfigurationAsync(false).ConfigureAwait(false);
 #else
             string root = Path.Combine("%LocalApplicationData%", "OPC");
             string pkiRoot = Path.Combine(root, "pki");
@@ -106,7 +107,7 @@ namespace Opc.Ua.Gds.Tests
                 .Create().ConfigureAwait(false);
 #endif
             // check the application certificate.
-            bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");
@@ -118,15 +119,16 @@ namespace Opc.Ua.Gds.Tests
             m_client = new ServerPushConfigurationClient(application.ApplicationConfiguration) {
                 EndpointUrl = TestUtils.PatchOnlyGDSEndpointUrlPort(clientConfiguration.ServerUrl, port)
             };
-            if (String.IsNullOrEmpty(clientConfiguration.AppUserName))
+
+            if (string.IsNullOrEmpty(clientConfiguration.AppUserName))
             {
                 AppUser = new UserIdentity(new AnonymousIdentityToken());
             }
             else
             {
-                AppUser = new UserIdentity(clientConfiguration.AppUserName, clientConfiguration.AppPassword);
+                AppUser = new UserIdentity(clientConfiguration.AppUserName, Encoding.UTF8.GetBytes(clientConfiguration.AppPassword));
             }
-            SysAdminUser = new UserIdentity(clientConfiguration.SysAdminUserName, clientConfiguration.SysAdminPassword);
+            SysAdminUser = new UserIdentity(clientConfiguration.SysAdminUserName, Encoding.UTF8.GetBytes(clientConfiguration.SysAdminPassword));
             TempStorePath = clientConfiguration.TempStorePath;
         }
 

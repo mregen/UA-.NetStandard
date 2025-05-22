@@ -329,6 +329,7 @@ namespace Opc.Ua.Client.Tests
                 .AsClient()
                 .AddSecurityConfiguration(ClientFixture.Config.SecurityConfiguration.ApplicationCertificate.SubjectName)
                 .Create().ConfigureAwait(false);
+            Assert.NotNull(config);
         }
 
         [Theory, Order(200)]
@@ -380,7 +381,7 @@ namespace Opc.Ua.Client.Tests
         }
 
         [Test, Order(204)]
-        public async Task ConnectAndCloseAsyncReadAfterCloseSessionReconnect()
+        public async Task ConnectAndCloseAsyncReadAfterCloseSessionReconnectAsync()
         {
             var securityPolicy = SecurityPolicies.Basic256Sha256;
             using (var session = await ClientFixture.ConnectAsync(ServerUrl, securityPolicy, Endpoints).ConfigureAwait(false))
@@ -515,12 +516,12 @@ namespace Opc.Ua.Client.Tests
         [Theory, Order(220)]
         public async Task ConnectJWT(string securityPolicy)
         {
-            var identityToken = "fakeTokenString";
+            var identityToken = "fakeTokenString"u8.ToArray();
 
             var issuedToken = new IssuedIdentityToken() {
                 IssuedTokenType = IssuedTokenType.JWT,
                 PolicyId = Profiles.JwtUserToken,
-                DecryptedTokenData = Encoding.UTF8.GetBytes(identityToken)
+                DecryptedTokenData = identityToken
             };
 
             var userIdentity = new UserIdentity(issuedToken);
@@ -529,7 +530,7 @@ namespace Opc.Ua.Client.Tests
             Assert.NotNull(session);
             Assert.NotNull(TokenValidator.LastIssuedToken);
 
-            var receivedToken = Encoding.UTF8.GetString(TokenValidator.LastIssuedToken.DecryptedTokenData);
+            var receivedToken = TokenValidator.LastIssuedToken.DecryptedTokenData;
             Assert.AreEqual(identityToken, receivedToken);
 
             var result = session.Close();
@@ -541,35 +542,37 @@ namespace Opc.Ua.Client.Tests
         [Theory, Order(230)]
         public async Task ReconnectJWT(string securityPolicy)
         {
-            UserIdentity CreateUserIdentity(string tokenData)
+            UserIdentity CreateUserIdentity(byte[] tokenData)
             {
                 var issuedToken = new IssuedIdentityToken() {
                     IssuedTokenType = IssuedTokenType.JWT,
                     PolicyId = Profiles.JwtUserToken,
-                    DecryptedTokenData = Encoding.UTF8.GetBytes(tokenData)
+                    DecryptedTokenData = tokenData
                 };
 
                 return new UserIdentity(issuedToken);
             }
 
-            var identityToken = "fakeTokenString";
+            var identityToken = "fakeTokenString"u8.ToArray();
             var userIdentity = CreateUserIdentity(identityToken);
 
             var session = await ClientFixture.ConnectAsync(ServerUrl, securityPolicy, Endpoints, userIdentity).ConfigureAwait(false);
             Assert.NotNull(session);
             Assert.NotNull(TokenValidator.LastIssuedToken);
 
-            var receivedToken = Encoding.UTF8.GetString(TokenValidator.LastIssuedToken.DecryptedTokenData);
+            var receivedToken = TokenValidator.LastIssuedToken.DecryptedTokenData;
             Assert.AreEqual(identityToken, receivedToken);
+            Array.Clear(receivedToken, 0, receivedToken.Length);
 
-            var newIdentityToken = "fakeTokenStringNew";
+            var newIdentityToken = "fakeTokenStringNew"u8.ToArray();
             session.RenewUserIdentity += (s, i) => {
                 return CreateUserIdentity(newIdentityToken);
             };
 
             session.Reconnect();
-            receivedToken = Encoding.UTF8.GetString(TokenValidator.LastIssuedToken.DecryptedTokenData);
+            receivedToken = TokenValidator.LastIssuedToken.DecryptedTokenData;
             Assert.AreEqual(newIdentityToken, receivedToken);
+            Array.Clear(receivedToken, 0, receivedToken.Length);
 
             var result = session.Close();
             Assert.NotNull(result);
@@ -730,7 +733,7 @@ namespace Opc.Ua.Client.Tests
         {
             ServiceResultException sre;
 
-            UserIdentity userIdentity = anonymous ? new UserIdentity() : new UserIdentity("user1", "password");
+            IUserIdentity userIdentity = anonymous ? new UserIdentity() : new UserIdentity("user1", "password"u8);
 
             // the first channel determines the endpoint
             ConfiguredEndpoint endpoint = await ClientFixture.GetEndpointAsync(ServerUrl, securityPolicy, Endpoints).ConfigureAwait(false);
@@ -968,6 +971,8 @@ namespace Opc.Ua.Client.Tests
         {
             // Test Read a DataType Node, the nodeclass is known
             Session.ReadNodes(new NodeIdCollection() { DataTypeIds.ProgramDiagnosticDataType }, NodeClass.DataType, out IList<Node> nodes, out IList<ServiceResult> errors, false);
+            Assert.NotNull(errors);
+            Assert.NotNull(nodes);
             ValidateDataTypeDefinition(nodes[0]);
         }
 
@@ -1425,9 +1430,9 @@ namespace Opc.Ua.Client.Tests
                 return default;
             }
 
-            ActivityTraceId traceId = default;
-            ActivitySpanId spanId = default;
-            ActivityTraceFlags traceFlags = ActivityTraceFlags.None;
+            ActivityTraceId traceId;
+            ActivitySpanId spanId;
+            ActivityTraceFlags traceFlags;
 
             foreach (var item in parameters.Parameters)
             {
@@ -1539,6 +1544,7 @@ namespace Opc.Ua.Client.Tests
             Assert.AreEqual(nodes.Count, errors2.Count);
 
             IList<VariableNode> variableNodes = nodeCollection.Cast<VariableNode>().ToList();
+            Assert.NotNull(variableNodes);
 
             // test build info contains the equal values as the properties
             var buildInfo = (values[0].Value as ExtensionObject)?.Body as BuildInfo;

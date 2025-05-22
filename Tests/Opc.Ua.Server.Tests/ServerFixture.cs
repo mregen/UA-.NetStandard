@@ -219,7 +219,7 @@ namespace Opc.Ua.Server.Tests
             }
 
             // check the application certificate.
-            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificate(
+            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificateAsync(
                 true, CertificateFactory.DefaultKeySize, CertificateFactory.DefaultLifeTime).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
@@ -232,7 +232,7 @@ namespace Opc.Ua.Server.Tests
             {
                 Quickstarts.Servers.Utils.AddDefaultNodeManagers(standardServer);
             }
-            await Application.Start(server).ConfigureAwait(false);
+            await Application.StartAsync(server).ConfigureAwait(false);
             Server = server;
             Port = port;
         }

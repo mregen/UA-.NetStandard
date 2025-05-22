@@ -105,7 +105,7 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
         public bool NoPrivateKeys => m_innerStore.NoPrivateKeys;
 
         /// <inheritdoc/>
-        public Task Add(X509Certificate2 certificate, string password = null)
+        public Task Add(X509Certificate2 certificate, char[] password = null)
         {
             return m_innerStore.Add(certificate, password);
         }
@@ -156,7 +156,7 @@ namespace Opc.Ua.Core.Tests.Security.Certificates
         public bool SupportsLoadPrivateKey => m_innerStore.SupportsLoadPrivateKey;
 
         /// <inheritdoc/>
-        public Task<X509Certificate2> LoadPrivateKey(string thumbprint, string subjectName, string password)
+        public X509Certificate2 LoadPrivateKey(string thumbprint, string subjectName, ReadOnlySpan<char> password)
             => m_innerStore.LoadPrivateKey(thumbprint, subjectName, password);
 
         /// <inheritdoc/>

@@ -11,11 +11,15 @@
 */
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+
+#if NET8_0_OR_GREATER
+using System.Collections.Frozen;
+#endif
 
 namespace Opc.Ua
 {
@@ -70,7 +74,7 @@ namespace Opc.Ua
         /// <summary>
         /// Creates a dictionary of browse names for the attributes.
         /// </summary>
-        private static readonly Lazy<FrozenDictionary<string, string>> SecurityPolicyUriNames = new(CreateSecurityPolicyUriNamesDictionary);
+        private static readonly Lazy<ReadOnlyDictionary<string, string>> SecurityPolicyUriNames = new(CreateSecurityPolicyUriNamesDictionary);
 
         /// <summary>
         /// Returns the uri associated with the display name.
@@ -144,21 +148,21 @@ namespace Opc.Ua
         /// <summary>
         /// Encrypts the text using the SecurityPolicyUri and returns the result.
         /// </summary>
-        public static EncryptedData Encrypt(X509Certificate2 certificate, string securityPolicyUri, byte[] plainText)
+        public static EncryptedData Encrypt(X509Certificate2 certificate, string securityPolicyUri, ReadOnlySpan<byte> plainText)
         {
-            EncryptedData encryptedData = new EncryptedData();
-
-            encryptedData.Algorithm = null;
-            encryptedData.Data = plainText;
+            EncryptedData encryptedData = new EncryptedData {
+                Algorithm = null,
+                Data = plainText.IsEmpty ? null : plainText.ToArray()
+            };
 
             // check if nothing to do.
-            if (plainText == null)
+            if (plainText.IsEmpty)
             {
                 return encryptedData;
             }
 
             // nothing more to do if no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri))
+            if (string.IsNullOrEmpty(securityPolicyUri))
             {
                 return encryptedData;
             }
@@ -191,7 +195,7 @@ namespace Opc.Ua
 
                 case SecurityPolicies.None:
                 {
-                    break;
+                    return encryptedData;
                 }
 
                 default:
@@ -218,7 +222,7 @@ namespace Opc.Ua
             }
 
             // nothing more to do if no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri))
+            if (string.IsNullOrEmpty(securityPolicyUri))
             {
                 return dataToDecrypt.Data;
             }
@@ -257,7 +261,7 @@ namespace Opc.Ua
 
                 case SecurityPolicies.None:
                 {
-                    if (String.IsNullOrEmpty(dataToDecrypt.Algorithm))
+                    if (string.IsNullOrEmpty(dataToDecrypt.Algorithm))
                     {
                         return dataToDecrypt.Data;
                     }
@@ -293,7 +297,7 @@ namespace Opc.Ua
             }
 
             // nothing more to do if no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri))
+            if (string.IsNullOrEmpty(securityPolicyUri))
             {
                 return signatureData;
             }
@@ -355,7 +359,7 @@ namespace Opc.Ua
             }
 
             // nothing more to do if no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri))
+            if (string.IsNullOrEmpty(securityPolicyUri))
             {
                 return true;
             }
@@ -440,7 +444,7 @@ namespace Opc.Ua
             return true;
         }
 
-        private static FrozenDictionary<string, string> CreateSecurityPolicyUriNamesDictionary()
+        private static ReadOnlyDictionary<string, string> CreateSecurityPolicyUriNamesDictionary()
         {
             FieldInfo[] fields = typeof(SecurityPolicies).GetFields(BindingFlags.Public | BindingFlags.Static);
 
@@ -456,8 +460,11 @@ namespace Opc.Ua
 
                 keyValuePairs.Add(field.Name, policyUri);
             }
-
-            return keyValuePairs.ToFrozenDictionary();
+#if NET8_0_OR_GREATER
+            return keyValuePairs.ToFrozenDictionary().AsReadOnly();
+#else
+            return new ReadOnlyDictionary<string, string>(keyValuePairs);
+#endif
         }
         #endregion
     }

@@ -20,7 +20,7 @@ namespace Opc.Ua
     /// <summary>
     /// Describes a certificate store.
     /// </summary>
-    public partial class CertificateStoreIdentifier : IFormattable, ICloneable
+    public partial class CertificateStoreIdentifier : IOpenStore, IFormattable, ICloneable
     {
         #region Constructors
         /// <summary>
@@ -251,23 +251,6 @@ namespace Opc.Ua
 
             store?.Open(this.StorePath, m_noPrivateKeys);
 
-            return store;
-        }
-
-        /// <summary>
-        /// Returns an object to access the store containing the certificates.
-        /// </summary>
-        /// <remarks>
-        /// Opens an instance of the store which contains public keys.
-        /// </remarks>
-        /// <param name="path">location of the store</param>
-        /// <param name="noPrivateKeys">Indicates whether NO private keys are found in the store. Default <c>true</c>.</param>
-        /// <returns>A disposable instance of the <see cref="ICertificateStore"/>.</returns>
-        [Obsolete("Use non static OpenStore method to take advantage of caching.")]
-        public static ICertificateStore OpenStore(string path, bool noPrivateKeys)
-        {
-            ICertificateStore store = CertificateStoreIdentifier.CreateStore(CertificateStoreIdentifier.DetermineStoreType(path));
-            store.Open(path, noPrivateKeys);
             return store;
         }
         #endregion

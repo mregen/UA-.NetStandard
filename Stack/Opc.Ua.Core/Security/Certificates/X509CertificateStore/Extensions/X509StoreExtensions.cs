@@ -88,6 +88,7 @@ namespace Opc.Ua.X509StoreExtensions
 
             X509CrlHelper.AddCrl(handle, crl);
         }
+
         /// <summary>
         /// Deletes the specified CRL from the provided X509 store
         /// </summary>

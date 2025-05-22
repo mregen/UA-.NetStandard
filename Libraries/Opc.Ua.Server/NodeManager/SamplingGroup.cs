@@ -215,10 +215,14 @@ namespace Opc.Ua.Server
                 for (int ii = 0; ii < m_itemsToAdd.Count; ii++)
                 {
                     ISampledDataChangeMonitoredItem monitoredItem = m_itemsToAdd[ii];
-
+#if NETFRAMEWORK || NETSTANDARD2_0
+                    if (!m_items.ContainsKey(monitoredItem.Id))
+                    {
+                        m_items.Add(monitoredItem.Id, monitoredItem);
+#else
                     if (m_items.TryAdd(monitoredItem.Id, monitoredItem))
                     {
-
+#endif
                         if (monitoredItem.MonitoringMode != MonitoringMode.Disabled)
                         {
                             itemsToSample.Add(monitoredItem);

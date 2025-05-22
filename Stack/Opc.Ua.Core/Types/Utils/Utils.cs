@@ -193,7 +193,7 @@ namespace Opc.Ua
 #endif
 
         private static string s_traceFileName = string.Empty;
-        private readonly static object s_traceFileLock = new object();
+        private static readonly object s_traceFileLock = new object();
 
         /// <summary>
         /// The possible trace output mechanisms.
@@ -1313,6 +1313,27 @@ namespace Opc.Ua
             return string.Empty;
         }
 
+        /// <summary>
+        /// Corresponds to <see cref="string.IsNullOrEmpty(string?)"/> for byte[].
+        /// </summary>
+        public static bool Utf8IsNullOrEmpty(ReadOnlySpan<byte> bytes)
+        {
+            if (bytes.IsEmpty)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != ' ')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 #if NET9_0_OR_GREATER
         /// <summary>
         /// Unescapes a URI string using the percent encoding.
@@ -2051,6 +2072,24 @@ namespace Opc.Ua
             }
 
             if (Object.ReferenceEquals(value1, null) || Object.ReferenceEquals(value2, null))
+            {
+                return false;
+            }
+
+            return value1.SequenceEqual(value2);
+        }
+
+        /// <summary>
+        /// Checks if two T[] values are equal.
+        /// </summary>
+        public static bool IsEqual<T>(ReadOnlySpan<T> value1, ReadOnlySpan<T> value2) where T : unmanaged, IEquatable<T>
+        {
+            if (value1.IsEmpty && value2.IsEmpty)
+            {
+                return true;
+            }
+
+            if (value1.Length != value2.Length)
             {
                 return false;
             }

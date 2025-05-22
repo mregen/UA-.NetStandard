@@ -220,7 +220,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public async virtual Task<StatusCode> CloseAsync(CancellationToken ct = default)
+        public virtual async Task<StatusCode> CloseAsync(CancellationToken ct = default)
         {
             ITransportChannel channel = Interlocked.Exchange(ref m_channel, null);
             if (channel != null)
@@ -354,16 +354,6 @@ namespace Opc.Ua
             {
                 m_authenticationToken = value;
             }
-        }
-
-        /// <summary>
-        /// Updates the header of a service request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        [Obsolete("Must override the version with useDefault parameter.")]
-        protected virtual void UpdateRequestHeader(IServiceRequest request)
-        {
-            UpdateRequestHeader(request, request == null);
         }
 
         /// <summary>

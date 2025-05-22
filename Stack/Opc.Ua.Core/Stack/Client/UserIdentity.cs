@@ -30,7 +30,7 @@ namespace Opc.Ua
         /// </summary>
         public UserIdentity()
         {
-            AnonymousIdentityToken token = new AnonymousIdentityToken();
+            var token = new AnonymousIdentityToken();
             Initialize(token);
         }
 
@@ -39,11 +39,26 @@ namespace Opc.Ua
         /// </summary>
         /// <param name="username">The user name.</param>
         /// <param name="password">The password.</param>
-        public UserIdentity(string username, string password)
+        public UserIdentity(string username, byte[] password)
         {
-            UserNameIdentityToken token = new UserNameIdentityToken();
-            token.UserName = username;
-            token.DecryptedPassword = password;
+            var token = new UserNameIdentityToken {
+                UserName = username,
+                DecryptedPassword = password
+            };
+            Initialize(token);
+        }
+
+        /// <summary>
+        /// Initializes the object with a username and password.
+        /// </summary>
+        /// <param name="username">The user name.</param>
+        /// <param name="password">The password.</param>
+        public UserIdentity(string username, ReadOnlySpan<byte> password)
+        {
+            var token = new UserNameIdentityToken {
+                UserName = username,
+                DecryptedPassword = password.ToArray()
+            };
             Initialize(token);
         }
 
@@ -57,32 +72,32 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate identifier
+        /// Initializes the object with a X509 certificate identifier.
         /// </summary>
         public UserIdentity(CertificateIdentifier certificateId)
-            : this(certificateId, new CertificatePasswordProvider(string.Empty))
+            : this(certificateId, new CertificatePasswordProvider())
         {
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate identifier and a CertificatePasswordProvider
+        /// Initializes the object with a X509 certificate identifier and a CertificatePasswordProvider.
         /// </summary>
         public UserIdentity(CertificateIdentifier certificateId, CertificatePasswordProvider certificatePasswordProvider)
         {
             if (certificateId == null) throw new ArgumentNullException(nameof(certificateId));
 
-            X509Certificate2 certificate = certificateId.LoadPrivateKeyEx(certificatePasswordProvider).Result;
+            X509Certificate2 certificate = certificateId.LoadPrivateKeyEx(certificatePasswordProvider).GetAwaiter().GetResult();
 
             if (certificate == null || !certificate.HasPrivateKey)
             {
-                throw new ServiceResultException("Cannot create User Identity with CertificateIdentifier that does not contain a private key");
+                throw new ServiceResultException("Cannot create User Identity with CertificateIdentifier that does not contain a private key.");
             }
 
             Initialize(certificate);
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate
+        /// Initializes the object with a X509 certificate.
         /// </summary>
         public UserIdentity(X509Certificate2 certificate)
         {
@@ -255,9 +270,10 @@ namespace Opc.Ua
         /// </summary>
         private void Initialize(X509Certificate2 certificate)
         {
-            X509IdentityToken token = new X509IdentityToken();
-            token.CertificateData = certificate.RawData;
-            token.Certificate = certificate;
+            var token = new X509IdentityToken {
+                CertificateData = certificate.RawData,
+                Certificate = certificate
+            };
             Initialize(token);
         }
         #endregion

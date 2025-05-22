@@ -516,8 +516,11 @@ namespace Quickstarts.ReferenceServer
 
                     FolderState dataItemFolder = CreateFolder(daFolder, "DataAccess_DataItem", "DataItem");
                     const string daDataItem = "DataAccess_DataItem_";
-
+#if NET6_0_OR_GREATER
                     foreach (string name in Enum.GetNames<BuiltInType>())
+#else
+                    foreach (string name in Enum.GetNames(typeof(BuiltInType)))
+#endif
                     {
                         DataItemState item = CreateDataItemVariable(dataItemFolder, daDataItem + name, name, Enum.Parse<BuiltInType>(name), ValueRanks.Scalar);
 
@@ -534,9 +537,15 @@ namespace Quickstarts.ReferenceServer
                     FolderState analogItemFolder = CreateFolder(daFolder, "DataAccess_AnalogType", "AnalogType");
                     const string daAnalogItem = "DataAccess_AnalogType_";
 
+#if NET6_0_OR_GREATER
                     foreach (string name in Enum.GetNames<BuiltInType>())
                     {
                         BuiltInType builtInType = Enum.Parse<BuiltInType>(name);
+#else
+                    foreach (string name in Enum.GetNames(typeof(BuiltInType)))
+                    {
+                        BuiltInType builtInType = (BuiltInType)Enum.Parse(typeof(BuiltInType), name);
+#endif
                         if (IsAnalogType(builtInType))
                         {
                             AnalogItemState item = CreateAnalogItemVariable(analogItemFolder, daAnalogItem + name, name, builtInType, ValueRanks.Scalar);

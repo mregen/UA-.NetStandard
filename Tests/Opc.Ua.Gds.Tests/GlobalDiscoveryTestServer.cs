@@ -28,12 +28,14 @@
  * ======================================================================*/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Opc.Ua.Configuration;
 using Opc.Ua.Gds.Server;
 using Opc.Ua.Gds.Server.Database.Linq;
+using Opc.Ua.Server;
 using Opc.Ua.Server.UserDatabase;
 
 namespace Opc.Ua.Gds.Tests
@@ -84,16 +86,16 @@ namespace Opc.Ua.Gds.Tests
                 }
 
                 // always start with clean cert store
-                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.ApplicationCertificate.OpenStore()).ConfigureAwait(false);
-                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.TrustedIssuerCertificates.OpenStore()).ConfigureAwait(false);
-                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.TrustedPeerCertificates.OpenStore()).ConfigureAwait(false);
-                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.RejectedCertificateStore.OpenStore()).ConfigureAwait(false);
+                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.ApplicationCertificate).ConfigureAwait(false);
+                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.TrustedIssuerCertificates).ConfigureAwait(false);
+                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.TrustedPeerCertificates).ConfigureAwait(false);
+                await TestUtils.CleanupTrustList(Config.SecurityConfiguration.RejectedCertificateStore).ConfigureAwait(false);
 
                 Config = await Load(Application, basePort).ConfigureAwait(false);
             }
 
             // check the application certificate.
-            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await Application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");
@@ -131,15 +133,17 @@ namespace Opc.Ua.Gds.Tests
             }
 
             var applicationsDatabase = JsonApplicationsDatabase.Load(databaseStorePath);
-            var usersDatabase = JsonUserDatabase.Load(usersDatabaseStorePath);
+            var userDatabase = JsonUserDatabase.Load(usersDatabaseStorePath);
+
+            RegisterDefaultUsers(userDatabase);
 
             // start the server.
             m_server = new GlobalDiscoverySampleServer(
                 applicationsDatabase,
                 applicationsDatabase,
                 new CertificateGroup(),
-                usersDatabase);
-            await Application.Start(m_server).ConfigureAwait(false);
+                userDatabase);
+            await Application.StartAsync(m_server).ConfigureAwait(false);
 
             ServerState serverState = Server.GetStatus().State;
             if (serverState != ServerState.Running)
@@ -200,11 +204,24 @@ namespace Opc.Ua.Gds.Tests
             }
         }
 
+        /// <summary>
+        /// Creates the default GDS users.
+        /// </summary>
+        private void RegisterDefaultUsers(IUserDatabase userDatabase)
+        {
+            userDatabase.CreateUser("sysadmin", "demo"u8, new List<Role> { GdsRole.CertificateAuthorityAdmin, GdsRole.DiscoveryAdmin, Role.SecurityAdmin, Role.ConfigureAdmin });
+            userDatabase.CreateUser("appadmin", "demo"u8, new List<Role> { Role.AuthenticatedUser, GdsRole.CertificateAuthorityAdmin, GdsRole.DiscoveryAdmin });
+            userDatabase.CreateUser("appuser", "demo"u8, new List<Role> { Role.AuthenticatedUser });
+
+            userDatabase.CreateUser("DiscoveryAdmin", "demo"u8, new List<Role> { Role.AuthenticatedUser, GdsRole.DiscoveryAdmin });
+            userDatabase.CreateUser("CertificateAuthorityAdmin", "demo"u8, new List<Role> { Role.AuthenticatedUser, GdsRole.CertificateAuthorityAdmin });
+        }
+
         private static async Task<ApplicationConfiguration> Load(ApplicationInstance application, int basePort)
         {
 #if !USE_FILE_CONFIG
             // load the application configuration.
-            ApplicationConfiguration config = await application.LoadApplicationConfiguration(true).ConfigureAwait(false);
+            ApplicationConfiguration config = await application.LoadApplicationConfigurationAsync(true).ConfigureAwait(false);
 #else
             string root = Path.Combine("%LocalApplicationData%", "OPC");
             string gdsRoot = Path.Combine(root, "GDS");

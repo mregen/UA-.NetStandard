@@ -2629,14 +2629,11 @@ namespace Opc.Ua.Client
             string securityPolicyUri = m_endpoint.Description.SecurityPolicyUri;
 
             // create the client signature.
-            byte[] dataToSign = Utils.Append(m_serverCertificate != null ? m_serverCertificate.RawData : null, serverNonce);
+            byte[] dataToSign = Utils.Append(m_serverCertificate?.RawData, serverNonce);
             SignatureData clientSignature = SecurityPolicies.Sign(m_instanceCertificate, securityPolicyUri, dataToSign);
 
             // choose a default token.
-            if (identity == null)
-            {
-                identity = new UserIdentity();
-            }
+            identity ??= new UserIdentity();
 
             // check that the user identity is supported by the endpoint.
             UserTokenPolicy identityPolicy = m_endpoint.Description.FindUserTokenPolicy(identity.TokenType, identity.IssuedTokenType);
@@ -2682,9 +2679,8 @@ namespace Opc.Ua.Client
 
             // send the software certificates assigned to the client.
             SignedSoftwareCertificateCollection clientSoftwareCertificates = GetSoftwareCertificates();
-
-            StatusCodeCollection certificateResults = null;
-            DiagnosticInfoCollection certificateDiagnosticInfos = null;
+            StatusCodeCollection certificateResults;
+            DiagnosticInfoCollection certificateDiagnosticInfos;
 
             // activate session.
             ActivateSession(

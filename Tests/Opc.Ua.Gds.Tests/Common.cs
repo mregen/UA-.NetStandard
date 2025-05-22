@@ -232,7 +232,7 @@ namespace Opc.Ua.Gds.Tests
             DomainNames = new StringCollection();
             Subject = null;
             PrivateKeyFormat = "PFX";
-            PrivateKeyPassword = "";
+            PrivateKeyPassword = null;
             Certificate = null;
             PrivateKey = null;
             IssuerCertificates = null;
@@ -243,9 +243,9 @@ namespace Opc.Ua.Gds.Tests
         public NodeId CertificateTypeId;
         public NodeId CertificateRequestId;
         public StringCollection DomainNames;
-        public String Subject;
-        public String PrivateKeyFormat;
-        public String PrivateKeyPassword;
+        public string Subject;
+        public string PrivateKeyFormat;
+        public char[] PrivateKeyPassword;
         public byte[] Certificate;
         public byte[] PrivateKey;
         public byte[][] IssuerCertificates;
@@ -294,24 +294,23 @@ namespace Opc.Ua.Gds.Tests
     {
         private static Random s_random = new Random();
 
-        public static async Task CleanupTrustList(ICertificateStore store, bool dispose = true)
+        public static async Task CleanupTrustList(IOpenStore id)
         {
-            var certs = await store.Enumerate().ConfigureAwait(false);
-            foreach (var cert in certs)
+            using (var store = id.OpenStore())
             {
-                await store.Delete(cert.Thumbprint).ConfigureAwait(false);
-            }
-            if (store.SupportsCRLs)
-            {
-                var crls = await store.EnumerateCRLs().ConfigureAwait(false);
-                foreach (var crl in crls)
+                var certs = await store.Enumerate().ConfigureAwait(false);
+                foreach (var cert in certs)
                 {
-                    await store.DeleteCRL(crl).ConfigureAwait(false);
+                    await store.Delete(cert.Thumbprint).ConfigureAwait(false);
                 }
-            }
-            if (dispose)
-            {
-                store.Dispose();
+                if (store.SupportsCRLs)
+                {
+                    var crls = await store.EnumerateCRLs().ConfigureAwait(false);
+                    foreach (var crl in crls)
+                    {
+                        await store.DeleteCRL(crl).ConfigureAwait(false);
+                    }
+                }
             }
         }
 

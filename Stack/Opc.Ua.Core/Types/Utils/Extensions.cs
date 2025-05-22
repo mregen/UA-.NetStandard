@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2020 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2025 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -27,19 +27,31 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-using Quickstarts.ReferenceServer;
+using System;
 
-namespace Opc.Ua.Client.Tests
+namespace Opc.Ua
 {
-    public class TokenValidatorMock : ITokenValidator
+    /// <summary>
+    /// Defines various static extension utility functions.
+    /// </summary>
+    public static class Extensions
     {
-        public IssuedIdentityToken LastIssuedToken { get; set; }
-
-        public IUserIdentity ValidateToken(IssuedIdentityToken issuedToken)
+#if !NET7_0_OR_GREATER
+        /// <summary>
+        /// Implement EndsWith helper for legacy .NET versions.
+        /// </summary>
+        public static bool EndsWith(this string s, char ch)
         {
-            this.LastIssuedToken = issuedToken;
-
-            return new UserIdentity(issuedToken);
+            return s.EndsWith(ch.ToString(), StringComparison.Ordinal);
         }
+
+        /// <summary>
+        /// Implement StartsWith helper for legacy .NET versions.
+        /// </summary>
+        public static bool StartsWith(this string s, char ch)
+        {
+            return s.StartsWith(ch.ToString(), StringComparison.Ordinal);
+        }
+#endif
     }
 }

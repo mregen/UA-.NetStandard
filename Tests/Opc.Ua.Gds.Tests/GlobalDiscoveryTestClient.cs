@@ -32,6 +32,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua.Configuration;
 using Opc.Ua.Gds.Client;
@@ -80,7 +81,7 @@ namespace Opc.Ua.Gds.Tests
 
 #if USE_FILE_CONFIG
             // load the application configuration.
-            Configuration = await m_application.LoadApplicationConfiguration(false).ConfigureAwait(false);
+            Configuration = await m_application.LoadApplicationConfigurationAsync(false).ConfigureAwait(false);
 #else
             string root = Path.Combine("%LocalApplicationData%", "OPC");
             string pkiRoot = Path.Combine(root, "pki");
@@ -113,7 +114,7 @@ namespace Opc.Ua.Gds.Tests
                 .Create().ConfigureAwait(false);
 #endif
             // check the application certificate.
-            bool haveAppCertificate = await m_application.CheckApplicationInstanceCertificate(true, 0).ConfigureAwait(false);
+            bool haveAppCertificate = await m_application.CheckApplicationInstanceCertificateAsync(true, 0).ConfigureAwait(false);
             if (!haveAppCertificate)
             {
                 throw new Exception("Application instance certificate invalid!");
@@ -131,9 +132,9 @@ namespace Opc.Ua.Gds.Tests
             }
             else
             {
-                AppUser = new UserIdentity(gdsClientConfiguration.AppUserName, gdsClientConfiguration.AppPassword);
+                AppUser = new UserIdentity(gdsClientConfiguration.AppUserName, Encoding.UTF8.GetBytes(gdsClientConfiguration.AppPassword));
             }
-            AdminUser = new UserIdentity(gdsClientConfiguration.AdminUserName, gdsClientConfiguration.AdminPassword);
+            AdminUser = new UserIdentity(gdsClientConfiguration.AdminUserName, Encoding.UTF8.GetBytes(gdsClientConfiguration.AdminPassword));
             Anonymous = new UserIdentity();
         }
 

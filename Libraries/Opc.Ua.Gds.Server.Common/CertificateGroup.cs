@@ -151,7 +151,7 @@ namespace Opc.Ua.Gds.Server
             if (application.ApplicationUri == null) throw new ArgumentNullException(nameof(application.ApplicationUri));
             if (application.ApplicationNames == null) throw new ArgumentNullException(nameof(application.ApplicationNames));
 
-            using (var signingKey = await LoadSigningKeyAsync(Certificate, string.Empty).ConfigureAwait(false))
+            using (var signingKey = await LoadSigningKeyAsync(Certificate, null).ConfigureAwait(false))
             using (var certificate = CertificateFactory.CreateCertificate(
                 application.ApplicationUri,
                 application.ApplicationNames.Count > 0 ? application.ApplicationNames[0].Text : "ApplicationName",
@@ -177,7 +177,7 @@ namespace Opc.Ua.Gds.Server
             }
         }
 
-        public async virtual Task<X509CRL> RevokeCertificateAsync(
+        public virtual async Task<X509CRL> RevokeCertificateAsync(
             X509Certificate2 certificate)
         {
             X509CRL crl = await RevokeCertificateAsync(
@@ -286,7 +286,7 @@ namespace Opc.Ua.Gds.Server
                 }
 
                 DateTime yesterday = DateTime.Today.AddDays(-1);
-                using (var signingKey = await LoadSigningKeyAsync(Certificate, string.Empty).ConfigureAwait(false))
+                using (var signingKey = await LoadSigningKeyAsync(Certificate, null).ConfigureAwait(false))
                 {
                     X500DistinguishedName subjectName = new X500DistinguishedName(info.Subject.GetEncoded());
                     return CertificateBuilder.Create(subjectName)
@@ -364,7 +364,7 @@ namespace Opc.Ua.Gds.Server
         /// <summary>
         /// load the authority signing key.
         /// </summary>
-        public virtual async Task<X509Certificate2> LoadSigningKeyAsync(X509Certificate2 signingCertificate, string signingKeyPassword)
+        public virtual async Task<X509Certificate2> LoadSigningKeyAsync(X509Certificate2 signingCertificate, char[] signingKeyPassword)
         {
             CertificateIdentifier certIdentifier = new CertificateIdentifier(signingCertificate) {
                 StorePath = AuthoritiesStore.StorePath,
@@ -381,7 +381,7 @@ namespace Opc.Ua.Gds.Server
         public static async Task<X509CRL> RevokeCertificateAsync(
             CertificateStoreIdentifier storeIdentifier,
             X509Certificate2 certificate,
-            string issuerKeyFilePassword = null
+            char[] issuerKeyFilePassword = null
             )
         {
             X509CRL updatedCRL = null;

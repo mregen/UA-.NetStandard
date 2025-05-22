@@ -92,20 +92,6 @@
         <HttpsTargetFrameworks>net48</HttpsTargetFrameworks>
       </PropertyGroup>
     </When>
-    <When  Condition="'$(CustomTestTarget)' == 'net6.0'">
-      <PropertyGroup>
-        <AnalysisLevel>preview</AnalysisLevel>
-        <AnalysisMode>all</AnalysisMode>
-        <AnalysisModeStyle>default</AnalysisModeStyle>
-        <AppTargetFrameworks>net6.0</AppTargetFrameworks>
-        <AppTargetFramework>net6.0</AppTargetFramework>
-        <TestsTargetFrameworks>net6.0</TestsTargetFrameworks>
-        <LibTargetFrameworks>net6.0</LibTargetFrameworks>
-        <LibCoreTargetFrameworks>net6.0</LibCoreTargetFrameworks>
-        <LibxTargetFrameworks>net6.0</LibxTargetFrameworks>
-        <HttpsTargetFrameworks>net6.0</HttpsTargetFrameworks>
-      </PropertyGroup>
-    </When>
     <When  Condition="'$(CustomTestTarget)' == 'net8.0'">
       <PropertyGroup>
         <AnalysisLevel>preview</AnalysisLevel>
@@ -159,10 +145,10 @@
         <AppTargetFrameworks>net9.0;net8.0;net48</AppTargetFrameworks>
         <AppTargetFramework>net9.0</AppTargetFramework>
         <TestsTargetFrameworks>net48;net9.0</TestsTargetFrameworks>
-        <LibTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net6.0;net8.0;net9.0</LibTargetFrameworks>
-        <LibCoreTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net6.0;net8.0;net9.0</LibCoreTargetFrameworks>
-        <LibxTargetFrameworks>net462;net472;net48;netstandard2.1;net6.0;net8.0;net9.0</LibxTargetFrameworks>
-        <HttpsTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net6.0;net8.0;net9.0</HttpsTargetFrameworks>
+        <LibTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net9.0</LibTargetFrameworks>
+        <LibCoreTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net9.0</LibCoreTargetFrameworks>
+        <LibxTargetFrameworks>net462;net472;net48;netstandard2.1;net8.0;net9.0</LibxTargetFrameworks>
+        <HttpsTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net9.0</HttpsTargetFrameworks>
       </PropertyGroup>
     </When>
     <!-- Visual Studio 2019, supports .NET Framework 4.8 and .NET Core 3.1 -->
