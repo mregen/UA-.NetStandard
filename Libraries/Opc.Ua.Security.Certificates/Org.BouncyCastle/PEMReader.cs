@@ -29,12 +29,12 @@
 
 #if !NETSTANDARD2_1 && !NET5_0_OR_GREATER
 using System;
-using System.Security.Cryptography;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
+using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Crypto.Parameters;
 
 namespace Opc.Ua.Security.Certificates
 {
@@ -49,19 +49,19 @@ namespace Opc.Ua.Security.Certificates
         /// </summary>
         public static RSA ImportPrivateKeyFromPEM(
             byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<char> password)
         {
             RSA rsaPrivateKey = null;
             Org.BouncyCastle.OpenSsl.PemReader pemReader;
             using (var pemStreamReader = new StreamReader(new MemoryStream(pemDataBlob), Encoding.UTF8, true))
             {
-                if (String.IsNullOrEmpty(password))
+                if (password == null || password.Length == 0)
                 {
                     pemReader = new Org.BouncyCastle.OpenSsl.PemReader(pemStreamReader);
                 }
                 else
                 {
-                    var pwFinder = new Password(password.ToCharArray());
+                    var pwFinder = new Password(password.ToArray());
                     pemReader = new Org.BouncyCastle.OpenSsl.PemReader(pemStreamReader, pwFinder);
                 }
                 try
@@ -116,8 +116,7 @@ namespace Opc.Ua.Security.Certificates
         {
             private readonly char[] m_password;
 
-            public Password(
-                char[] word)
+            public Password(char[] word)
             {
                 this.m_password = (char[])word.Clone();
             }

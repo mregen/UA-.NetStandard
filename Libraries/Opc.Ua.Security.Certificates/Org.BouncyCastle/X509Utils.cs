@@ -56,7 +56,7 @@ namespace Opc.Ua.Security.Certificates.BouncyCastle
             Org.BouncyCastle.X509.X509Certificate certificate,
             string friendlyName,
             AsymmetricKeyParameter privateKey,
-            string passcode,
+            char[] passcode,
             SecureRandom random)
         {
             // create pkcs12 store for cert and private key
@@ -72,7 +72,7 @@ namespace Opc.Ua.Security.Certificates.BouncyCastle
                     friendlyName = GetCertificateCommonName(certificate);
                 }
                 pkcsStore.SetKeyEntry(friendlyName, new AsymmetricKeyEntry(privateKey), chain);
-                pkcsStore.Save(pfxData, passcode.ToCharArray(), random);
+                pkcsStore.Save(pfxData, passcode, random);
                 return pfxData.ToArray();
             }
         }
@@ -181,14 +181,23 @@ namespace Opc.Ua.Security.Certificates.BouncyCastle
         /// <summary>
         /// Create secure temporary passcode.
         /// </summary>
-        internal static string GeneratePasscode()
+        /// <remarks>
+        /// Caller is responsible for clearing the passcode.
+        /// </remarks>
+        internal static char[] GeneratePasscode()
         {
             const int kLength = 18;
             using (var rng = RandomNumberGenerator.Create())
             {
                 byte[] tokenBuffer = new byte[kLength];
                 rng.GetBytes(tokenBuffer);
-                return Convert.ToBase64String(tokenBuffer);
+                var charToken = new char[kLength * 3];
+                int length = Convert.ToBase64CharArray(tokenBuffer, 0, tokenBuffer.Length, charToken, 0, Base64FormattingOptions.None);
+                Array.Clear(tokenBuffer, 0, tokenBuffer.Length);
+                char[] passcode = new char[length];
+                charToken.AsSpan(0, length).CopyTo(passcode);
+                Array.Clear(charToken, 0, charToken.Length);
+                return passcode;
             }
         }
 

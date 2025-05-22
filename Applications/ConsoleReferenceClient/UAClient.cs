@@ -132,7 +132,7 @@ namespace Quickstarts
         /// <summary>
         /// Creates a session with the UA server
         /// </summary>
-        public async Task<bool> ConnectAsync(string serverUrl, bool useSecurity = true, CancellationToken ct = default)
+        public async Task<bool> ConnectAsync(Uri serverUrl, bool useSecurity = true, CancellationToken ct = default)
         {
             if (m_disposed) throw new ObjectDisposedException(nameof(UAClient));
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
@@ -155,7 +155,7 @@ namespace Quickstarts
                             using (var cts = new CancellationTokenSource(30_000))
                             using (var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(ct, cts.Token))
                             {
-                                connection = await m_reverseConnectManager.WaitForConnection(new Uri(serverUrl), null, linkedCTS.Token).ConfigureAwait(false);
+                                connection = await m_reverseConnectManager.WaitForConnection(serverUrl, null, linkedCTS.Token).ConfigureAwait(false);
                                 if (connection == null)
                                 {
                                     throw new ServiceResultException(StatusCodes.BadTimeout, "Waiting for a reverse connection timed out.");
@@ -172,7 +172,7 @@ namespace Quickstarts
                     else
                     {
                         m_output.WriteLine("Connecting to... {0}", serverUrl);
-                        endpointDescription = CoreClientUtils.SelectEndpoint(m_configuration, serverUrl, useSecurity);
+                        endpointDescription = CoreClientUtils.SelectEndpoint(m_configuration, serverUrl.ToString(), useSecurity);
                     }
 
                     // Get the endpoint by connecting to server's discovery endpoint.

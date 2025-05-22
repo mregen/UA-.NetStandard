@@ -98,8 +98,15 @@ namespace Opc.Ua.Security.Certificates
             }
             else
             {
-                string passcode = X509Utils.GeneratePasscode();
-                return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode), passcode);
+                char[] passcode = X509Utils.GeneratePasscode();
+                try
+                {
+                    return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode), passcode);
+                }
+                finally
+                {
+                    Array.Clear(passcode, 0, passcode.Length);
+                }
             }
         }
 
@@ -114,8 +121,15 @@ namespace Opc.Ua.Security.Certificates
             }
             else
             {
-                string passcode = X509Utils.GeneratePasscode();
-                return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode, signatureFactory), passcode);
+                char[] passcode = X509Utils.GeneratePasscode();
+                try
+                {
+                    return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode, signatureFactory), passcode);
+                }
+                finally
+                {
+                    Array.Clear(passcode, 0, passcode.Length);
+                }
             }
         }
 
@@ -142,7 +156,7 @@ namespace Opc.Ua.Security.Certificates
             X509Certificate2 certificate,
             string friendlyName,
             RSA privateKey,
-            string passcode)
+            char[] passcode)
         {
             Org.BouncyCastle.X509.X509Certificate x509 = new X509CertificateParser().ReadCertificate(certificate.RawData);
             using (var cfrg = new CryptoApiRandomGenerator())
@@ -428,7 +442,7 @@ namespace Opc.Ua.Security.Certificates
         /// <returns>
         /// Returns the Pfx with certificate and private key.
         /// </returns>
-        private byte[] CreatePfxForRSA(string passcode, ISignatureFactory signatureFactory = null)
+        private byte[] CreatePfxForRSA(char[] passcode, ISignatureFactory signatureFactory = null)
         {
             // Cases locked out by API flow
             Debug.Assert(m_rsaPublicKey == null, "A public key is not supported for the certificate.");

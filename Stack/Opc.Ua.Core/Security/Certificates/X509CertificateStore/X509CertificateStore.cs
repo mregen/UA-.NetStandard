@@ -135,7 +135,7 @@ namespace Opc.Ua
         }
 
         /// <inheritdoc/>
-        public Task Add(X509Certificate2 certificate, string password = null)
+        public Task Add(X509Certificate2 certificate, char[] password = null)
         {
             if (certificate == null) throw new ArgumentNullException(nameof(certificate));
 
@@ -215,9 +215,9 @@ namespace Opc.Ua
 
         /// <inheritdoc/>
         /// <remarks>The LoadPrivateKey special handling is not necessary in this store.</remarks>
-        public Task<X509Certificate2> LoadPrivateKey(string thumbprint, string subjectName, string password)
+        public X509Certificate2 LoadPrivateKey(string thumbprint, string subjectName, ReadOnlySpan<char> password)
         {
-            return Task.FromResult<X509Certificate2>(null);
+            return null;
         }
 
         /// <inheritdoc/>

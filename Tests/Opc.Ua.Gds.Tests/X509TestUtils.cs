@@ -40,7 +40,7 @@ namespace Opc.Ua.Gds.Tests
 
     public static class X509TestUtils
     {
-        public static void VerifyApplicationCertIntegrity(byte[] certificate, byte[] privateKey, string privateKeyPassword, string privateKeyFormat, byte[][] issuerCertificates)
+        public static void VerifyApplicationCertIntegrity(byte[] certificate, byte[] privateKey, char[] privateKeyPassword, string privateKeyFormat, byte[][] issuerCertificates)
         {
             X509Certificate2 newCert = X509CertificateLoader.LoadCertificate(certificate);
             Assert.IsNotNull(newCert);

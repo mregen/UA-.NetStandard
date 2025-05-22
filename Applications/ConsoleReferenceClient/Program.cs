@@ -33,11 +33,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Opc.Ua;
 using Opc.Ua.Client;
+using Opc.Ua.Client.ComplexTypes;
 using Opc.Ua.Configuration;
 
 namespace Quickstarts.ConsoleReferenceClient
@@ -61,17 +63,17 @@ namespace Quickstarts.ConsoleReferenceClient
                 Utils.GetAssemblySoftwareVersion());
 
             // The application name and config file names
-            var applicationName = "ConsoleReferenceClient";
-            var configSectionName = "Quickstarts.ReferenceClient";
-            var usage = $"Usage: dotnet {applicationName}.dll [OPTIONS]";
+            string applicationName = "ConsoleReferenceClient";
+            string configSectionName = "Quickstarts.ReferenceClient";
+            string usage = $"Usage: dotnet {applicationName}.dll [OPTIONS]";
 
             // command line options
             bool showHelp = false;
             bool autoAccept = false;
             string username = null;
-            string userpassword = null;
+            byte[] userpassword = null;
             string userCertificateThumbprint = null;
-            string userCertificatePassword = null;
+            byte[] userCertificatePassword = null;
             bool logConsole = false;
             bool appLog = false;
             bool renewCertificate = false;
@@ -83,25 +85,25 @@ namespace Quickstarts.ConsoleReferenceClient
             bool verbose = false;
             bool subscribe = false;
             bool noSecurity = false;
-            string password = null;
+            byte[] pfxPassword = null;
             int timeout = Timeout.Infinite;
             string logFile = null;
             string reverseConnectUrlString = null;
             bool leakChannels = false;
             bool forever = false;
 
-            Mono.Options.OptionSet options = new Mono.Options.OptionSet {
+            var options = new Mono.Options.OptionSet {
                 usage,
                 { "h|help", "show this message and exit", h => showHelp = h != null },
                 { "a|autoaccept", "auto accept certificates (for testing only)", a => autoAccept = a != null },
                 { "nsec|nosecurity", "select endpoint with security NONE, least secure if unavailable", s => noSecurity = s != null },
                 { "un|username=", "the name of the user identity for the connection", (string u) => username = u },
-                { "up|userpassword=", "the password of the user identity for the connection", (string u) => userpassword = u },
+                { "up|userpassword=", "the pfxPassword of the user identity for the connection", (string u) => userpassword = Encoding.UTF8.GetBytes(u) },
                 { "uc|usercertificate=", "the thumbprint of the user certificate for the user identity", (string u) => userCertificateThumbprint = u },
-                { "ucp|usercertificatepassword=", "the password of the  user certificate for the user identity", (string u) => userCertificatePassword = u },
+                { "ucp|usercertificatepassword=", "the pfxPassword of the  user certificate for the user identity", (string u) => userCertificatePassword = Encoding.UTF8.GetBytes(u) },
                 { "c|console", "log to console", c => logConsole = c != null },
                 { "l|log", "log app output", c => appLog = c != null },
-                { "p|password=", "optional password for private key", (string p) => password = p },
+                { "p|pfxPassword=", "optional pfxPassword for private key", (string p) => pfxPassword = Encoding.UTF8.GetBytes(p) },
                 { "r|renew", "renew application certificate", r => renewCertificate = r != null },
                 { "t|timeout=", "timeout in seconds to exit application", (int t) => timeout = t * 1000 },
                 { "logfile=", "custom file name for log output", l => { if (l != null) { logFile = l; } } },
@@ -122,10 +124,10 @@ namespace Quickstarts.ConsoleReferenceClient
             try
             {
                 // parse command line and set options
-                var extraArg = ConsoleUtils.ProcessCommandLine(output, args, options, ref showHelp, "REFCLIENT", false);
+                string extraArg = ConsoleUtils.ProcessCommandLine(output, args, options, ref showHelp, "REFCLIENT", false);
 
                 // connect Url?
-                Uri serverUrl = new Uri("opc.tcp://localhost:62541/Quickstarts/ReferenceServer");
+                var serverUrl = new Uri("opc.tcp://localhost:62541/Quickstarts/ReferenceServer");
                 if (!string.IsNullOrEmpty(extraArg))
                 {
                     serverUrl = new Uri(extraArg);
@@ -139,22 +141,22 @@ namespace Quickstarts.ConsoleReferenceClient
 
                 // Define the UA Client application
                 ApplicationInstance.MessageDlg = new ApplicationMessageDlg(output);
-                CertificatePasswordProvider PasswordProvider = new CertificatePasswordProvider(password);
-                ApplicationInstance application = new ApplicationInstance {
+                var passwordProvider = new CertificatePasswordProvider(pfxPassword);
+                var application = new ApplicationInstance {
                     ApplicationName = applicationName,
                     ApplicationType = ApplicationType.Client,
                     ConfigSectionName = configSectionName,
-                    CertificatePasswordProvider = PasswordProvider
+                    CertificatePasswordProvider = passwordProvider
                 };
 
                 // load the application configuration.
-                var config = await application.LoadApplicationConfigurationAsync(silent: false).ConfigureAwait(false);
+                ApplicationConfiguration config = await application.LoadApplicationConfigurationAsync(silent: false).ConfigureAwait(false);
 
                 // override logfile
                 if (logFile != null)
                 {
-                    var logFilePath = config.TraceConfiguration.OutputFilePath;
-                    var filename = Path.GetFileNameWithoutExtension(logFilePath);
+                    string logFilePath = config.TraceConfiguration.OutputFilePath;
+                    string filename = Path.GetFileNameWithoutExtension(logFilePath);
                     config.TraceConfiguration.OutputFilePath = logFilePath.Replace(filename, logFile);
                     config.TraceConfiguration.DeleteOnLoad = true;
                     config.TraceConfiguration.ApplySettings();
@@ -187,7 +189,40 @@ namespace Quickstarts.ConsoleReferenceClient
 
                 // wait for timeout or Ctrl-C
                 var quitCTS = new CancellationTokenSource();
-                var quitEvent = ConsoleUtils.CtrlCHandler(quitCTS);
+                ManualResetEvent quitEvent = ConsoleUtils.CtrlCHandler(quitCTS);
+                var userIdentity = new UserIdentity();
+
+                // set user identity of type username/pw
+                if (!string.IsNullOrEmpty(username))
+                {
+                    if (userpassword == null)
+                    {
+                        output.WriteLine("No password provided for user {0}, using empty password.", username);
+                    }
+
+                    userIdentity = new UserIdentity(username, userpassword ?? ""u8);
+
+                    output.WriteLine("Connect with user identity for user {0}", username);
+                }
+
+                // set user identity of type certificate
+                if (!string.IsNullOrEmpty(userCertificateThumbprint))
+                {
+                    CertificateIdentifier userCertificateIdentifier =
+                        await FindUserCertificateIdentifierAsync(userCertificateThumbprint,
+                            application.ApplicationConfiguration.SecurityConfiguration.TrustedUserCertificates).ConfigureAwait(false);
+
+                    if (userCertificateIdentifier != null)
+                    {
+                        userIdentity = new UserIdentity(userCertificateIdentifier, new CertificatePasswordProvider(userCertificatePassword));
+
+                        output.WriteLine("Connect with user certificate with Thumbprint {0}", userCertificateThumbprint);
+                    }
+                    else
+                    {
+                        throw ServiceResultException.Create( StatusCodes.BadUserAccessDenied, "Failed to load user certificate with Thumbprint {0}", userCertificateThumbprint);
+                    }
+                }
 
                 // connect to a server until application stops
                 bool quit = false;
@@ -217,35 +252,15 @@ namespace Quickstarts.ConsoleReferenceClient
                     }
 
                     // create the UA Client object and connect to configured server.
-                    using (UAClient uaClient = new UAClient(application.ApplicationConfiguration, reverseConnectManager, output, ClientBase.ValidateResponse) {
+                    using (var uaClient = new UAClient(application.ApplicationConfiguration, reverseConnectManager, output, ClientBase.ValidateResponse) {
                         AutoAccept = autoAccept,
                         SessionLifeTime = 60_000,
+                        UserIdentity = userIdentity,
                     })
                     {
-                        // set user identity of type username/pw
-                        if (!string.IsNullOrEmpty(username))
-                        {
-                            uaClient.UserIdentity = new UserIdentity(username, userpassword ?? string.Empty);
-                        }
 
-                        // set user identity of type certificate
-                        if (!string.IsNullOrEmpty(userCertificateThumbprint))
-                        {
-                            CertificateIdentifier userCertificateIdentifier =
-                                await FindUserCertificateIdentifierAsync(userCertificateThumbprint,
-                                    application.ApplicationConfiguration.SecurityConfiguration.TrustedUserCertificates).ConfigureAwait(false);
 
-                            if (userCertificateIdentifier != null)
-                            {
-                                uaClient.UserIdentity = new UserIdentity(userCertificateIdentifier, new CertificatePasswordProvider(userCertificatePassword ?? string.Empty));
-                            }
-                            else
-                            {
-                                output.WriteLine($"Failed to load user certificate with Thumbprint {userCertificateThumbprint}");
-                            }
-                        }
-
-                        bool connected = await uaClient.ConnectAsync(serverUrl.ToString(), !noSecurity, quitCTS.Token).ConfigureAwait(false);
+                        bool connected = await uaClient.ConnectAsync(serverUrl, !noSecurity, quitCTS.Token).ConfigureAwait(false);
                         if (connected)
                         {
                             output.WriteLine("Connected! Ctrl-C to quit.");
@@ -258,7 +273,7 @@ namespace Quickstarts.ConsoleReferenceClient
                             var samples = new ClientSamples(output, ClientBase.ValidateResponse, quitEvent, verbose);
                             if (loadTypes)
                             {
-                                var complexTypeSystem = await samples.LoadTypeSystemAsync(uaClient.Session).ConfigureAwait(false);
+                                ComplexTypeSystem complexTypeSystem = await samples.LoadTypeSystemAsync(uaClient.Session).ConfigureAwait(false);
                             }
 
                             if (browseall || fetchall || jsonvalues || managedbrowseall)
@@ -306,15 +321,15 @@ namespace Quickstarts.ConsoleReferenceClient
 
                                 if (jsonvalues && variableIds != null)
                                 {
-                                    var (allValues, results) = await samples.ReadAllValuesAsync(uaClient, variableIds).ConfigureAwait(false);
+                                    (DataValueCollection allValues, IList<ServiceResult> results) = await samples.ReadAllValuesAsync(uaClient, variableIds).ConfigureAwait(false);
                                 }
 
                                 if (subscribe && (browseall || fetchall))
                                 {
                                     // subscribe to 1000 random variables
                                     const int MaxVariables = 1000;
-                                    NodeCollection variables = new NodeCollection();
-                                    Random random = new Random(62541);
+                                    var variables = new NodeCollection();
+                                    var random = new Random(62541);
                                     if (fetchall)
                                     {
                                         variables.AddRange(allNodes
@@ -350,14 +365,14 @@ namespace Quickstarts.ConsoleReferenceClient
 
                                     waitTime = timeout - (int)DateTime.UtcNow.Subtract(start).TotalMilliseconds;
                                     DateTime endTime = waitTime > 0 ? DateTime.UtcNow.Add(TimeSpan.FromMilliseconds(waitTime)) : DateTime.MaxValue;
-                                    var variableIterator = variables.GetEnumerator();
+                                    List<Node>.Enumerator variableIterator = variables.GetEnumerator();
                                     while (!quit && endTime > DateTime.UtcNow)
                                     {
                                         if (variableIterator.MoveNext())
                                         {
                                             try
                                             {
-                                                var value = await uaClient.Session.ReadValueAsync(variableIterator.Current.NodeId).ConfigureAwait(false);
+                                                DataValue value = await uaClient.Session.ReadValueAsync(variableIterator.Current.NodeId).ConfigureAwait(false);
                                                 output.WriteLine("Value of {0} is {1}", variableIterator.Current.NodeId, value);
                                             }
                                             catch (Exception ex)
@@ -430,7 +445,7 @@ namespace Quickstarts.ConsoleReferenceClient
             // get user certificate with matching thumbprint
             X509Certificate2Collection userCertifiactesWithMatchingThumbprint =
                 (await trustedUserCertificates
-                .GetCertificates().ConfigureAwait(false))
+                .GetCertificatesAsync().ConfigureAwait(false))
                 .Find(X509FindType.FindByThumbprint, thumbprint, false);
 
             // create Certificate Identifier

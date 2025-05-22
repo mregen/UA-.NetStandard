@@ -10,6 +10,8 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
+using System;
+
 namespace Opc.Ua
 {
     #region ICertificatePasswordProvider Interface
@@ -22,7 +24,7 @@ namespace Opc.Ua
         /// Return the password for a certificate private key.
         /// </summary>
         /// <param name="certificateIdentifier">The certificate identifier for which the password is needed.</param>
-        string GetPassword(CertificateIdentifier certificateIdentifier);
+        char[] GetPassword(CertificateIdentifier certificateIdentifier);
     }
     #endregion
 
@@ -33,23 +35,45 @@ namespace Opc.Ua
     public class CertificatePasswordProvider : ICertificatePasswordProvider
     {
         /// <summary>
-        /// Constructor which takes a password string.
+        /// Default constructor.
+        /// </summary>
+        public CertificatePasswordProvider()
+        {
+            m_password = Array.Empty<char>();
+        }
+
+        /// <summary>
+        /// Constructor which takes a UTF8 encoded password.
+        /// </summary>
+        /// <param name="password">The UTF8 encoded password.</param>
+        public CertificatePasswordProvider(byte[] password)
+        {
+            var charToken = new char[password.Length * 3];
+            int length = Convert.ToBase64CharArray(password, 0, password.Length, charToken, 0, Base64FormattingOptions.None);
+            char[] passcode = new char[length];
+            charToken.CopyTo(passcode, 0);
+            Array.Clear(charToken, 0, charToken.Length);
+            m_password = passcode;
+        }
+
+        /// <summary>
+        /// Constructor which takes a UTF8 encoded password.
         /// </summary>
         /// <param name="password"></param>
-        public CertificatePasswordProvider(string password)
+        public CertificatePasswordProvider(ReadOnlySpan<char> password)
         {
-            m_password = password;
+            m_password = password.ToArray();
         }
 
         /// <summary>
         /// Return the password used for the certificate.
         /// </summary>
-        public string GetPassword(CertificateIdentifier certificateIdentifier)
+        public char[] GetPassword(CertificateIdentifier certificateIdentifier)
         {
             return m_password;
         }
 
-        private string m_password;
+        private char[] m_password;
     }
     #endregion
 }
