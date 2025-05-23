@@ -699,7 +699,7 @@ namespace Opc.Ua.Server
             }
             else
             {
-                certificateTypeIds = new NodeId[0];
+                certificateTypeIds = Array.Empty<NodeId>();
                 certificates = Array.Empty<byte[]>();
             }
 

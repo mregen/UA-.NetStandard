@@ -501,7 +501,7 @@ namespace Opc.Ua.Configuration.Tests
                     await issuerCert.AddToStoreAsync(
                         applicationInstance.ApplicationConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StoreType,
                         applicationInstance.ApplicationConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath
-                        );
+                        ).ConfigureAwait(false);
                 }
             }
 
@@ -513,7 +513,7 @@ namespace Opc.Ua.Configuration.Tests
                 await testCert.AddToStoreAsync(
                     applicationCertificate.StoreType,
                     applicationCertificate.StorePath
-                    );
+                    ).ConfigureAwait(false);
                 publicKey = X509CertificateLoader.LoadCertificate(testCert.RawData);
             }
 

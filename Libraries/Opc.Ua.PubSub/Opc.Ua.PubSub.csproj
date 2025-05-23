@@ -32,12 +32,12 @@
   </ItemGroup>
  
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
-    <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
+    <PackageReference Include="MQTTnet" />
+    <PackageReference Include="System.Net.NetworkInformation" />
   </ItemGroup>
 
   <Target Name="GetPackagingOutputs" />

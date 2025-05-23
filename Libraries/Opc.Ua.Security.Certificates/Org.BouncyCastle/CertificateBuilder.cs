@@ -46,6 +46,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
+using Org.BouncyCastle.X509.Extension;
 
 namespace Opc.Ua.Security.Certificates
 {
@@ -314,7 +315,7 @@ namespace Opc.Ua.Security.Certificates
             {
                 // Subject key identifier
                 cg.AddExtension(Org.BouncyCastle.Asn1.X509.X509Extensions.SubjectKeyIdentifier.Id, false,
-                new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectPublicKey)));
+                    X509ExtensionUtilities.CreateSubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectPublicKey)));
             }
 
             // Basic constraints
@@ -353,8 +354,10 @@ namespace Opc.Ua.Security.Certificates
             if (X509Extensions.FindExtension<X509AuthorityKeyIdentifierExtension>(m_extensions) == null)
             {
                 cg.AddExtension(Org.BouncyCastle.Asn1.X509.X509Extensions.AuthorityKeyIdentifier.Id, false,
-                new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerPublicKey),
-                    new GeneralNames(new GeneralName(m_issuerIssuerAKI)), issuerSerialNumber));
+                    X509ExtensionUtilities.CreateAuthorityKeyIdentifier(
+                        issuerPublicKey,
+                        new GeneralNames(new GeneralName(m_issuerIssuerAKI)),
+                        issuerSerialNumber));
             }
 
             if (!m_isCA)

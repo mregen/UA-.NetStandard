@@ -55,7 +55,7 @@ namespace Opc.Ua.Security.Certificates
             Org.BouncyCastle.OpenSsl.PemReader pemReader;
             using (var pemStreamReader = new StreamReader(new MemoryStream(pemDataBlob), Encoding.UTF8, true))
             {
-                if (password == null || password.Length == 0)
+                if (password.IsEmpty || password.IsWhiteSpace())
                 {
                     pemReader = new Org.BouncyCastle.OpenSsl.PemReader(pemStreamReader);
                 }

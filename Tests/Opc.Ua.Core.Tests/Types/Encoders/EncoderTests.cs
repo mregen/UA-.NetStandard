@@ -936,9 +936,7 @@ namespace Opc.Ua.Core.Tests.Types.Encoders
                         {
                             // check such matrix cannot be initialized when encoded into Json format
                             // the exception is thrown while trying to WriteStructureMatrix into the arrray 
-                            Assert.Throws(
-                                typeof(ServiceResultException),
-                                () => {
+                            NUnit.Framework.Assert.Throws<ServiceResultException>(() => {
                                     encoder.WriteArray(builtInType.ToString(), matrix, matrix.TypeInfo.ValueRank, builtInType);
                                 });
                             return;

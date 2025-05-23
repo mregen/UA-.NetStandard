@@ -181,10 +181,7 @@ namespace Quickstarts
                 m_output.WriteLine("Writing nodes...");
 
                 // Call Write Service
-                session.Write(null,
-                                nodesToWrite,
-                                out results,
-                                out diagnosticInfos);
+                session.Write(null, nodesToWrite, out results, out diagnosticInfos);
 
                 // Validate the response
                 m_validateResponse(results, nodesToWrite);
@@ -1007,7 +1004,7 @@ namespace Quickstarts
                 }
                 catch (ServiceResultException sre) when (sre.StatusCode == StatusCodes.BadEncodingLimitsExceeded)
                 {
-                    m_output.WriteLine("Retry to read the values due to error:", sre.Message);
+                    m_output.WriteLine("Retry to read the values due to error: {0}", sre.Message);
                     retrySingleRead = !retrySingleRead;
                 }
             } while (retrySingleRead);

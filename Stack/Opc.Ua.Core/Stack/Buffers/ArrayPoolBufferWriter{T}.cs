@@ -139,7 +139,6 @@ namespace Opc.Ua.Buffers
                 throw new ArgumentOutOfRangeException(nameof(sizeHint), $"{nameof(sizeHint)} must be non-negative.");
             }
 
-
             int remainingSpace = CheckAndAllocateBuffer(sizeHint);
             return _currentBuffer.AsSpan(_offset, remainingSpace);
         }

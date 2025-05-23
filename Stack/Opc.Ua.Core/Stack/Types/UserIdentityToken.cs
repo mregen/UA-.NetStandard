@@ -14,6 +14,7 @@ using System;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Opc.Ua
 {
@@ -81,7 +82,7 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
-        [IgnoreDataMember]
+        [IgnoreDataMember, JsonIgnore]
         public byte[] DecryptedPassword
         {
             get { return m_decryptedPassword; }
@@ -297,18 +298,6 @@ namespace Opc.Ua
     /// </summary>
     public partial class IssuedIdentityToken
     {
-        /// <summary>
-        /// Ensure the finalizer erases the unencrypted data.
-        /// </summary>
-        ~IssuedIdentityToken()
-        {
-            if (m_decryptedTokenData != null)
-            {
-                Array.Clear(m_decryptedTokenData, 0, m_decryptedTokenData.Length);
-                m_decryptedTokenData = null;
-            }
-        }
-
         #region Public Properties
         /// <summary>
         /// The type of issued token.
@@ -322,34 +311,11 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
-        /// <remarks>
-        /// Internally always creates a deep copy on get and set, so that the user
-        /// can clear the token data after using or setting it.
-        /// </remarks>
+        [IgnoreDataMember, JsonIgnore]
         public byte[] DecryptedTokenData
         {
-            get
-            {
-                if (m_decryptedTokenData != null)
-                {
-                    var result = new byte[m_decryptedTokenData.Length];
-                    Array.Copy(m_decryptedTokenData, result, m_decryptedTokenData.Length);
-                    return result;
-                }
-                return null;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    m_decryptedTokenData = new byte[value.Length];
-                    Array.Copy(value, m_decryptedTokenData, value.Length);
-                }
-                else
-                {
-                    m_decryptedTokenData = null;
-                }
-            }
+            get { return m_decryptedTokenData; }
+            set { m_decryptedTokenData = value; }
         }
         #endregion
 

@@ -2336,6 +2336,7 @@ namespace Opc.Ua.Client
                                 {
                                     datachange.PublishTime = message.PublishTime;
                                     datachange.SequenceNumber = message.SequenceNumber;
+                                    datachange.MoreNotifications = message.MoreNotifications;
 
                                     noNotificationsReceived += datachange.MonitoredItems.Count;
 
@@ -2353,6 +2354,7 @@ namespace Opc.Ua.Client
                                 {
                                     events.PublishTime = message.PublishTime;
                                     events.SequenceNumber = message.SequenceNumber;
+                                    events.MoreNotifications = message.MoreNotifications;
 
                                     noNotificationsReceived += events.Events.Count;
 
@@ -2610,12 +2612,13 @@ namespace Opc.Ua.Client
         {
             lock (m_cache)
             {
-                itemsToModify = new List<MonitoredItem>();
-                var updatedMonitoredItems = new Dictionary<uint, MonitoredItem>();
+                int count = clientHandles.Count;
+                itemsToModify = new List<MonitoredItem>(count);
+                var updatedMonitoredItems = new Dictionary<uint, MonitoredItem>(count);
                 foreach (MonitoredItem monitoredItem in m_monitoredItems.Values)
                 {
                     var index = serverHandles.FindIndex(handle => handle == monitoredItem.Status.Id);
-                    if (index >= 0 && index < clientHandles.Count)
+                    if (index >= 0 && index < count)
                     {
                         var clientHandle = clientHandles[index];
                         updatedMonitoredItems[clientHandle] = monitoredItem;
