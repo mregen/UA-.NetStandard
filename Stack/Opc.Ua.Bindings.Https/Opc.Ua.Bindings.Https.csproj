@@ -22,11 +22,11 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net462' OR '$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
       <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+        <PackageReference Include="Microsoft.AspNetCore.Http" />
       </ItemGroup>
     </When>
     <Otherwise>
@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
   <Target Name="GetPackagingOutputs" />

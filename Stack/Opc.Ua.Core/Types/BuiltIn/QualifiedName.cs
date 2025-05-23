@@ -333,9 +333,7 @@ namespace Opc.Ua
                     // prepend the namespace index if the name contains a colon.
                     if (m_name != null)
                     {
-                        int index = m_name.IndexOf(':');
-
-                        if (index != -1)
+                        if (m_name.Contains(':'))
                         {
                             builder.Append("0:");
                         }
