@@ -126,7 +126,7 @@ namespace Opc.Ua.Security.Certificates
         /// <returns>The certificate with a private key.</returns>
         public static X509Certificate2 CreateCertificateFromPKCS12(
             byte[] rawData,
-            string password,
+            ReadOnlySpan<char> password,
             bool noEphemeralKeySet = false
             )
         {
@@ -153,10 +153,7 @@ namespace Opc.Ua.Security.Certificates
                 try
                 {
                     // merge first cert with private key into X509Certificate2
-                    certificate = X509CertificateLoader.LoadPkcs12(
-                        rawData,
-                        password ?? string.Empty,
-                        flag);
+                    certificate = X509CertificateLoader.LoadPkcs12(rawData, password, flag);
 
                     // can we really access the private key?
                     if (VerifyRSAKeyPair(certificate, certificate, true))

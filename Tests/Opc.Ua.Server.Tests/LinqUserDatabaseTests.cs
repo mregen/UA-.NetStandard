@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Opc.Ua.Server;
 using Opc.Ua.Server.UserDatabase;
 using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
@@ -13,55 +12,64 @@ namespace Opc.Ua.Server.Tests
     internal class LinqUserDatabaseTests
     {
         #region Test Methods
-
         [Test]
         public void CreateInvalidUser()
         {
-            //Arrrange
+            // Arrange
             var usersDb = new LinqUserDatabase();
 
-            //Act+ Assert
+            // Act + Assert
             Assert.Throws<ArgumentException>(
-            () => usersDb.CreateUser("", "PW", new List<Role> { Role.AuthenticatedUser }));
+                () => usersDb.CreateUser(null, "PW"u8, new List<Role> { Role.AuthenticatedUser }));
             Assert.Throws<ArgumentException>(
-            () => usersDb.CreateUser("Name", "", new List<Role> { Role.AuthenticatedUser }));
+                () => usersDb.CreateUser("Name", null, new List<Role> { Role.AuthenticatedUser }));
+            Assert.Throws<ArgumentException>(
+                () => usersDb.CreateUser("", "PW"u8, new List<Role> { Role.AuthenticatedUser }));
+            Assert.Throws<ArgumentException>(
+                () => usersDb.CreateUser("Name", ""u8, new List<Role> { Role.AuthenticatedUser }));
         }
 
         [Test]
         public void DeleteExistingUser()
         {
-            //Arrrange
+            // Arrrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
             var result = usersDb.DeleteUser("TestUser");
-            //Assert
+
+            // Assert
             Assert.True(result);
         }
 
         [Test]
         public void DeleteNonExistingUser()
         {
-            //Arrrange
+            // Arrrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
             var result = usersDb.DeleteUser("NoTestUser");
-            //Assert
+
+            // Assert
             Assert.False(result);
         }
 
         [Test]
         public void ChangePwOfExistingUser()
         {
-            //Arrrange
+            // Arrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
-            var result = usersDb.ChangePassword("TestUser", "PW", "newPW");
-            var login = usersDb.CheckCredentials("TestUser", "newPW");
-            var loginOldPW = usersDb.CheckCredentials("TestUser", "PW");
-            //Assert
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
+            var result = usersDb.ChangePassword("TestUser", "PW"u8, "newPW"u8);
+            var login = usersDb.CheckCredentials("TestUser", "newPW"u8);
+            var loginOldPW = usersDb.CheckCredentials("TestUser", "PW"u8);
+
+            // Assert
             Assert.True(result);
             Assert.True(login);
             Assert.False(loginOldPW);
@@ -70,25 +78,29 @@ namespace Opc.Ua.Server.Tests
         [Test]
         public void ChangePwOfNonExistingUser()
         {
-            //Arrrange
+            // Arrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
             var result = usersDb.DeleteUser("NoTestUser");
-            //Assert
+
+            // Assert
             Assert.False(result);
         }
 
         [Test]
         public void CheckPWofExistingUser()
         {
-            //Arrrange
+            // Arrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
-            var result = usersDb.CheckCredentials("TestUser", "PW");
-            var loginWrongPw = usersDb.CheckCredentials("TestUser", "newPW");
-            //Assert
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
+            var result = usersDb.CheckCredentials("TestUser", "PW"u8);
+            var loginWrongPw = usersDb.CheckCredentials("TestUser", "newPW"u8);
+
+            // Assert
             Assert.True(result);
             Assert.False(loginWrongPw);
         }
@@ -96,12 +108,14 @@ namespace Opc.Ua.Server.Tests
         [Test]
         public void CheckPWofNonExistingUser()
         {
-            //Arrrange
+            // Arrange
             var usersDb = new LinqUserDatabase();
-            usersDb.CreateUser("TestUser", "PW", new List<Role> { Role.AuthenticatedUser });
-            //Act
-            var result = usersDb.CheckCredentials("NoTestUser", "PW");
-            //Assert
+            usersDb.CreateUser("TestUser", "PW"u8, new List<Role> { Role.AuthenticatedUser });
+
+            // Act
+            var result = usersDb.CheckCredentials("NoTestUser", "PW"u8);
+
+            // Assert
             Assert.False(result);
         }
         #endregion

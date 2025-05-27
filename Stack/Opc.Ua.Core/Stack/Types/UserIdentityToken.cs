@@ -13,6 +13,8 @@
 using System;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Opc.Ua
 {
@@ -59,11 +61,29 @@ namespace Opc.Ua
     /// </summary>
     public partial class UserNameIdentityToken
     {
+        /// <summary>
+        /// Finalizer for token to erase unencrypted data.
+        /// </summary>
+        ~UserNameIdentityToken()
+        {
+            if (m_decryptedPassword != null)
+            {
+                Array.Clear(m_decryptedPassword, 0, m_decryptedPassword.Length);
+                m_decryptedPassword = null;
+            }
+            if (m_password != null)
+            {
+                Array.Clear(m_password, 0, m_password.Length);
+                m_password = null;
+            }
+        }
+
         #region Public Properties
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
-        public string DecryptedPassword
+        [IgnoreDataMember, JsonIgnore]
+        public byte[] DecryptedPassword
         {
             get { return m_decryptedPassword; }
             set { m_decryptedPassword = value; }
@@ -83,20 +103,22 @@ namespace Opc.Ua
             }
 
             // handle no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
+            if (string.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
             {
-                m_password = Encoding.UTF8.GetBytes(m_decryptedPassword);
+                m_password = m_decryptedPassword;
                 m_encryptionAlgorithm = null;
                 return;
             }
 
             // encrypt the password.
-            byte[] dataToEncrypt = Utils.Append(Encoding.UTF8.GetBytes(m_decryptedPassword), senderNonce);
+            byte[] dataToEncrypt = Utils.Append(m_decryptedPassword, senderNonce);
 
             EncryptedData encryptedData = SecurityPolicies.Encrypt(
                 certificate,
                 securityPolicyUri,
                 dataToEncrypt);
+
+            Array.Clear(dataToEncrypt, 0, dataToEncrypt.Length);
 
             m_password = encryptedData.Data;
             m_encryptionAlgorithm = encryptedData.Algorithm;
@@ -108,16 +130,18 @@ namespace Opc.Ua
         public override void Decrypt(X509Certificate2 certificate, byte[] senderNonce, string securityPolicyUri)
         {
             // handle no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
+            if (string.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
             {
-                m_decryptedPassword = Encoding.UTF8.GetString(m_password, 0, m_password.Length);
+                m_decryptedPassword = new byte[m_password.Length];
+                Array.Copy(m_password, m_decryptedPassword, m_password.Length);
                 return;
             }
 
             // decrypt.
-            EncryptedData encryptedData = new EncryptedData();
-            encryptedData.Data = m_password;
-            encryptedData.Algorithm = m_encryptionAlgorithm;
+            EncryptedData encryptedData = new EncryptedData {
+                Data = m_password,
+                Algorithm = m_encryptionAlgorithm
+            };
 
             byte[] decryptedPassword = SecurityPolicies.Decrypt(
                 certificate,
@@ -149,13 +173,15 @@ namespace Opc.Ua
                 }
             }
 
-            // convert to UTF-8.
-            m_decryptedPassword = Encoding.UTF8.GetString(decryptedPassword, 0, startOfNonce);
+            // copy to UTF-8.
+            m_decryptedPassword = new byte[startOfNonce];
+            Array.Copy(decryptedPassword, m_decryptedPassword, startOfNonce);
+            Array.Clear(decryptedPassword, 0, decryptedPassword.Length);
         }
         #endregion
 
         #region Private Fields
-        private string m_decryptedPassword;
+        private byte[] m_decryptedPassword;
         #endregion
     }
 
@@ -250,14 +276,17 @@ namespace Opc.Ua
         /// Web services security (WSS) token.
         /// </summary>
         GenericWSS,
+
         /// <summary>
         /// Security Assertions Markup Language (SAML) token.
         /// </summary>
         SAML,
+
         /// <summary>
         /// JSON web token.
         /// </summary>
         JWT,
+
         /// <summary>
         /// Kerberos token.
         /// </summary>
@@ -282,6 +311,7 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
+        [IgnoreDataMember, JsonIgnore]
         public byte[] DecryptedTokenData
         {
             get { return m_decryptedTokenData; }
@@ -296,10 +326,10 @@ namespace Opc.Ua
         public override void Encrypt(X509Certificate2 certificate, byte[] senderNonce, string securityPolicyUri)
         {
             // handle no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
+            if (string.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
             {
                 m_tokenData = m_decryptedTokenData;
-                m_encryptionAlgorithm = String.Empty;
+                m_encryptionAlgorithm = string.Empty;
                 return;
             }
 
@@ -309,6 +339,8 @@ namespace Opc.Ua
                 certificate,
                 securityPolicyUri,
                 dataToEncrypt);
+
+            Array.Clear(dataToEncrypt, 0, dataToEncrypt.Length);
 
             m_tokenData = encryptedData.Data;
             m_encryptionAlgorithm = encryptedData.Algorithm;
@@ -320,7 +352,7 @@ namespace Opc.Ua
         public override void Decrypt(X509Certificate2 certificate, byte[] senderNonce, string securityPolicyUri)
         {
             // handle no encryption.
-            if (String.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
+            if (string.IsNullOrEmpty(securityPolicyUri) || securityPolicyUri == SecurityPolicies.None)
             {
                 m_decryptedTokenData = m_tokenData;
                 return;
@@ -355,6 +387,7 @@ namespace Opc.Ua
             // copy results.
             m_decryptedTokenData = new byte[startOfNonce];
             Array.Copy(decryptedTokenData, m_decryptedTokenData, startOfNonce);
+            Array.Clear(decryptedTokenData, 0, decryptedTokenData.Length);
         }
 
         /// <summary>

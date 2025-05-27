@@ -29,6 +29,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Xml;
 
 namespace Opc.Ua.Server
@@ -37,6 +38,7 @@ namespace Opc.Ua.Server
     /// The well known roles in a server.
     /// https://reference.opcfoundation.org/Core/Part3/v105/docs/4.9.2
     /// </summary>
+    [DataContract(Namespace = Namespaces.Roles)]
     public class Role : IEquatable<Role>
     {
         /// <summary>
@@ -68,7 +70,7 @@ namespace Opc.Ua.Server
         /// <summary>
         /// The Role is allowed to browse, read live data, read historical data/events, call Methods or subscribe to data/events.
         /// </summary>
-        public static Role Supervisor { get; }  = new Role(ObjectIds.WellKnownRole_Supervisor, BrowseNames.WellKnownRole_Supervisor);
+        public static Role Supervisor { get; } = new Role(ObjectIds.WellKnownRole_Supervisor, BrowseNames.WellKnownRole_Supervisor);
 
         /// <summary>
         /// The Role is allowed to change the non-security related configuration settings.
@@ -90,16 +92,20 @@ namespace Opc.Ua.Server
             RoleId = roleId;
             Name = name;
         }
-        /// <summary>
-        /// the NodeId of the role
-        /// </summary>
-        public NodeId RoleId { get; private set; }
 
         /// <summary>
-        /// the name of the role
+        /// The name of the role.
         /// </summary>
+        [DataMember(Name = "Name", IsRequired = true, Order = 10)]
         public string Name { get; private set; }
-        #region value equality
+
+        /// <summary>
+        /// The NodeId of the role.
+        /// </summary>
+        [DataMember(Name = "RoleId", IsRequired = true, Order = 20)]
+        public NodeId RoleId { get; set; }
+
+        #region IEqualityComparer
         /// <inheritdoc/>
         public bool Equals(Role other)
         {
@@ -117,16 +123,19 @@ namespace Opc.Ua.Server
             }
             return (Name == other.Name) && (RoleId == other.RoleId);
         }
+
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             return Equals(obj as Role);
         }
+
         /// <inheritdoc/>
         public override int GetHashCode()
         {
             return (Name, RoleId).GetHashCode();
         }
+
         /// <inheritdoc/>
         public static bool operator ==(Role lhs, Role rhs)
         {
@@ -140,16 +149,18 @@ namespace Opc.Ua.Server
                 // Only the left side is null.
                 return false;
             }
+
             // Equals handles case of null on right side.
             return lhs.Equals(rhs);
         }
+
         /// <inheritdoc/>
         public static bool operator !=(Role lhs, Role rhs) => !(lhs == rhs);
         #endregion
+
         /// <summary>
-        /// returns the name of the role
+        /// Returns the name of the role.
         /// </summary>
-        /// <returns>the name of the role</returns>
         public override string ToString()
         {
             return Name;
@@ -229,5 +240,16 @@ namespace Opc.Ua.Server
         {
             return m_identity.GetIdentityToken();
         }
+    }
+
+    /// <summary>
+    /// Defines constants for all namespaces.
+    /// </summary>
+    public static partial class Namespaces
+    {
+        /// <summary>
+        /// The URI for the UserDatabase namespace.
+        /// </summary>
+        public const string Roles = "http://opcfoundation.org/UA/Server/Roles/";
     }
 }

@@ -56,11 +56,11 @@ namespace Opc.Ua.PubSub.Transport
         /// <param name="clientCertificatePath"></param>
         /// <param name="clientCertificatePassword"></param>
         public MqttTlsCertificates(string caCertificatePath = null,
-            string clientCertificatePath = null, string clientCertificatePassword = null)
+            string clientCertificatePath = null, char[] clientCertificatePassword = null)
         {
             CaCertificatePath = caCertificatePath ?? "";
             ClientCertificatePath = clientCertificatePath ?? "";
-            ClientCertificatePassword = clientCertificatePassword ?? "";
+            ClientCertificatePassword = clientCertificatePassword;
 
             if (!string.IsNullOrEmpty(CaCertificatePath))
             {
@@ -80,7 +80,7 @@ namespace Opc.Ua.PubSub.Transport
             KeyValuePairs.Add(new KeyValuePair { Key = qClientCertificatePath, Value = ClientCertificatePath });
 
             QualifiedName qClientCertificatePassword = EnumMqttClientConfigurationParameters.TlsCertificateClientCertificatePassword.ToString();
-            KeyValuePairs.Add(new KeyValuePair { Key = qClientCertificatePassword, Value = ClientCertificatePassword });
+            KeyValuePairs.Add(new KeyValuePair { Key = qClientCertificatePassword, Value = ClientCertificatePassword?.ToString() ?? "" });
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace Opc.Ua.PubSub.Transport
             QualifiedName qClientCertificatePath = EnumMqttClientConfigurationParameters.TlsCertificateClientCertificatePath.ToString();
             ClientCertificatePath = keyValuePairs.Find(kvp => kvp.Key.Name.Equals(qClientCertificatePath.Name))?.Value.Value as string;
 
-            ClientCertificatePassword = "";
+            ClientCertificatePassword = null;
             QualifiedName qClientCertificatePassword = EnumMqttClientConfigurationParameters.TlsCertificateClientCertificatePassword.ToString();
-            ClientCertificatePassword = keyValuePairs.Find(kvp => kvp.Key.Name.Equals(qClientCertificatePassword.Name))?.Value.Value as string;
+            ClientCertificatePassword = (keyValuePairs.Find(kvp => kvp.Key.Name.Equals(qClientCertificatePassword.Name))?.Value.Value as string)?.ToCharArray() ?? null;
 
             KeyValuePairs = keyValuePairs;
 
@@ -118,7 +118,7 @@ namespace Opc.Ua.PubSub.Transport
         #region Internal Properties
         internal string CaCertificatePath { get; set; }
         internal string ClientCertificatePath { get; set; }
-        internal string ClientCertificatePassword { get; set; }
+        internal char[] ClientCertificatePassword { get; set; }
 
         internal KeyValuePairCollection KeyValuePairs { get; set; }
 

@@ -12,9 +12,11 @@
 
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -509,9 +511,25 @@ namespace Opc.Ua
                 )
             {
                 // see https://github.com/dotnet/runtime/issues/29144
-                string passcode = GeneratePasscode();
-                X509KeyStorageFlags storageFlags = persisted ? X509KeyStorageFlags.PersistKeySet : X509KeyStorageFlags.Exportable;
-                return X509CertificateLoader.LoadPkcs12(certificate.Export(X509ContentType.Pfx, passcode), passcode, storageFlags);
+                char[] passcode = GeneratePasscode();
+                try
+                {
+                    // create a secure string for the passcode only on windows
+                    using (var securePasscode = new SecureString())
+                    {
+                        foreach (char c in passcode)
+                        {
+                            securePasscode.AppendChar(c);
+                        }
+                        securePasscode.MakeReadOnly();
+                        X509KeyStorageFlags storageFlags = persisted ? X509KeyStorageFlags.PersistKeySet : X509KeyStorageFlags.Exportable;
+                        return X509CertificateLoader.LoadPkcs12(certificate.Export(X509ContentType.Pfx, securePasscode), passcode, storageFlags);
+                    }
+                }
+                finally
+                {
+                    Array.Clear(passcode, 0, passcode.Length);
+                }
             }
             return certificate;
         }
@@ -525,7 +543,7 @@ namespace Opc.Ua
         /// <returns>The certificate with a private key.</returns>
         public static X509Certificate2 CreateCertificateFromPKCS12(
             byte[] rawData,
-            string password,
+            char[] password,
             bool noEphemeralKeySet = false
             )
         {
@@ -554,80 +572,6 @@ namespace Opc.Ua
             return null;
         }
 
-        /// <summary>
-        /// Extension to add a certificate to a <see cref="ICertificateStore"/>.
-        /// </summary>
-        /// <remarks>
-        /// Saves also the private key, if available.
-        /// If written to a Pfx file, the password is used for protection.
-        /// </remarks>
-        /// <param name="certificate">The certificate to store.</param>
-        /// <param name="storeType">Type of certificate store (Directory) <see cref="CertificateStoreType"/>.</param>
-        /// <param name="storePath">The store path (syntax depends on storeType).</param>
-        /// <param name="password">The password to use to protect the certificate.</param>
-        /// <returns></returns>
-        public static X509Certificate2 AddToStore(
-            this X509Certificate2 certificate,
-            string storeType,
-            string storePath,
-            string password = null)
-        {
-            // add cert to the store.
-            if (!String.IsNullOrEmpty(storePath) && !String.IsNullOrEmpty(storeType))
-            {
-                var certificateStoreIdentifier = new CertificateStoreIdentifier(storePath, storeType, false);
-                using (ICertificateStore store = certificateStoreIdentifier.OpenStore())
-                {
-                    if (store == null)
-                    {
-                        throw new ArgumentException("Invalid store type");
-                    }
-
-                    store.Open(storePath, false);
-                    store.Add(certificate, password).Wait();
-                    store.Close();
-                }
-            }
-            return certificate;
-        }
-
-        /// <summary>
-        /// Extension to add a certificate to a <see cref="ICertificateStore"/>.
-        /// </summary>
-        /// <remarks>
-        /// Saves also the private key, if available.
-        /// If written to a Pfx file, the password is used for protection.
-        /// </remarks>
-        /// <param name="certificate">The certificate to store.</param>
-        /// <param name="storeIdentifier">The certificate store.</param>
-        /// <param name="password">The password to use to protect the certificate.</param>
-        /// <returns></returns>
-        public static X509Certificate2 AddToStore(
-            this X509Certificate2 certificate,
-            CertificateStoreIdentifier storeIdentifier,
-            string password = null)
-        {
-            // add cert to the store.
-            if (storeIdentifier != null)
-            {
-                ICertificateStore store = storeIdentifier.OpenStore();
-                try
-                {
-                    if (store == null || store.NoPrivateKeys == true)
-                    {
-                        throw new ArgumentException("Invalid store type");
-                    }
-
-                    store.Add(certificate, password).Wait();
-                }
-                finally
-                {
-                    store?.Close();
-                }
-            }
-            return certificate;
-        }
-
         /// <summary>e
         /// Extension to add a certificate to a <see cref="ICertificateStore"/>.
         /// </summary>
@@ -644,7 +588,7 @@ namespace Opc.Ua
             this X509Certificate2 certificate,
             string storeType,
             string storePath,
-            string password = null,
+            char[] password = null,
             CancellationToken ct = default)
         {
             // add cert to the store.
@@ -679,7 +623,7 @@ namespace Opc.Ua
         public static async Task<X509Certificate2> AddToStoreAsync(
             this X509Certificate2 certificate,
             CertificateStoreIdentifier storeIdentifier,
-            string password = null,
+            char[] password = null,
             CancellationToken ct = default)
         {
             // add cert to the store.
@@ -730,11 +674,20 @@ namespace Opc.Ua
         /// <summary>
         /// Create secure temporary passcode.
         /// </summary>
-        internal static string GeneratePasscode()
+        /// <remarks>
+        /// Caller is responsible to clear memory after usage.
+        /// </remarks>
+        internal static char[] GeneratePasscode()
         {
             const int kLength = 18;
             byte[] tokenBuffer = Utils.Nonce.CreateNonce(kLength);
-            return Convert.ToBase64String(tokenBuffer);
+            var charToken = new char[kLength * 3];
+            int length = Convert.ToBase64CharArray(tokenBuffer, 0, tokenBuffer.Length, charToken, 0, Base64FormattingOptions.None);
+            Array.Clear(tokenBuffer, 0, tokenBuffer.Length);
+            char[] passcode = new char[length];
+            charToken.AsSpan(0, length).CopyTo(passcode);
+            Array.Clear(charToken, 0, charToken.Length);
+            return passcode;
         }
 
     }

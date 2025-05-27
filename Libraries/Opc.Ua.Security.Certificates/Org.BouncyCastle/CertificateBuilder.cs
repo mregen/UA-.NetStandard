@@ -46,6 +46,7 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
+using Org.BouncyCastle.X509.Extension;
 
 namespace Opc.Ua.Security.Certificates
 {
@@ -98,8 +99,15 @@ namespace Opc.Ua.Security.Certificates
             }
             else
             {
-                string passcode = X509Utils.GeneratePasscode();
-                return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode), passcode);
+                char[] passcode = X509Utils.GeneratePasscode();
+                try
+                {
+                    return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode), passcode);
+                }
+                finally
+                {
+                    Array.Clear(passcode, 0, passcode.Length);
+                }
             }
         }
 
@@ -114,8 +122,15 @@ namespace Opc.Ua.Security.Certificates
             }
             else
             {
-                string passcode = X509Utils.GeneratePasscode();
-                return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode, signatureFactory), passcode);
+                char[] passcode = X509Utils.GeneratePasscode();
+                try
+                {
+                    return X509PfxUtils.CreateCertificateFromPKCS12(CreatePfxForRSA(passcode, signatureFactory), passcode);
+                }
+                finally
+                {
+                    Array.Clear(passcode, 0, passcode.Length);
+                }
             }
         }
 
@@ -142,7 +157,7 @@ namespace Opc.Ua.Security.Certificates
             X509Certificate2 certificate,
             string friendlyName,
             RSA privateKey,
-            string passcode)
+            char[] passcode)
         {
             Org.BouncyCastle.X509.X509Certificate x509 = new X509CertificateParser().ReadCertificate(certificate.RawData);
             using (var cfrg = new CryptoApiRandomGenerator())
@@ -300,7 +315,7 @@ namespace Opc.Ua.Security.Certificates
             {
                 // Subject key identifier
                 cg.AddExtension(Org.BouncyCastle.Asn1.X509.X509Extensions.SubjectKeyIdentifier.Id, false,
-                new SubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectPublicKey)));
+                    X509ExtensionUtilities.CreateSubjectKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(subjectPublicKey)));
             }
 
             // Basic constraints
@@ -339,8 +354,10 @@ namespace Opc.Ua.Security.Certificates
             if (X509Extensions.FindExtension<X509AuthorityKeyIdentifierExtension>(m_extensions) == null)
             {
                 cg.AddExtension(Org.BouncyCastle.Asn1.X509.X509Extensions.AuthorityKeyIdentifier.Id, false,
-                new AuthorityKeyIdentifier(SubjectPublicKeyInfoFactory.CreateSubjectPublicKeyInfo(issuerPublicKey),
-                    new GeneralNames(new GeneralName(m_issuerIssuerAKI)), issuerSerialNumber));
+                    X509ExtensionUtilities.CreateAuthorityKeyIdentifier(
+                        issuerPublicKey,
+                        new GeneralNames(new GeneralName(m_issuerIssuerAKI)),
+                        issuerSerialNumber));
             }
 
             if (!m_isCA)
@@ -428,7 +445,7 @@ namespace Opc.Ua.Security.Certificates
         /// <returns>
         /// Returns the Pfx with certificate and private key.
         /// </returns>
-        private byte[] CreatePfxForRSA(string passcode, ISignatureFactory signatureFactory = null)
+        private byte[] CreatePfxForRSA(char[] passcode, ISignatureFactory signatureFactory = null)
         {
             // Cases locked out by API flow
             Debug.Assert(m_rsaPublicKey == null, "A public key is not supported for the certificate.");

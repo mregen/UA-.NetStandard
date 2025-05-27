@@ -32,6 +32,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Opc.Ua.Configuration;
 using Opc.Ua.Gds.Client;
@@ -131,9 +132,9 @@ namespace Opc.Ua.Gds.Tests
             }
             else
             {
-                AppUser = new UserIdentity(gdsClientConfiguration.AppUserName, gdsClientConfiguration.AppPassword);
+                AppUser = new UserIdentity(gdsClientConfiguration.AppUserName, Encoding.UTF8.GetBytes(gdsClientConfiguration.AppPassword));
             }
-            AdminUser = new UserIdentity(gdsClientConfiguration.AdminUserName, gdsClientConfiguration.AdminPassword);
+            AdminUser = new UserIdentity(gdsClientConfiguration.AdminUserName, Encoding.UTF8.GetBytes(gdsClientConfiguration.AdminPassword));
             Anonymous = new UserIdentity();
         }
 
