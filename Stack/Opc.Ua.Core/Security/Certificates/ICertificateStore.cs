@@ -18,6 +18,17 @@ using Opc.Ua.Security.Certificates;
 namespace Opc.Ua
 {
     /// <summary>
+    /// An interface to open a certificate store.
+    /// </summary>
+    public interface IOpenStore
+    {
+        /// <summary>
+        /// Returns an object to access the store containing the certificates.
+        /// </summary>
+        ICertificateStore OpenStore();
+    }
+
+    /// <summary>
     /// An abstract interface to certificate stores.
     /// </summary>
     public interface ICertificateStore : IDisposable
@@ -65,7 +76,7 @@ namespace Opc.Ua
         /// </summary>
         /// <param name="certificate">The certificate.</param>
         /// <param name="password">The certificate password.</param>
-        Task Add(X509Certificate2 certificate, string password = null);
+        Task Add(X509Certificate2 certificate, char[] password = null);
 
         /// <summary>
         /// Adds a rejected certificate chain to the store.
@@ -102,7 +113,7 @@ namespace Opc.Ua
         /// <param name="password">The certificate password.</param>
         /// <remarks>Returns always null if SupportsLoadPrivateKey returns false.</remarks>
         /// <returns>The matching certificate with private key</returns>
-        Task<X509Certificate2> LoadPrivateKey(string thumbprint, string subjectName, string password);
+        X509Certificate2 LoadPrivateKey(string thumbprint, string subjectName, ReadOnlySpan<char> password);
 
         /// <summary>
         /// Checks if issuer has revoked the certificate.

@@ -30,8 +30,8 @@
 #if NETSTANDARD2_1 || NET5_0_OR_GREATER
 
 using System;
-using System.Security.Cryptography;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Opc.Ua.Security.Certificates
@@ -46,12 +46,12 @@ namespace Opc.Ua.Security.Certificates
         /// Import a PKCS#8 private key or RSA private key from PEM.
         /// The PKCS#8 private key may be encrypted using a password.
         /// </summary>
-        /// <param name="pemDataBlob">The PEM datablob as byte array.</param>
+        /// <param name="pemDataBlob">The PEM datablob as byte span.</param>
         /// <param name="password">The password to use (optional).</param>
         /// <returns>The RSA private key.</returns>
         public static RSA ImportPrivateKeyFromPEM(
-            byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<byte> pemDataBlob,
+            ReadOnlySpan<char> password)
         {
             string[] labels = {
                 "ENCRYPTED PRIVATE KEY", "PRIVATE KEY", "RSA PRIVATE KEY"
@@ -60,7 +60,7 @@ namespace Opc.Ua.Security.Certificates
             {
                 string pemText = Encoding.UTF8.GetString(pemDataBlob);
                 int count = 0;
-                foreach (var label in labels)
+                foreach (string label in labels)
                 {
                     count++;
                     string beginlabel = $"-----BEGIN {label}-----";
@@ -76,7 +76,7 @@ namespace Opc.Ua.Security.Certificates
                     {
                         continue;
                     }
-                    var pemData = pemText.Substring(beginIndex, endIndex - beginIndex);
+                    string pemData = pemText.Substring(beginIndex, endIndex - beginIndex);
                     byte[] pemDecoded = new byte[pemData.Length];
                     int bytesDecoded;
                     if (Convert.TryFromBase64Chars(pemData, pemDecoded, out bytesDecoded))
@@ -86,11 +86,11 @@ namespace Opc.Ua.Security.Certificates
                         switch (count)
                         {
                             case 1:
-                                if (String.IsNullOrEmpty(password))
+                                if (password.IsEmpty || password.IsWhiteSpace())
                                 {
                                     throw new ArgumentException("Need password for encrypted private key.");
                                 }
-                                rsaPrivateKey.ImportEncryptedPkcs8PrivateKey(password.ToCharArray(), pemDecoded, out bytesRead);
+                                rsaPrivateKey.ImportEncryptedPkcs8PrivateKey(password, pemDecoded, out bytesRead);
                                 break;
                             case 2: rsaPrivateKey.ImportPkcs8PrivateKey(pemDecoded, out bytesRead); break;
                             case 3: rsaPrivateKey.ImportRSAPrivateKey(pemDecoded, out bytesRead); break;

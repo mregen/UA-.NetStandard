@@ -87,7 +87,7 @@ namespace Opc.Ua.Configuration.Tests
         /// Load a file configuration.
         /// </summary>
         [Test]
-        public async Task TestFileConfig()
+        public async Task TestFileConfigAsync()
         {
             var applicationInstance = new ApplicationInstance() {
                 ApplicationName = ApplicationName
@@ -423,10 +423,10 @@ namespace Opc.Ua.Configuration.Tests
             {
                 Assert.NotNull(testCert);
                 Assert.True(testCert.HasPrivateKey);
-                testCert.AddToStore(
+                await testCert.AddToStoreAsync(
                     applicationCertificate.StoreType,
                     applicationCertificate.StorePath
-                );
+                ).ConfigureAwait(false);
                 publicKey = X509CertificateLoader.LoadCertificate(testCert.RawData);
             }
 
@@ -498,10 +498,10 @@ namespace Opc.Ua.Configuration.Tests
                 {
                     Assert.NotNull(issuerCert);
                     Assert.False(issuerCert.HasPrivateKey);
-                    issuerCert.AddToStore(
+                    await issuerCert.AddToStoreAsync(
                         applicationInstance.ApplicationConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StoreType,
                         applicationInstance.ApplicationConfiguration.SecurityConfiguration.TrustedIssuerCertificates.StorePath
-                        );
+                        ).ConfigureAwait(false);
                 }
             }
 
@@ -510,10 +510,10 @@ namespace Opc.Ua.Configuration.Tests
             {
                 Assert.NotNull(testCert);
                 Assert.True(testCert.HasPrivateKey);
-                testCert.AddToStore(
+                await testCert.AddToStoreAsync(
                     applicationCertificate.StoreType,
                     applicationCertificate.StorePath
-                    );
+                    ).ConfigureAwait(false);
                 publicKey = X509CertificateLoader.LoadCertificate(testCert.RawData);
             }
 
