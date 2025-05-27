@@ -88,12 +88,12 @@ namespace Opc.Ua
                 return null;
             }
 
-            lock (m_certificatesLock)
+            lock (s_certificatesLock)
             {
                 X509Certificate2 cachedCertificate = null;
 
                 // check for existing cached certificate.
-                if (m_certificates.TryGetValue(certificate.Thumbprint, out cachedCertificate))
+                if (s_certificates.TryGetValue(certificate.Thumbprint, out cachedCertificate))
                 {
                     return cachedCertificate;
                 }
@@ -114,11 +114,11 @@ namespace Opc.Ua
                 }
 
                 // update the cache.
-                m_certificates[certificate.Thumbprint] = certificate;
+                s_certificates[certificate.Thumbprint] = certificate;
 
-                if (m_certificates.Count > 100)
+                if (s_certificates.Count > 100)
                 {
-                    Utils.LogWarning("Certificate cache has {0} certificates in it.", m_certificates.Count);
+                    Utils.LogWarning("Certificate cache has {0} certificates in it.", s_certificates.Count);
                 }
             }
             return certificate;
@@ -321,8 +321,19 @@ namespace Opc.Ua
         /// </summary>
         public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
             X509Certificate2 certificate,
+            byte[] pemDataBlob)
+        {
+            return CreateCertificateWithPEMPrivateKey(certificate, pemDataBlob, ReadOnlySpan<char>.Empty);
+        }
+
+        /// <summary>
+        /// Create a X509Certificate2 with a private key by combining 
+        /// the certificate with a private key from a PEM stream
+        /// </summary>
+        public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
+            X509Certificate2 certificate,
             byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<char> password)
         {
             RSA rsaPrivateKey = PEMReader.ImportPrivateKeyFromPEM(pemDataBlob, password);
             return X509CertificateLoader.LoadCertificate(certificate.RawData).CopyWithPrivateKey(rsaPrivateKey);
@@ -333,7 +344,7 @@ namespace Opc.Ua
         /// </summary>
         public static byte[] CreateSigningRequest(
             X509Certificate2 certificate,
-            IList<String> domainNames = null
+            IList<string> domainNames = null
             )
         {
             return CertificateBuilder.CreateSigningRequest(
@@ -359,12 +370,19 @@ namespace Opc.Ua
                 throw new NotSupportedException("The public and the private key pair doesn't match.");
             }
 
-            string passcode = X509Utils.GeneratePasscode();
-            using (RSA rsaPrivateKey = certificateWithPrivateKey.GetRSAPrivateKey())
+            char[] passcode = X509Utils.GeneratePasscode();
+            try
             {
-                byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
-                    certificate, certificate.FriendlyName, rsaPrivateKey, passcode);
-                return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+                using (RSA rsaPrivateKey = certificateWithPrivateKey.GetRSAPrivateKey())
+                {
+                    byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
+                        certificate, certificate.FriendlyName, rsaPrivateKey, passcode);
+                    return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+                }
+            }
+            finally
+            {
+                Array.Clear(passcode, 0, passcode.Length);
             }
         }
 
@@ -374,8 +392,16 @@ namespace Opc.Ua
         /// </summary>
         public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
             X509Certificate2 certificate,
+            byte[] pemDataBlob) => CreateCertificateWithPEMPrivateKey(certificate, pemDataBlob, Array.Empty<char>());
+
+        /// <summary>
+        /// Create a X509Certificate2 with a private key by combining 
+        /// the certificate with a private key from a PEM stream
+        /// </summary>
+        public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
+            X509Certificate2 certificate,
             byte[] pemDataBlob,
-            string password = null)
+            ReadOnlySpan<char> password)
         {
             RSA privateKey = PEMReader.ImportPrivateKeyFromPEM(pemDataBlob, password);
             if (privateKey == null)
@@ -383,10 +409,17 @@ namespace Opc.Ua
                 throw new ServiceResultException("PEM data blob does not contain a private key.");
             }
 
-            string passcode = X509Utils.GeneratePasscode();
-            byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
-                certificate, certificate.FriendlyName, privateKey, passcode);
-            return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+            char[] passcode = X509Utils.GeneratePasscode();
+            try
+            {
+                byte[] pfxData = CertificateBuilder.CreatePfxWithRSAPrivateKey(
+                    certificate, certificate.FriendlyName, privateKey, passcode);
+                return X509Utils.CreateCertificateFromPKCS12(pfxData, passcode);
+            }
+            finally
+            {
+                Array.Clear(passcode, 0, passcode.Length);
+            }
         }
 #endif
         #endregion
@@ -399,22 +432,22 @@ namespace Opc.Ua
             ref string applicationUri,
             ref string applicationName,
             ref string subjectName,
-            ref IList<String> domainNames)
+            ref IList<string> domainNames)
         {
             // parse the subject name if specified.
             List<string> subjectNameEntries = null;
 
-            if (!String.IsNullOrEmpty(subjectName))
+            if (!string.IsNullOrEmpty(subjectName))
             {
                 subjectNameEntries = X509Utils.ParseDistinguishedName(subjectName);
             }
 
             // check the application name.
-            if (String.IsNullOrEmpty(applicationName))
+            if (string.IsNullOrEmpty(applicationName))
             {
                 if (subjectNameEntries == null)
                 {
-                    throw new ArgumentNullException(nameof(applicationName), "Must specify a applicationName or a subjectName.");
+                    throw new ArgumentNullException(nameof(applicationName), "Must specify an applicationName or a subjectName.");
                 }
 
                 // use the common name as the application name.
@@ -428,7 +461,7 @@ namespace Opc.Ua
                 }
             }
 
-            if (String.IsNullOrEmpty(applicationName))
+            if (string.IsNullOrEmpty(applicationName))
             {
                 throw new ArgumentNullException(nameof(applicationName), "Must specify a applicationName or a subjectName.");
             }
@@ -440,7 +473,7 @@ namespace Opc.Ua
             {
                 char ch = applicationName[ii];
 
-                if (Char.IsControl(ch) || ch == '/' || ch == ',' || ch == ';')
+                if (char.IsControl(ch) || ch == '/' || ch == ',' || ch == ';')
                 {
                     ch = '+';
                 }
@@ -458,7 +491,7 @@ namespace Opc.Ua
             }
 
             // create the application uri.
-            if (String.IsNullOrEmpty(applicationUri))
+            if (string.IsNullOrEmpty(applicationUri))
             {
                 StringBuilder builder = new StringBuilder();
 
@@ -478,7 +511,7 @@ namespace Opc.Ua
             }
 
             // create the subject name,
-            if (String.IsNullOrEmpty(subjectName))
+            if (string.IsNullOrEmpty(subjectName))
             {
                 subjectName = Utils.Format("CN={0}", applicationName);
             }
@@ -502,7 +535,7 @@ namespace Opc.Ua
         }
         #endregion
 
-        private static readonly Dictionary<string, X509Certificate2> m_certificates = new Dictionary<string, X509Certificate2>();
-        private static readonly object m_certificatesLock = new object();
+        private static readonly Dictionary<string, X509Certificate2> s_certificates = new Dictionary<string, X509Certificate2>();
+        private static readonly object s_certificatesLock = new object();
     }
 }

@@ -32,10 +32,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using Opc.Ua.Server.Tests;
 using Quickstarts.ReferenceServer;
@@ -59,7 +57,6 @@ namespace Opc.Ua.Client.Tests
         public const int TransportQuotaMaxMessageSize = 4 * 1024 * 1024;
         public const int TransportQuotaMaxStringLength = 1 * 1024 * 1024;
         public TokenValidatorMock TokenValidator { get; set; } = new TokenValidatorMock();
-
         public bool SingleSession { get; set; } = true;
         public int MaxChannelCount { get; set; } = 10;
         public bool SupportsExternalServerUrl { get; set; } = false;
@@ -167,7 +164,7 @@ namespace Opc.Ua.Client.Tests
                 }
 
                 ServerUrl = new Uri(url);
-                
+
             }
 
             if (SingleSession)

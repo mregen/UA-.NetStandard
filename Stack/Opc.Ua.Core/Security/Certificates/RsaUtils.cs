@@ -11,6 +11,7 @@
 */
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -158,7 +159,7 @@ namespace Opc.Ua
         /// Encrypts the data using RSA encryption.
         /// </summary>
         internal static byte[] Encrypt(
-            byte[] dataToEncrypt,
+            ReadOnlySpan<byte> dataToEncrypt,
             X509Certificate2 encryptingCertificate,
             Padding padding)
         {
@@ -183,11 +184,12 @@ namespace Opc.Ua
                 plainText[3] = (byte)((0xFF000000 & dataToEncrypt.Length) >> 24);
 
                 // copy data.
-                Array.Copy(dataToEncrypt, 0, plainText, 4, dataToEncrypt.Length);
+                dataToEncrypt.CopyTo(plainText.AsSpan(4, dataToEncrypt.Length));
 
                 byte[] buffer = new byte[cipherTextSize];
                 ArraySegment<byte> cipherText = Encrypt(new ArraySegment<byte>(plainText), rsa, padding, new ArraySegment<byte>(buffer));
-                System.Diagnostics.Debug.Assert(cipherText.Count == buffer.Length);
+                Debug.Assert(cipherText.Count == buffer.Length);
+                Array.Clear(plainText, 0, plainText.Length);
 
                 return buffer;
             }
@@ -257,7 +259,7 @@ namespace Opc.Ua
 
                 byte[] buffer = new byte[plainTextSize];
                 ArraySegment<byte> plainText = Decrypt(dataToDecrypt, rsa, padding, new ArraySegment<byte>(buffer));
-                System.Diagnostics.Debug.Assert(plainText.Count == buffer.Length);
+                Debug.Assert(plainText.Count == buffer.Length);
 
                 // decode length.
                 int length = 0;
@@ -274,6 +276,7 @@ namespace Opc.Ua
 
                 byte[] decryptedData = new byte[length];
                 Array.Copy(plainText.Array, plainText.Offset + 4, decryptedData, 0, length);
+                Array.Clear(buffer, 0, buffer.Length);
 
                 return decryptedData;
             }

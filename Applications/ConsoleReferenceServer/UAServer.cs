@@ -46,7 +46,8 @@ namespace Quickstarts
         public ApplicationConfiguration Configuration => m_application.ApplicationConfiguration;
 
         public bool AutoAccept { get; set; }
-        public string Password { get; set; }
+
+        public char[] Password { get; set; }
 
         public ExitCode ExitCode { get; private set; }
         public T Server => m_server;

@@ -30,7 +30,7 @@ namespace Opc.Ua
         /// </summary>
         public UserIdentity()
         {
-            AnonymousIdentityToken token = new AnonymousIdentityToken();
+            var token = new AnonymousIdentityToken();
             Initialize(token);
         }
 
@@ -39,11 +39,26 @@ namespace Opc.Ua
         /// </summary>
         /// <param name="username">The user name.</param>
         /// <param name="password">The password.</param>
-        public UserIdentity(string username, string password)
+        public UserIdentity(string username, byte[] password)
         {
-            UserNameIdentityToken token = new UserNameIdentityToken();
-            token.UserName = username;
-            token.DecryptedPassword = password;
+            var token = new UserNameIdentityToken {
+                UserName = username,
+                DecryptedPassword = password
+            };
+            Initialize(token);
+        }
+
+        /// <summary>
+        /// Initializes the object with a username and password.
+        /// </summary>
+        /// <param name="username">The user name.</param>
+        /// <param name="password">The password.</param>
+        public UserIdentity(string username, ReadOnlySpan<byte> password)
+        {
+            var token = new UserNameIdentityToken {
+                UserName = username,
+                DecryptedPassword = password.ToArray()
+            };
             Initialize(token);
         }
 
@@ -57,10 +72,10 @@ namespace Opc.Ua
         }
 
         /// <summary>
-        /// Initializes the object with an X509 certificate identifier
+        /// Initializes the object with a X509 certificate identifier.
         /// </summary>
         public UserIdentity(CertificateIdentifier certificateId)
-            : this(certificateId, new CertificatePasswordProvider(string.Empty))
+            : this(certificateId, new CertificatePasswordProvider())
         {
         }
 
@@ -75,7 +90,7 @@ namespace Opc.Ua
 
             if (certificate == null || !certificate.HasPrivateKey)
             {
-                throw new ServiceResultException("Cannot create User Identity with CertificateIdentifier that does not contain a private key");
+                throw new ServiceResultException("Cannot create User Identity with CertificateIdentifier that does not contain a private key.");
             }
 
             Initialize(certificate);

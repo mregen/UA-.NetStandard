@@ -724,7 +724,7 @@ namespace Opc.Ua.Gds.Client
             string subjectName,
             IList<string> domainNames,
             string privateKeyFormat,
-            string privateKeyPassword)
+            char[] privateKeyPassword)
         {
             if (!IsConnected)
             {
