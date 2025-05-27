@@ -88,12 +88,12 @@ namespace Opc.Ua
                 return null;
             }
 
-            lock (m_certificatesLock)
+            lock (s_certificatesLock)
             {
                 X509Certificate2 cachedCertificate = null;
 
                 // check for existing cached certificate.
-                if (m_certificates.TryGetValue(certificate.Thumbprint, out cachedCertificate))
+                if (s_certificates.TryGetValue(certificate.Thumbprint, out cachedCertificate))
                 {
                     return cachedCertificate;
                 }
@@ -114,11 +114,11 @@ namespace Opc.Ua
                 }
 
                 // update the cache.
-                m_certificates[certificate.Thumbprint] = certificate;
+                s_certificates[certificate.Thumbprint] = certificate;
 
-                if (m_certificates.Count > 100)
+                if (s_certificates.Count > 100)
                 {
-                    Utils.LogWarning("Certificate cache has {0} certificates in it.", m_certificates.Count);
+                    Utils.LogWarning("Certificate cache has {0} certificates in it.", s_certificates.Count);
                 }
             }
             return certificate;
@@ -392,6 +392,14 @@ namespace Opc.Ua
         /// </summary>
         public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
             X509Certificate2 certificate,
+            byte[] pemDataBlob) => CreateCertificateWithPEMPrivateKey(certificate, pemDataBlob, Array.Empty<char>());
+
+        /// <summary>
+        /// Create a X509Certificate2 with a private key by combining 
+        /// the certificate with a private key from a PEM stream
+        /// </summary>
+        public static X509Certificate2 CreateCertificateWithPEMPrivateKey(
+            X509Certificate2 certificate,
             byte[] pemDataBlob,
             ReadOnlySpan<char> password)
         {
@@ -527,7 +535,7 @@ namespace Opc.Ua
         }
         #endregion
 
-        private static readonly Dictionary<string, X509Certificate2> m_certificates = new Dictionary<string, X509Certificate2>();
-        private static readonly object m_certificatesLock = new object();
+        private static readonly Dictionary<string, X509Certificate2> s_certificates = new Dictionary<string, X509Certificate2>();
+        private static readonly object s_certificatesLock = new object();
     }
 }
