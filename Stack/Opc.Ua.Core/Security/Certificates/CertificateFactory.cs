@@ -344,7 +344,7 @@ namespace Opc.Ua
         /// </summary>
         public static byte[] CreateSigningRequest(
             X509Certificate2 certificate,
-            IList<String> domainNames = null
+            IList<string> domainNames = null
             )
         {
             return CertificateBuilder.CreateSigningRequest(
@@ -432,22 +432,22 @@ namespace Opc.Ua
             ref string applicationUri,
             ref string applicationName,
             ref string subjectName,
-            ref IList<String> domainNames)
+            ref IList<string> domainNames)
         {
             // parse the subject name if specified.
             List<string> subjectNameEntries = null;
 
-            if (!String.IsNullOrEmpty(subjectName))
+            if (!string.IsNullOrEmpty(subjectName))
             {
                 subjectNameEntries = X509Utils.ParseDistinguishedName(subjectName);
             }
 
             // check the application name.
-            if (String.IsNullOrEmpty(applicationName))
+            if (string.IsNullOrEmpty(applicationName))
             {
                 if (subjectNameEntries == null)
                 {
-                    throw new ArgumentNullException(nameof(applicationName), "Must specify a applicationName or a subjectName.");
+                    throw new ArgumentNullException(nameof(applicationName), "Must specify an applicationName or a subjectName.");
                 }
 
                 // use the common name as the application name.
@@ -461,7 +461,7 @@ namespace Opc.Ua
                 }
             }
 
-            if (String.IsNullOrEmpty(applicationName))
+            if (string.IsNullOrEmpty(applicationName))
             {
                 throw new ArgumentNullException(nameof(applicationName), "Must specify a applicationName or a subjectName.");
             }
@@ -473,7 +473,7 @@ namespace Opc.Ua
             {
                 char ch = applicationName[ii];
 
-                if (Char.IsControl(ch) || ch == '/' || ch == ',' || ch == ';')
+                if (char.IsControl(ch) || ch == '/' || ch == ',' || ch == ';')
                 {
                     ch = '+';
                 }
@@ -491,7 +491,7 @@ namespace Opc.Ua
             }
 
             // create the application uri.
-            if (String.IsNullOrEmpty(applicationUri))
+            if (string.IsNullOrEmpty(applicationUri))
             {
                 StringBuilder builder = new StringBuilder();
 
@@ -511,7 +511,7 @@ namespace Opc.Ua
             }
 
             // create the subject name,
-            if (String.IsNullOrEmpty(subjectName))
+            if (string.IsNullOrEmpty(subjectName))
             {
                 subjectName = Utils.Format("CN={0}", applicationName);
             }
