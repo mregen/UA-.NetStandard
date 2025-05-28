@@ -185,10 +185,14 @@ namespace Opc.Ua
 
         #region Trace Support
 #if DEBUG
+#if TRACEEVENTLOGGER
         private static int s_traceOutput = (int)TraceOutput.DebugAndFile;
+#endif
         private static int s_traceMasks = (int)TraceMasks.All;
 #else
+#if TRACEEVENTLOGGER
         private static int s_traceOutput = (int)TraceOutput.FileOnly;
+#endif
         private static int s_traceMasks = (int)TraceMasks.None;
 #endif
 
@@ -282,6 +286,7 @@ namespace Opc.Ua
             public const int All = 0x3FF;
         }
 
+#if TRACEEVENTLOGGER
         /// <summary>
         /// Sets the output for tracing (thread safe).
         /// </summary>
@@ -292,6 +297,7 @@ namespace Opc.Ua
                 s_traceOutput = (int)output;
             }
         }
+#endif
 
         /// <summary>
         /// Gets the current trace mask settings.
@@ -309,6 +315,7 @@ namespace Opc.Ua
             s_traceMasks = (int)masks;
         }
 
+#if TRACEEVENTLOGGER
         /// <summary>
         /// Returns Tracing class instance for event attaching.
         /// </summary>
@@ -441,6 +448,7 @@ namespace Opc.Ua
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Writes an informational message to the trace log.
@@ -536,6 +544,7 @@ namespace Opc.Ua
             return message;
         }
 
+#if TRACEEVENTLOGGER
         /// <summary>
         /// Writes an exception/error message to the trace log.
         /// </summary>
@@ -546,6 +555,7 @@ namespace Opc.Ua
             // trace message.
             Trace(e, (int)TraceMasks.Error, message.ToString(), handled, null);
         }
+#endif
 
         /// <summary>
         /// Writes a message to the trace log.
@@ -576,6 +586,7 @@ namespace Opc.Ua
             Trace(null, traceMask, format, handled, args);
         }
 
+#if TRACEEVENTLOGGER
         /// <summary>
         /// Writes a message to the trace log.
         /// </summary>
@@ -656,6 +667,7 @@ namespace Opc.Ua
 
             TraceWriteLine(message.ToString());
         }
+#endif
         #endregion
 
         #region File Access

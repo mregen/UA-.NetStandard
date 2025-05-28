@@ -35,7 +35,6 @@ using Opc.Ua;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
-using static Opc.Ua.Utils;
 
 public static class Logging
 {
@@ -78,7 +77,7 @@ public static class Logging
         {
             loggerConfiguration.WriteTo.File(
                 new ExpressionTemplate("{UtcDateTime(@t):yyyy-MM-dd HH:mm:ss.fff} [{@l:u3}] {@m}\n{@x}"),
-                ReplaceSpecialFolderNames(outputFilePath),
+                Utils.ReplaceSpecialFolderNames(outputFilePath),
                 restrictedToMinimumLevel: (LogEventLevel)fileLevel,
                 rollOnFileSizeLimit: true);
         }
@@ -99,7 +98,7 @@ public static class Logging
             .CreateLogger(context);
 
         // set logger interface, disables TraceEvent
-        SetLogger(logger);
+        Utils.SetLogger(logger);
     }
 
     private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs args)
