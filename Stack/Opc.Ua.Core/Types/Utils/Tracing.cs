@@ -12,6 +12,8 @@
 
 using System;
 
+#if TRACEEVENTLOGGER
+
 namespace Opc.Ua
 {
     /// <summary>
@@ -87,3 +89,4 @@ namespace Opc.Ua
         #endregion
     }
 }
+#endif

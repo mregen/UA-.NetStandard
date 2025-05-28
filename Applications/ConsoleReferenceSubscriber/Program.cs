@@ -934,10 +934,12 @@ namespace Quickstarts.ConsoleReferenceSubscriber
         /// </summary>
         private static void InitializeLog()
         {
+#if TRACEEVENTLOGGER
             // Initialize logger
             Utils.SetTraceLog("%CommonApplicationData%\\OPC Foundation\\Logs\\Quickstarts.ConsoleReferenceSubscriber.log.txt", true);
             Utils.SetTraceMask(Utils.TraceMasks.Error);
             Utils.SetTraceOutput(Utils.TraceOutput.DebugAndFile);
+#endif
         }
         #endregion
     }
