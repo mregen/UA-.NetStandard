@@ -45,6 +45,7 @@
   <Choose>
     <When Condition="'$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net48'">
       <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.Cryptography" />
         <PackageReference Include="BouncyCastle.Cryptography" />
         <PackageReference Include="System.Formats.Asn1" VersionOverride="8.0.2" />
       </ItemGroup>
@@ -56,6 +57,7 @@
     </When>
     <Otherwise>
       <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.Cryptography" />
         <PackageReference Include="System.Formats.Asn1" VersionOverride="8.0.2" />
       </ItemGroup>
     </Otherwise>
