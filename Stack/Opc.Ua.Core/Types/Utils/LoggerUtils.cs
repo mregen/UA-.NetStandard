@@ -44,6 +44,7 @@ using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Opc.Ua.Redaction;
 
 namespace Opc.Ua
@@ -67,8 +68,14 @@ namespace Opc.Ua
         /// <summary>
         /// ILogger abstraction used by all Utils.LogXXX methods.
         /// </summary>
-        public static ILogger Logger { get; private set; } = new TraceEventLogger();
+        public static ILogger Logger { get; private set; } = NullLogger.Instance;
 
+        /// <summary>
+        /// ILoggerFactory abstraction used by all private loggers.
+        /// </summary>
+        public static ILoggerFactory LoggerFactory { get; private set; } = NullLoggerFactory.Instance;
+
+#if TRACEEVENTLOGGER
         /// <summary>
         /// Sets the LogLevel for the TraceEventLogger.
         /// </summary>
@@ -82,6 +89,7 @@ namespace Opc.Ua
                 tlogger.LogLevel = logLevel;
             }
         }
+#endif
 
         /// <summary>
         /// Sets the ILogger.
@@ -93,10 +101,20 @@ namespace Opc.Ua
         }
 
         /// <summary>
+        /// Sets the ILoggerFactory.
+        /// </summary>
+        public static void SetLoggerFactory(ILoggerFactory loggerFactory)
+        {
+            LoggerFactory = loggerFactory;
+            Logger = loggerFactory.CreateLogger("Opc.Ua");
+            UseTraceEvent = false;
+        }
+
+        /// <summary>
         /// If the legacy trace event handler should be used.
         /// </summary>
         /// <remarks>By default true, however a call to SetLogger disables it.</remarks>
-        public static bool UseTraceEvent { get; set; } = true;
+        public static bool UseTraceEvent { get; private set; } = false;
         #endregion
 
         #region Certificate Log Methods
@@ -534,6 +552,7 @@ namespace Opc.Ua
             }
             else if (Logger.IsEnabled(logLevel))
             {
+#if TRACEEVENTLOGGER
                 // note: to support semantic logging strings
                 if (UseTraceEvent && Tracing.IsEnabled())
                 {
@@ -547,6 +566,7 @@ namespace Opc.Ua
                         return;
                     }
                 }
+#endif
                 Logger.Log(logLevel, eventId, null, message, args);
             }
         }
@@ -579,6 +599,7 @@ namespace Opc.Ua
             }
             else if (Logger.IsEnabled(logLevel))
             {
+#if TRACEEVENTLOGGER
                 if (UseTraceEvent && Tracing.IsEnabled())
                 {
                     // call the legacy logging handler (TraceEvent)
@@ -591,6 +612,7 @@ namespace Opc.Ua
                         return;
                     }
                 }
+#endif
                 Logger.Log(logLevel, eventId, exception, message, args);
             }
         }

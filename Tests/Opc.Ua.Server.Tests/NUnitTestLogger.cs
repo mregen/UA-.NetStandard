@@ -50,7 +50,9 @@ namespace Opc.Ua.Server.Tests
 
             // disable the built in tracing, use nunit trace output
             Utils.SetTraceMask(Utils.TraceMask & Utils.TraceMasks.StackTrace);
+#if TRACEEVENTLOGGER
             Utils.SetTraceOutput(Utils.TraceOutput.Off);
+#endif
             Utils.SetLogger(traceLogger);
 
             return traceLogger;
