@@ -1,0 +1,151 @@
+<opc:TypeDictionary
+  xmlns:opc="http://opcfoundation.org/BinarySchema/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ua="http://opcfoundation.org/UA/"
+  xmlns:tns="http://test.org/UA/StructuresWithArrays/"
+  DefaultByteOrder="LittleEndian"
+  TargetNamespace="http://test.org/UA/StructuresWithArrays/"
+>
+  <opc:Import Namespace="http://opcfoundation.org/UA/" Location="Opc.Ua.BinarySchema.bsd"/>
+
+  <opc:StructuredType Name="Structure_A" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Duration_Field" TypeName="opc:Double" />
+    <opc:Field Name="Double_Field" TypeName="opc:Double" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_B" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Duration_Field" TypeName="opc:Double" />
+    <opc:Field Name="Int32_Field" TypeName="opc:Int32" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_C" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Int32_Field" TypeName="opc:Int32" />
+    <opc:Field Name="NodeId_Field" TypeName="ua:NodeId" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_D" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_BaseDataType" TypeName="ua:Variant" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_E" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_Structure" TypeName="ua:ExtensionObject" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_F" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_ApplicationDescription" TypeName="ua:ApplicationDescription" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_G" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_Structure_A" TypeName="tns:Structure_A" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_H" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_Duration" TypeName="opc:Double" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_J" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_MessageSecurityMode" TypeName="ua:MessageSecurityMode" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_K" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS1D_Array_String_within_max_length" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_String_within_max_length" TypeName="opc:String" LengthField="NoOfS1D_Array_String_within_max_length" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_L" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS1D_Array_of_BaseDataType" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_BaseDataType" TypeName="ua:Variant" LengthField="NoOfS1D_Array_of_BaseDataType" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_M" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS1D_Array_of_Structure__unknown_" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure__unknown_" TypeName="ua:ExtensionObject" LengthField="NoOfS1D_Array_of_Structure__unknown_" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_N" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS1D_Array_of_Structure__known_" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure__known_" TypeName="ua:ExtensionObject" LengthField="NoOfS1D_Array_of_Structure__known_" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_O" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS1D_Array_of_ApplicationDescription" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_ApplicationDescription" TypeName="ua:ApplicationDescription" LengthField="NoOfS1D_Array_of_ApplicationDescription" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_P" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS2D_Array_String_within_max_length" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_String_within_max_length" TypeName="opc:String" LengthField="NoOfS2D_Array_String_within_max_length" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_Q" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS2D_Array_of_BaseDataType" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_BaseDataType" TypeName="ua:Variant" LengthField="NoOfS2D_Array_of_BaseDataType" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_R" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS2D_Array_of_Structure__unknown_" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Structure__unknown_" TypeName="ua:ExtensionObject" LengthField="NoOfS2D_Array_of_Structure__unknown_" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_S" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS2D_Array_of_Structure__known_" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Structure__known_" TypeName="ua:ExtensionObject" LengthField="NoOfS2D_Array_of_Structure__known_" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="Structure_T" BaseType="ua:ExtensionObject">
+    <opc:Field Name="NoOfS2D_Array_of_ApplicationDescription" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_ApplicationDescription" TypeName="ua:ApplicationDescription" LengthField="NoOfS2D_Array_of_ApplicationDescription" />
+  </opc:StructuredType>
+
+  <opc:StructuredType Name="LargeComplexStructure" BaseType="ua:ExtensionObject">
+    <opc:Field Name="Scalar_BaseDataType" TypeName="ua:Variant" />
+    <opc:Field Name="Scalar_Structure" TypeName="ua:ExtensionObject" />
+    <opc:Field Name="Scalar_ApplicationDescription" TypeName="ua:ApplicationDescription" />
+    <opc:Field Name="Scalar_Structure_A" TypeName="tns:Structure_A" />
+    <opc:Field Name="Scalar_Structure_B" TypeName="tns:Structure_B" />
+    <opc:Field Name="Scalar_Boolean" TypeName="opc:Boolean" />
+    <opc:Field Name="Scalar_Duration" TypeName="opc:Double" />
+    <opc:Field Name="Scalar_RolePermissionType" TypeName="ua:RolePermissionType" />
+    <opc:Field Name="Scalar_String_no_max_length" TypeName="ua:Variant" />
+    <opc:Field Name="Scalar_String_within_max_length" TypeName="ua:Variant" />
+    <opc:Field Name="NoOfS1D_Array_String_no_max_length" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_String_no_max_length" TypeName="opc:String" LengthField="NoOfS1D_Array_String_no_max_length" />
+    <opc:Field Name="NoOfS1D_Array_String_within_max_length" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_String_within_max_length" TypeName="opc:String" LengthField="NoOfS1D_Array_String_within_max_length" />
+    <opc:Field Name="NoOfS1D_Array_of_BaseDataType" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_BaseDataType" TypeName="ua:Variant" LengthField="NoOfS1D_Array_of_BaseDataType" />
+    <opc:Field Name="NoOfS1D_Array_of_Structure__unknown_" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure__unknown_" TypeName="ua:ExtensionObject" LengthField="NoOfS1D_Array_of_Structure__unknown_" />
+    <opc:Field Name="NoOfS1D_Array_of_Structure__known_" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure__known_" TypeName="ua:ExtensionObject" LengthField="NoOfS1D_Array_of_Structure__known_" />
+    <opc:Field Name="NoOfS1D_Array_of_ApplicationDescription" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_ApplicationDescription" TypeName="ua:ApplicationDescription" LengthField="NoOfS1D_Array_of_ApplicationDescription" />
+    <opc:Field Name="NoOfS1D_Array_of_Structure_A" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure_A" TypeName="tns:Structure_A" LengthField="NoOfS1D_Array_of_Structure_A" />
+    <opc:Field Name="NoOfS1D_Array_of_Structure_B" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Structure_B" TypeName="tns:Structure_B" LengthField="NoOfS1D_Array_of_Structure_B" />
+    <opc:Field Name="NoOfS1D_Array_of_Boolean" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Boolean" TypeName="opc:Boolean" LengthField="NoOfS1D_Array_of_Boolean" />
+    <opc:Field Name="NoOfS1D_Array_of_Duration" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_Duration" TypeName="opc:Double" LengthField="NoOfS1D_Array_of_Duration" />
+    <opc:Field Name="NoOfS1D_Array_of_RolePermissionType" TypeName="opc:Int32" />
+    <opc:Field Name="S1D_Array_of_RolePermissionType" TypeName="ua:RolePermissionType" LengthField="NoOfS1D_Array_of_RolePermissionType" />
+    <opc:Field Name="NoOfS2D_Array_of_BaseDataType" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_BaseDataType" TypeName="ua:Variant" LengthField="NoOfS2D_Array_of_BaseDataType" />
+    <opc:Field Name="NoOfS2D_Array_of_Structure" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Structure" TypeName="ua:ExtensionObject" LengthField="NoOfS2D_Array_of_Structure" />
+    <opc:Field Name="NoOfS2D_Array_of_ApplicationDescription" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_ApplicationDescription" TypeName="ua:ApplicationDescription" LengthField="NoOfS2D_Array_of_ApplicationDescription" />
+    <opc:Field Name="NoOfS2D_Array_of_Structure_A" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Structure_A" TypeName="tns:Structure_A" LengthField="NoOfS2D_Array_of_Structure_A" />
+    <opc:Field Name="NoOfS2D_Array_of_Structure_B" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Structure_B" TypeName="tns:Structure_B" LengthField="NoOfS2D_Array_of_Structure_B" />
+    <opc:Field Name="NoOfS2D_Array_of_Boolean" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Boolean" TypeName="opc:Boolean" LengthField="NoOfS2D_Array_of_Boolean" />
+    <opc:Field Name="NoOfS2D_Array_of_Duration" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_Duration" TypeName="opc:Double" LengthField="NoOfS2D_Array_of_Duration" />
+    <opc:Field Name="NoOfS2D_Array_of_RolePermissionType" TypeName="opc:Int32" />
+    <opc:Field Name="S2D_Array_of_RolePermissionType" TypeName="ua:RolePermissionType" LengthField="NoOfS2D_Array_of_RolePermissionType" />
+  </opc:StructuredType>
+
+</opc:TypeDictionary>
