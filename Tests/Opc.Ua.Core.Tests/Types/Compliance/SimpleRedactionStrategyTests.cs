@@ -32,7 +32,7 @@ using NUnit.Framework;
 using Opc.Ua.Redaction;
 using Opc.Ua.Types.Redaction;
 
-namespace Opc.Ua.Core.Tests.Types.UtilsTests
+namespace Opc.Ua.Core.Tests.Types.Compliance
 {
     [TestFixture, Category("Utils")]
     internal class SimpleRedactionStrategyTests

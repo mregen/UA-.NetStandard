@@ -33,6 +33,7 @@ using System.Text;
 using System.Xml;
 using System.Linq;
 using System.Runtime.Serialization;
+using Opc.Ua.Compliance;
 
 namespace Opc.Ua
 {
@@ -938,6 +939,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 1)]
         public string EndpointUrl
         {
@@ -16114,6 +16116,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 3)]
         public string EndpointUrl
         {
@@ -25723,6 +25726,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [UserNameInformation]
         [DataMember(Name = "UserName", IsRequired = false, Order = 1)]
         public string UserName
         {
@@ -33065,6 +33069,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "DiscoveryUrls", IsRequired = false, Order = 7)]
         public StringCollection DiscoveryUrls
         {
@@ -34201,6 +34206,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 2)]
         public string EndpointUrl
         {
@@ -35248,6 +35254,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "IssuerEndpointUrl", IsRequired = false, Order = 4)]
         public string IssuerEndpointUrl
         {
@@ -35462,6 +35469,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 1)]
         public string EndpointUrl
         {
@@ -35490,6 +35498,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [CertificateInformation]
         [DataMember(Name = "ServerCertificate", IsRequired = false, Order = 3)]
         public byte[] ServerCertificate
         {
@@ -35779,6 +35788,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 2)]
         public string EndpointUrl
         {
@@ -38460,6 +38470,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 4)]
         public string EndpointUrl
         {
@@ -39163,6 +39174,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [UserNameInformation]
         [DataMember(Name = "UserName", IsRequired = false, Order = 1)]
         public string UserName
         {
@@ -39171,6 +39183,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [SecretInformation]
         [DataMember(Name = "Password", IsRequired = false, Order = 2)]
         public byte[] Password
         {
@@ -39307,6 +39320,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [CertificateInformation]
         [DataMember(Name = "CertificateData", IsRequired = false, Order = 1)]
         public byte[] CertificateData
         {
@@ -67635,6 +67649,7 @@ namespace Opc.Ua
 
         #region Public Properties
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrlList", IsRequired = false, Order = 1)]
         public StringCollection EndpointUrlList
         {
@@ -67835,6 +67850,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "NetworkPaths", IsRequired = false, Order = 2)]
         public EndpointUrlListDataTypeCollection NetworkPaths
         {
@@ -68802,6 +68818,7 @@ namespace Opc.Ua
         }
 
         /// <remarks />
+        [EndpointInformation]
         [DataMember(Name = "EndpointUrl", IsRequired = false, Order = 5)]
         public string EndpointUrl
         {
