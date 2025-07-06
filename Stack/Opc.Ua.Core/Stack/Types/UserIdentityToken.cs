@@ -15,6 +15,7 @@ using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Opc.Ua.Compliance;
 
 namespace Opc.Ua
 {
@@ -82,7 +83,7 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
+        [IgnoreDataMember, JsonIgnore, SecretInformation]
         public byte[] DecryptedPassword
         {
             get { return m_decryptedPassword; }
@@ -194,6 +195,7 @@ namespace Opc.Ua
         /// <summary>
         /// The certificate associated with the token.
         /// </summary>
+        [CertificateInformation]
         public X509Certificate2 Certificate
         {
             get
@@ -311,7 +313,7 @@ namespace Opc.Ua
         /// <summary>
         /// The decrypted password associated with the token.
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
+        [IgnoreDataMember, JsonIgnore, SecretInformation]
         public byte[] DecryptedTokenData
         {
             get { return m_decryptedTokenData; }
