@@ -30,7 +30,7 @@
 using NUnit.Framework;
 using Opc.Ua.Redaction;
 
-namespace Opc.Ua.Core.Tests.Types.UtilsTests
+namespace Opc.Ua.Core.Tests.Types.Compliance
 {
     [TestFixture, Category("Utils")]
     public class RedactionTests

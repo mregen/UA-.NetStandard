@@ -34,6 +34,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using Opc.Ua.Compliance;
 
 namespace Opc.Ua.Server.UserDatabase
 {
@@ -63,6 +64,7 @@ namespace Opc.Ua.Server.UserDatabase
             /// <summary>
             /// The user name. 
             /// </summary>
+            [UserNameInformation]
             [DataMember(Name = "UserName", IsRequired = true, Order = 20)]
             public string UserName { get; set; }
 

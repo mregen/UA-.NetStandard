@@ -27,6 +27,7 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
+
 namespace Opc.Ua.Redaction
 {
     /// <summary>
