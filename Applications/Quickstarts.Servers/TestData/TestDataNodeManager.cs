@@ -64,6 +64,9 @@ namespace TestData
                 return nameSpaces;
             }
         }
+
+        /// <inheritdoc/>
+        public uint Order => (uint)NodeManagerOrderDefaults.Default;
     }
 
     /// <summary>
@@ -230,6 +233,18 @@ namespace TestData
                     var variable = FindTypeState<VectorVariableState>(Variables.Data_Dynamic_Scalar_VectorValue);
                     m_dataDynamicVectorScalarValue = new VectorVariableValue(variable, m_system.GetRandomVector(), null);
                 }
+
+                /* TODO expose then namespacemetadatastate
+                ConfigurationNodeManager configurationNodeManager = Server.NodeManager.ConfigurationNodeManager;
+                if (configurationNodeManager != null)
+                {
+                    var typeNamespaceMetaDataState = configurationNodeManager.CreateNamespaceMetadataState(Server.NamespaceUris.GetString(m_typeNamespaceIndex));
+                    //typeNamespaceMetaDataState.NamespacePublicationDate.Value = this.GetType().GetTypeInfo().Assembly.
+                    //typeNamespaceMetaDataState.NamespaceVersion.Value =
+                    var nameSpaceMetaDataState = configurationNodeManager.CreateNamespaceMetadataState(Server.NamespaceUris.GetString(m_namespaceIndex));
+                }
+                */
+
             }
         }
 

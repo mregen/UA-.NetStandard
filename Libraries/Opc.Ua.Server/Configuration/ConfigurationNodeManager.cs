@@ -268,8 +268,7 @@ namespace Opc.Ua.Server
         /// <summary>
         /// Gets or creates the <see cref="NamespaceMetadataState"/> node for the specified NamespaceUri.
         /// </summary>
-        /// <param name="namespaceUri"></param>
-        /// <returns></returns>
+        /// <param name="namespaceUri">The nameSpaceUri to add to the </param>
         public NamespaceMetadataState CreateNamespaceMetadataState(string namespaceUri)
         {
             NamespaceMetadataState namespaceMetadataState = FindNamespaceMetadataState(namespaceUri);
@@ -285,8 +284,13 @@ namespace Opc.Ua.Server
                 }
 
                 // create the NamespaceMetadata node
+                var nameSpaceIndex = Server.NamespaceUris.GetIndex(namespaceUri);
+                if (nameSpaceIndex < 0)
+                {
+                    nameSpaceIndex = 0;
+                }
                 namespaceMetadataState = new NamespaceMetadataState(serverNamespacesNode);
-                namespaceMetadataState.BrowseName = new QualifiedName(namespaceUri, NamespaceIndex);
+                namespaceMetadataState.BrowseName = new QualifiedName(namespaceUri, (ushort)nameSpaceIndex);
                 namespaceMetadataState.Create(SystemContext, null, namespaceMetadataState.BrowseName, null, true);
                 namespaceMetadataState.DisplayName = namespaceUri;
                 namespaceMetadataState.SymbolicName = namespaceUri;

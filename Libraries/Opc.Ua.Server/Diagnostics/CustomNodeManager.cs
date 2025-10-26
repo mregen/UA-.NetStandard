@@ -539,7 +539,7 @@ namespace Opc.Ua.Server
             // assign a default value to any variable in namespace 0
             if (node is BaseVariableState nodeStateVar)
             {
-                if (nodeStateVar.NodeId.NamespaceIndex == 0 && nodeStateVar.Value == null)
+                if (nodeStateVar.NodeId?.NamespaceIndex == 0 && nodeStateVar.Value == null)
                 {
                     nodeStateVar.Value = TypeInfo.GetDefaultValue(nodeStateVar.DataType,
                         nodeStateVar.ValueRank,
