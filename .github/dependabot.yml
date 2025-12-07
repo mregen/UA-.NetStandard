@@ -6,15 +6,28 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    labels:
-      - "nuget"
-    directory: "/"
+    directory: "/" 
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    registries: "*"
+    open-pull-requests-limit: 10
+    labels: 
+      - "nuget"
+    groups:
+      microsoft:
+        applies-to: version-updates
+        patterns:
+        - "Microsoft.*"
+        - "System.*"
 
   - package-ecosystem: github-actions
     labels:
       - "actions"
     directory: "./"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    groups:
+      actions:
+        applies-to: version-updates
+        patterns:
+        - "actions/*"
