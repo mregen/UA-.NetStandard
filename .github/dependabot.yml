@@ -19,6 +19,8 @@ updates:
         patterns:
         - "Microsoft.*"
         - "System.*"
+        - "Serilog.*"
+        - "NUnit*"
 
   - package-ecosystem: github-actions
     labels:
