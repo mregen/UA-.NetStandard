@@ -1504,10 +1504,10 @@ namespace Opc.Ua
             {
                 bool accept = false;
                 const string message = "The domain '{0}' is not listed in the server certificate.";
-                var serviceResult = ServiceResultException.Create(StatusCodes.BadCertificateHostNameInvalid, message, endpointUrl.DnsSafeHost);
+                var serviceResult = ServiceResult.Create(StatusCodes.BadCertificateHostNameInvalid, message, endpointUrl.DnsSafeHost);
                 if (m_CertificateValidation != null)
                 {
-                    var args = new CertificateValidationEventArgs(new ServiceResult(serviceResult), serverCertificate);
+                    var args = new CertificateValidationEventArgs(serviceResult, serverCertificate);
                     m_CertificateValidation(this, args);
                     accept = args.Accept || args.AcceptAll;
                 }
@@ -1526,13 +1526,93 @@ namespace Opc.Ua
                         Task.Run(async () => await SaveCertificateAsync(serverCertificate).ConfigureAwait(false));
                     }
 
-                    throw serviceResult;
+                    throw new ServiceResultException(serviceResult);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validate application Uri in a server certificate against endpoint used for connection.
+        /// A url mismatch can be accepted by the certificate validation event,
+        /// otherwise an exception is thrown.
+        /// </summary>
+        /// <param name="serverCertificate">The server certificate which contains the application Uri.</param>
+        /// <param name="endpoint">The endpoint used to connect to a server.</param>
+        /// <exception cref="ServiceResultException">
+        /// <see cref="StatusCodes.BadCertificateUriInvalid"/>if the application Uri can not be found in
+        /// the subject alternate names field in the certificate.
+        /// </exception>
+        public void ValidateApplicationUri(X509Certificate2 serverCertificate, ConfiguredEndpoint endpoint)
+        {
+            ServiceResult serviceResult = ValidateServerCertificateApplicationUri(serverCertificate, endpoint);
+
+            if (ServiceResult.IsBad(serviceResult))
+            {
+                bool accept = false;
+                if (m_CertificateValidation != null)
+                {
+                    var args = new CertificateValidationEventArgs(serviceResult, serverCertificate);
+                    m_CertificateValidation(this, args);
+                    accept = args.Accept || args.AcceptAll;
+                }
+
+                // throw if rejected.
+                if (!accept)
+                {
+                    // write the invalid certificate to rejected store if specified.
+                    Utils.LogCertificate(LogLevel.Error, "Certificate rejected. Reason={0}.",
+                        serverCertificate, Redact.Create(serviceResult));
+                    SaveCertificate(serverCertificate);
+
+                    throw new ServiceResultException(serviceResult);
                 }
             }
         }
         #endregion
 
         #region Private Methods
+        private static ServiceResult ValidateServerCertificateApplicationUri(X509Certificate2 serverCertificate, ConfiguredEndpoint endpoint)
+        {
+            var applicationUri = endpoint?.Description?.Server?.ApplicationUri;
+
+            // check that an ApplicatioUri is specified for the Endpoint
+            if (string.IsNullOrEmpty(applicationUri))
+            {
+                return ServiceResult.Create(
+                    StatusCodes.BadCertificateUriInvalid,
+                    "Server did not return an ApplicationUri in the EndpointDescription.");
+            }
+
+            var certificateApplicationUris = X509Utils.GetApplicationUrisFromCertificate(serverCertificate);
+            if (certificateApplicationUris.Count == 0)
+            {
+                return ServiceResult.Create(
+                        StatusCodes.BadCertificateUriInvalid,
+                        "The Server Certificate ({1}) does not contain an applicationUri.",
+                        serverCertificate.Subject);
+            }
+
+            bool noMatch = true;
+            foreach (var certificateApplicationUri in certificateApplicationUris)
+            {
+                if (string.Equals(certificateApplicationUri, applicationUri, StringComparison.Ordinal))
+                {
+                    noMatch = false;
+                    break;
+                }
+            }
+
+            if (noMatch)
+            {
+                return ServiceResult.Create(
+                    StatusCodes.BadCertificateUriInvalid,
+                    "The Application in the EndpointDescription ({0}) is not in the Server Certificate ({1}).",
+                    applicationUri, serverCertificate.Subject);
+            }
+
+            return ServiceResult.Good;
+        }
+
         /// <summary>
         /// Returns an error if the chain status elements indicate an error.
         /// </summary>
