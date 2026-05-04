@@ -43,7 +43,6 @@ using Opc.Ua.Configuration;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
-using static Opc.Ua.Utils;
 
 namespace Quickstarts
 {
@@ -62,34 +61,34 @@ namespace Quickstarts
         public override void WriteLine(char value)
         {
             m_builder.Append(value);
-            LogInfo("{0}", m_builder.ToString());
+            Utils.LogInfo("{0}", m_builder.ToString());
             m_builder.Clear();
         }
 
         public override void WriteLine()
         {
-            LogInfo("{0}", m_builder.ToString());
+            Utils.LogInfo("{0}", m_builder.ToString());
             m_builder.Clear();
         }
 
         public override void WriteLine(string format, object arg0)
         {
             m_builder.Append(format);
-            LogInfo(m_builder.ToString(), arg0);
+            Utils.LogInfo(m_builder.ToString(), arg0);
             m_builder.Clear();
         }
 
         public override void WriteLine(string format, object arg0, object arg1)
         {
             m_builder.Append(format);
-            LogInfo(m_builder.ToString(), arg0, arg1);
+            Utils.LogInfo(m_builder.ToString(), arg0, arg1);
             m_builder.Clear();
         }
 
         public override void WriteLine(string format, params object[] arg)
         {
             m_builder.Append(format);
-            LogInfo(m_builder.ToString(), arg);
+            Utils.LogInfo(m_builder.ToString(), arg);
             m_builder.Clear();
         }
 
@@ -101,7 +100,7 @@ namespace Quickstarts
         public override void WriteLine(string value)
         {
             m_builder.Append(value);
-            LogInfo("{0}", m_builder.ToString());
+            Utils.LogInfo("{0}", m_builder.ToString());
             m_builder.Clear();
         }
 
@@ -338,8 +337,8 @@ namespace Quickstarts
 
             // switch for Trace/Verbose output
             var traceMasks = configuration.TraceConfiguration.TraceMasks;
-            if ((traceMasks & ~(TraceMasks.Information | TraceMasks.Error |
-                TraceMasks.Security | TraceMasks.StartStop | TraceMasks.StackTrace)) != 0)
+            if ((traceMasks & ~(Utils.TraceMasks.Information | Utils.TraceMasks.Error |
+                Utils.TraceMasks.Security | Utils.TraceMasks.StartStop | Utils.TraceMasks.StackTrace)) != 0)
             {
                 fileLevel = LogLevel.Trace;
             }
@@ -350,7 +349,7 @@ namespace Quickstarts
             {
                 loggerConfiguration.WriteTo.File(
                     new ExpressionTemplate("{UtcDateTime(@t):yyyy-MM-dd HH:mm:ss.fff} [{@l:u3}] {@m}\n{@x}"),
-                    ReplaceSpecialFolderNames(outputFilePath),
+                    Utils.ReplaceSpecialFolderNames(outputFilePath),
                     restrictedToMinimumLevel: (LogEventLevel)fileLevel,
                     rollOnFileSizeLimit: true);
             }
@@ -371,7 +370,7 @@ namespace Quickstarts
                 .CreateLogger(context);
 
             // set logger interface, disables TraceEvent
-            SetLogger(logger);
+            Utils.SetLogger(logger);
         }
 
         /// <summary>
@@ -380,24 +379,24 @@ namespace Quickstarts
         public static void LogTest()
         {
             // print legacy logging output, for testing
-            Trace(TraceMasks.Error, "This is an Error message: {0}", TraceMasks.Error);
-            Trace(TraceMasks.Information, "This is a Information message: {0}", TraceMasks.Information);
-            Trace(TraceMasks.StackTrace, "This is a StackTrace message: {0}", TraceMasks.StackTrace);
-            Trace(TraceMasks.Service, "This is a Service message: {0}", TraceMasks.Service);
-            Trace(TraceMasks.ServiceDetail, "This is a ServiceDetail message: {0}", TraceMasks.ServiceDetail);
-            Trace(TraceMasks.Operation, "This is a Operation message: {0}", TraceMasks.Operation);
-            Trace(TraceMasks.OperationDetail, "This is a OperationDetail message: {0}", TraceMasks.OperationDetail);
-            Trace(TraceMasks.StartStop, "This is a StartStop message: {0}", TraceMasks.StartStop);
-            Trace(TraceMasks.ExternalSystem, "This is a ExternalSystem message: {0}", TraceMasks.ExternalSystem);
-            Trace(TraceMasks.Security, "This is a Security message: {0}", TraceMasks.Security);
+            Utils.Trace(Utils.TraceMasks.Error, "This is an Error message: {0}", Utils.TraceMasks.Error);
+            Utils.Trace(Utils.TraceMasks.Information, "This is a Information message: {0}", Utils.TraceMasks.Information);
+            Utils.Trace(Utils.TraceMasks.StackTrace, "This is a StackTrace message: {0}", Utils.TraceMasks.StackTrace);
+            Utils.Trace(Utils.TraceMasks.Service, "This is a Service message: {0}", Utils.TraceMasks.Service);
+            Utils.Trace(Utils.TraceMasks.ServiceDetail, "This is a ServiceDetail message: {0}", Utils.TraceMasks.ServiceDetail);
+            Utils.Trace(Utils.TraceMasks.Operation, "This is a Operation message: {0}", Utils.TraceMasks.Operation);
+            Utils.Trace(Utils.TraceMasks.OperationDetail, "This is a OperationDetail message: {0}", Utils.TraceMasks.OperationDetail);
+            Utils.Trace(Utils.TraceMasks.StartStop, "This is a StartStop message: {0}", Utils.TraceMasks.StartStop);
+            Utils.Trace(Utils.TraceMasks.ExternalSystem, "This is a ExternalSystem message: {0}", Utils.TraceMasks.ExternalSystem);
+            Utils.Trace(Utils.TraceMasks.Security, "This is a Security message: {0}", Utils.TraceMasks.Security);
 
             // print ILogger logging output
-            LogTrace("This is a Trace message: {0}", LogLevel.Trace);
-            LogDebug("This is a Debug message: {0}", LogLevel.Debug);
-            LogInfo("This is a Info message: {0}", LogLevel.Information);
-            LogWarning("This is a Warning message: {0}", LogLevel.Warning);
-            LogError("This is a Error message: {0}", LogLevel.Error);
-            LogCritical("This is a Critical message: {0}", LogLevel.Critical);
+            Utils.LogTrace("This is a Trace message: {0}", LogLevel.Trace);
+            Utils.LogDebug("This is a Debug message: {0}", LogLevel.Debug);
+            Utils.LogInfo("This is a Info message: {0}", LogLevel.Information);
+            Utils.LogWarning("This is a Warning message: {0}", LogLevel.Warning);
+            Utils.LogError("This is a Error message: {0}", LogLevel.Error);
+            Utils.LogCritical("This is a Critical message: {0}", LogLevel.Critical);
         }
 
         /// <summary>

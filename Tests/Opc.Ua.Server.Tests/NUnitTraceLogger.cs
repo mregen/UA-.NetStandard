@@ -27,6 +27,7 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
+#if TRACEEVENTLOGGER
 using System;
 using System.Globalization;
 using System.IO;
@@ -91,3 +92,4 @@ namespace Opc.Ua.Server.Tests
         }
     }
 }
+#endif

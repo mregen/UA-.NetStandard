@@ -34,6 +34,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Legacy.ClassicAssert;
 
+#if TRACEEVENTLOGGER
 
 namespace Opc.Ua.Core.Tests.Types.LogTests
 {
@@ -305,3 +306,4 @@ namespace Opc.Ua.Core.Tests.Types.LogTests
         }
     }
 }
+#endif

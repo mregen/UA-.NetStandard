@@ -48,12 +48,19 @@ namespace Opc.Ua
         /// <param name="password">The UTF8 encoded password.</param>
         public CertificatePasswordProvider(byte[] password)
         {
-            var charToken = new char[password.Length * 3];
-            int length = Convert.ToBase64CharArray(password, 0, password.Length, charToken, 0, Base64FormattingOptions.None);
-            char[] passcode = new char[length];
-            charToken.CopyTo(passcode, 0);
-            Array.Clear(charToken, 0, charToken.Length);
-            m_password = passcode;
+            if (password != null)
+            {
+                var charToken = new char[password.Length * 3];
+                int length = Convert.ToBase64CharArray(password, 0, password.Length, charToken, 0, Base64FormattingOptions.None);
+                char[] passcode = new char[length];
+                charToken.CopyTo(passcode, 0);
+                Array.Clear(charToken, 0, charToken.Length);
+                m_password = passcode;
+            }
+            else
+            {
+                m_password = Array.Empty<char>();
+            }
         }
 
         /// <summary>
@@ -62,7 +69,14 @@ namespace Opc.Ua
         /// <param name="password"></param>
         public CertificatePasswordProvider(ReadOnlySpan<char> password)
         {
-            m_password = password.ToArray();
+            if (!password.IsEmpty && !password.IsWhiteSpace())
+            {
+                m_password = password.ToArray();
+            }
+            else
+            {
+                m_password = Array.Empty<char>();
+            }
         }
 
         /// <summary>

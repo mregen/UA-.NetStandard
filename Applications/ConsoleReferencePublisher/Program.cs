@@ -758,11 +758,13 @@ namespace Quickstarts.ConsoleReferencePublisher
         /// </summary>
         private static void InitializeLog()
         {
+#if TRACEEVENTLOGGER
             // Initialize logger
             Utils.SetTraceLog("%CommonApplicationData%\\OPC Foundation\\Logs\\Quickstarts.ConsoleReferencePublisher.log.txt", true);
             Utils.SetTraceMask(Utils.TraceMasks.Error);
             Utils.SetTraceOutput(Utils.TraceOutput.DebugAndFile);
+#endif
         }
-        #endregion
+#endregion
     }
 }

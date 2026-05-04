@@ -13,6 +13,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
+#if TRACEEVENTLOGGER
 namespace Opc.Ua
 {
     /// <summary>
@@ -49,3 +50,4 @@ namespace Opc.Ua
         }
     }
 }
+#endif

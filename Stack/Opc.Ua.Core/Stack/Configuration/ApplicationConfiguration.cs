@@ -596,6 +596,7 @@ namespace Opc.Ua
         /// </summary>
         public void ApplySettings()
         {
+#if TRACEEVENTLOGGER
             Utils.SetTraceLog(m_outputFilePath, m_deleteOnLoad);
             Utils.SetTraceMask(m_traceMasks);
 
@@ -607,6 +608,7 @@ namespace Opc.Ua
             {
                 Utils.SetTraceOutput(Utils.TraceOutput.DebugAndFile);
             }
+#endif
         }
         #endregion
     }
