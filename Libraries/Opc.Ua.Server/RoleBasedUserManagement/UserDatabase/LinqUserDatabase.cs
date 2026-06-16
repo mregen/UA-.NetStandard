@@ -1,5 +1,5 @@
 /* ========================================================================
- * Copyright (c) 2005-2025 The OPC Foundation, Inc. All rights reserved.
+ * Copyright (c) 2005-2026 The OPC Foundation, Inc. All rights reserved.
  *
  * OPC Foundation MIT License 1.00
  * 
@@ -243,7 +243,7 @@ namespace Opc.Ua.Server.UserDatabase
             byte[] tmpPassword = password.ToArray();
             try
             {
-                byte[] salt = new byte[kSaltSize + sizeof(uint)];
+                byte[] salt = new byte[kSaltSize];
 
 #if NETSTANDARD2_0 || NETFRAMEWORK
                 using (var random = RandomNumberGenerator.Create())
@@ -251,7 +251,7 @@ namespace Opc.Ua.Server.UserDatabase
                     random.GetNonZeroBytes(salt);
                 }
 #else
-                RandomNumberGenerator.Fill(salt.AsSpan(0, kSaltSize));
+                RandomNumberGenerator.Fill(salt);
 #endif
 
 #if NETSTANDARD2_0 || NET462
@@ -262,18 +262,35 @@ namespace Opc.Ua.Server.UserDatabase
                     kIterations))
                 {
 #pragma warning restore CA5379 // Ensure Key Derivation Function algorithm is sufficiently strong
+                    string keyBase64 = Convert.ToBase64String(algorithm.GetBytes(kKeySize));
+                    string saltBase64 = Convert.ToBase64String(algorithm.Salt);
+                    return $"{kIterations}.{saltBase64}.{keyBase64}";
+                }
 #else
+#if NET472_OR_GREATER || NETSTANDARD2_1 
                 using (var algorithm = new Rfc2898DeriveBytes(
                     tmpPassword,
                     salt,
                     kIterations,
                     HashAlgorithmName.SHA512))
                 {
-#endif
                     string keyBase64 = Convert.ToBase64String(algorithm.GetBytes(kKeySize));
                     string saltBase64 = Convert.ToBase64String(algorithm.Salt);
                     return $"{kIterations}.{saltBase64}.{keyBase64}";
                 }
+#else
+                byte[] key = Rfc2898DeriveBytes.Pbkdf2(
+                    tmpPassword,
+                    salt,
+                    kIterations,
+                    HashAlgorithmName.SHA512,
+                    kKeySize);
+
+                string keyBase64 = Convert.ToBase64String(key);
+                string saltBase64 = Convert.ToBase64String(salt);
+                return $"{kIterations}.{saltBase64}.{keyBase64}";
+#endif
+#endif
             }
             finally
             {
@@ -310,18 +327,30 @@ namespace Opc.Ua.Server.UserDatabase
                     iterations))
                 {
 #pragma warning restore CA5379 // Ensure Key Derivation Function algorithm is sufficiently strong
+                    byte[] keyToCheck = algorithm.GetBytes(kKeySize);
+                    return keyToCheck.SequenceEqual(key);
+                }
 #else
+#if NET472_OR_GREATER || NETSTANDARD2_1
+                byte[] keyToCheck;
                 using (var algorithm = new Rfc2898DeriveBytes(
                     tmpPassword,
                     salt,
                     iterations,
                     HashAlgorithmName.SHA512))
                 {
-#endif
-                    byte[] keyToCheck = algorithm.GetBytes(kKeySize);
-
-                    return keyToCheck.SequenceEqual(key);
+                    keyToCheck = algorithm.GetBytes(kKeySize);
                 }
+#else
+                byte[] keyToCheck = Rfc2898DeriveBytes.Pbkdf2(
+                    tmpPassword,
+                    salt,
+                    iterations,
+                    HashAlgorithmName.SHA512,
+                    kKeySize);
+#endif
+                return keyToCheck.SequenceEqual(key);
+#endif
             }
             finally
             {

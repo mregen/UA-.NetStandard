@@ -34,7 +34,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Opc.Ua.Types.Utils;
+using CryptoHives.Foundation.Threading.Async.Pooled;
 
 namespace Opc.Ua.Client
 {

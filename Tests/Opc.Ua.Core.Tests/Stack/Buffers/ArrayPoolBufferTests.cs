@@ -27,6 +27,7 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
+using CryptoHives.Foundation.Memory.Buffers;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using System;
@@ -65,7 +66,7 @@ namespace Opc.Ua.Buffers.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => writer.GetMemory(-1));
             Assert.Throws<ArgumentOutOfRangeException>(() => writer.GetSpan(-1));
             Assert.Throws<ArgumentOutOfRangeException>(() => writer.Advance(-1));
-            Assert.Throws<InvalidOperationException>(() => writer.Advance(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => writer.Advance(2));
 
             act();
 

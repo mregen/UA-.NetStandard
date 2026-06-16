@@ -63,4 +63,8 @@
 
   <Target Name="GetPackagingOutputs" />
 
+  <ItemGroup>
+    <PackageReference Include="CryptoHives.Foundation.Security.Cryptography" />
+  </ItemGroup>
+
 </Project>

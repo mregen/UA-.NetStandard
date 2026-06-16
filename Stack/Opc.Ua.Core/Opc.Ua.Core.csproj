@@ -78,6 +78,9 @@
   </Choose>
 
   <ItemGroup>
+    <PackageReference Include="CryptoHives.Foundation.Memory" />
+    <PackageReference Include="CryptoHives.Foundation.Security.Cryptography" />
+    <PackageReference Include="CryptoHives.Foundation.Threading" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
