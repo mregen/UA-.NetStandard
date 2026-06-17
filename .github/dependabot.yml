@@ -33,3 +33,4 @@ updates:
         applies-to: version-updates
         patterns:
         - "actions/*"
+        - "docker/*"
