@@ -19,7 +19,7 @@ jobs:
 - job: nuget${{parameters.config}}
   displayName: Pack Nugets ${{parameters.config}}
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-latest'
   variables:
   - group: codesign
   - name: msbuildversion
@@ -34,10 +34,10 @@ jobs:
     value: '.azurepipelines/signlist${{parameters.config}}.txt'
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET 9.0'
+    displayName: 'Install .NET 10.0'
     inputs:
       packageType: 'sdk'
-      version: '9.0.x'
+      version: '10.0.x'
       includePreviewVersions: false  
   - task: DownloadSecureFile@1
     name: strongnamefile
