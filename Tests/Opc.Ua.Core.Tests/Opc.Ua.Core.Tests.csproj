@@ -45,6 +45,7 @@
 
   <ItemGroup Condition="'$(SignAssembly)' != 'true'">
     <PackageReference Include="EmbedIO" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 
   <ItemGroup>
