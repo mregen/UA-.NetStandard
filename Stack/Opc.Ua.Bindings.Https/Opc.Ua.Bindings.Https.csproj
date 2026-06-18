@@ -9,6 +9,7 @@
     <Description>OPC UA Https Binding Library for a Opc.Ua.Server.</Description>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);ASPDEPR008</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -44,7 +45,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
     <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" VersionOverride="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="10.0.9" />

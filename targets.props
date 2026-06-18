@@ -117,7 +117,7 @@
         <LibTargetFrameworks>net10.0</LibTargetFrameworks>
         <LibCoreTargetFrameworks>net10.0</LibCoreTargetFrameworks>
         <LibxTargetFrameworks>net10.0</LibxTargetFrameworks>
-        <HttpsTargetFrameworks>net8.0</HttpsTargetFrameworks>
+        <HttpsTargetFrameworks>net10.0</HttpsTargetFrameworks>
       </PropertyGroup>
     </When>
 
@@ -133,7 +133,7 @@
         <LibTargetFrameworks>net10.0</LibTargetFrameworks>
         <LibCoreTargetFrameworks>net10.0</LibCoreTargetFrameworks>
         <LibxTargetFrameworks>net10.0</LibxTargetFrameworks>
-        <HttpsTargetFrameworks>net8.0</HttpsTargetFrameworks>
+        <HttpsTargetFrameworks>net10.0</HttpsTargetFrameworks>
       </PropertyGroup>
     </When>
 
@@ -151,7 +151,7 @@
         <LibTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net10.0</LibTargetFrameworks>
         <LibCoreTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net10.0</LibCoreTargetFrameworks>
         <LibxTargetFrameworks>net462;net472;net48;netstandard2.1;net8.0;net10.0</LibxTargetFrameworks>
-        <HttpsTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0</HttpsTargetFrameworks>
+        <HttpsTargetFrameworks>net472;net48;netstandard2.0;netstandard2.1;net8.0;net10.0</HttpsTargetFrameworks>
       </PropertyGroup>
     </When>
     <!-- Visual Studio 2022, supports .NET Framework 4.7.2/4.8, .NET Standard2.0/2.1, .NET 8/9-->
