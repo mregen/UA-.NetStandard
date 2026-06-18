@@ -34,9 +34,12 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="MQTTnet" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
     <PackageReference Include="System.Net.NetworkInformation" />
   </ItemGroup>
 

@@ -17,8 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Opc.Ua.Bindings;
-using Opc.Ua.Buffers;
+using CryptoHives.Foundation.Memory.Buffers;
 
 namespace Opc.Ua
 {

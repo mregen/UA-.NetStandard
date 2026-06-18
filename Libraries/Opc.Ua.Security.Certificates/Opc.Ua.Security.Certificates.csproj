@@ -46,21 +46,20 @@
     <When Condition="'$(TargetFramework)' == 'net472' OR '$(TargetFramework)' == 'net48'">
       <ItemGroup>
         <PackageReference Include="BouncyCastle.Cryptography" />
-        <PackageReference Include="System.Formats.Asn1" VersionOverride="8.0.2" />
-      </ItemGroup>
-    </When>
-    <When Condition="'$(TargetFramework)' == 'net9.0' OR '$(TargetFramework)' == 'net8.0'">
-      <ItemGroup>
-        <PackageReference Include="System.Formats.Asn1" />
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="System.Formats.Asn1" VersionOverride="8.0.2" />
-      </ItemGroup>
     </Otherwise>
   </Choose>
 
   <Target Name="GetPackagingOutputs" />
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+    <PackageReference Include="System.Formats.Asn1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CryptoHives.Foundation.Security.Cryptography" />
+  </ItemGroup>
 
 </Project>
