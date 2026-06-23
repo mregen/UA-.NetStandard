@@ -202,6 +202,8 @@ namespace Opc.Ua.Client
 
                 ValidateServerEndpoints(serverEndpoints);
 
+                ValidateServerCertificateApplicationUri(serverCertificate, m_endpoint);
+
                 ValidateServerSignature(serverCertificate, serverSignature, clientCertificateData, clientCertificateChainData, clientNonce);
 
                 HandleSignedSoftwareCertificates(serverSoftwareCertificates);
