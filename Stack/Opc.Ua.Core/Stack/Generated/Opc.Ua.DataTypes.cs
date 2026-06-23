@@ -27,6 +27,8 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
+#undef NET_STANDARD
+
 using System;
 using System.Collections.Generic;
 using System.Text;
